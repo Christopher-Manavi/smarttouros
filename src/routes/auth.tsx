@@ -1,17 +1,18 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-// NOTE: Google OAuth intentionally disabled. The default Lovable broker shows
-// a "Sign in to continue to Lovable" consent screen which is not acceptable
-// for the white-label SmartTourOS product. Only re-enable after configuring a
-// custom Google OAuth app branded as SmartTourOS (or the client's white-label
-// domain) in Cloud → Users → Auth Settings → Google.
-// import { lovable } from "@/integrations/lovable/index";
+// NOTE: Google OAuth intentionally disabled for white-label MVP. Only re-enable
+// after configuring a custom Google OAuth app branded as SmartTourOS.
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertTriangle, CheckCircle2 } from "lucide-react";
+
+const IS_DEV = import.meta.env.DEV;
+const DEMO_EMAIL = "demo@smarttouros.app";
+const DEMO_PASSWORD = "DemoTour!2026#Smart";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -31,44 +32,101 @@ function AuthPage() {
   const [fullName, setFullName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [infoMsg, setInfoMsg] = useState<string | null>(null);
+  const [sessionEmail, setSessionEmail] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
+      setSessionEmail(data.session?.user.email ?? null);
       if (data.session) navigate({ to: "/dashboard", replace: true });
     });
   }, [navigate]);
 
+  function logDev(label: string, value: unknown) {
+    if (IS_DEV) console.log(`[auth] ${label}`, value);
+  }
+
+  async function doSignup(em: string, pw: string, fn: string, co: string) {
+    logDev("signup payload", { email: em, fullName: fn, companyName: co });
+    const res = await supabase.auth.signUp({
+      email: em,
+      password: pw,
+      options: {
+        emailRedirectTo: window.location.origin + "/dashboard",
+        data: { full_name: fn, company_name: co },
+      },
+    });
+    logDev("auth signUp response", { data: res.data, error: res.error });
+    if (res.error) throw res.error;
+
+    // Profile/company/tracking rows are created by the handle_new_user trigger
+    // (SECURITY DEFINER). If there's a session, we're auto-confirmed; redirect.
+    if (res.data.session) {
+      logDev("redirect", "/dashboard");
+      navigate({ to: "/dashboard", replace: true });
+      return { confirmed: true };
+    }
+    return { confirmed: false };
+  }
+
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
+    setErrorMsg(null);
+    setInfoMsg(null);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: window.location.origin + "/dashboard",
-            data: { full_name: fullName, company_name: companyName },
-          },
-        });
-        if (error) throw error;
-        toast.success("Account created. Check your email if confirmation is required.");
+        const { confirmed } = await doSignup(email, password, fullName, companyName);
+        if (!confirmed) {
+          setInfoMsg(
+            "Account created. Please check your email to confirm your account before signing in.",
+          );
+        }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        const res = await supabase.auth.signInWithPassword({ email, password });
+        logDev("signIn response", { data: res.data, error: res.error });
+        if (res.error) throw res.error;
+        if (res.data.session) navigate({ to: "/dashboard", replace: true });
       }
-      const { data } = await supabase.auth.getSession();
-      if (data.session) navigate({ to: "/dashboard", replace: true });
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Authentication failed");
+      const msg = err instanceof Error ? err.message : String(err);
+      logDev("error", err);
+      setErrorMsg(msg);
     } finally {
       setBusy(false);
     }
   }
 
-  // Google OAuth handler intentionally removed for white-label MVP.
-  // See note at top of file before re-enabling.
-
+  async function handleDemo() {
+    setBusy(true);
+    setErrorMsg(null);
+    setInfoMsg(null);
+    try {
+      // Try sign-in first; if user doesn't exist, sign up.
+      let res = await supabase.auth.signInWithPassword({
+        email: DEMO_EMAIL,
+        password: DEMO_PASSWORD,
+      });
+      logDev("demo signIn", { error: res.error });
+      if (res.error) {
+        await doSignup(DEMO_EMAIL, DEMO_PASSWORD, "Demo User", "Demo Brokerage");
+        res = await supabase.auth.signInWithPassword({
+          email: DEMO_EMAIL,
+          password: DEMO_PASSWORD,
+        });
+        logDev("demo signIn after signup", { error: res.error });
+        if (res.error) throw res.error;
+      }
+      if (res.data.session) navigate({ to: "/dashboard", replace: true });
+      else setInfoMsg("Demo account created. Check the demo inbox to confirm if required.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setErrorMsg(`Demo login failed: ${msg}`);
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div className="min-h-screen flex">
@@ -95,7 +153,20 @@ function AuthPage() {
             </p>
           </div>
 
-
+          {errorMsg && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Authentication error</AlertTitle>
+              <AlertDescription className="break-words">{errorMsg}</AlertDescription>
+            </Alert>
+          )}
+          {infoMsg && (
+            <Alert className="mb-4">
+              <CheckCircle2 className="h-4 w-4" />
+              <AlertTitle>Check your email</AlertTitle>
+              <AlertDescription>{infoMsg}</AlertDescription>
+            </Alert>
+          )}
 
           <form onSubmit={handleEmail} className="space-y-4">
             {mode === "signup" && (
@@ -117,22 +188,52 @@ function AuthPage() {
             <div>
               <Label htmlFor="pw">Password</Label>
               <Input id="pw" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
+              {mode === "signup" && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Min 8 characters. Common/breached passwords are rejected — use something unique.
+                </p>
+              )}
             </div>
             <Button type="submit" className="w-full" disabled={busy}>
-              {mode === "signin" ? "Sign in" : "Create account"}
+              {busy
+                ? mode === "signin" ? "Signing in..." : "Creating account..."
+                : mode === "signin" ? "Sign in" : "Create account"}
             </Button>
           </form>
+
+          <div className="flex items-center gap-3 my-5">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs uppercase tracking-widest text-muted-foreground">or</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+          <Button type="button" variant="outline" className="w-full" disabled={busy} onClick={handleDemo}>
+            Continue as Demo User
+          </Button>
 
           <p className="text-sm text-muted-foreground text-center mt-6">
             {mode === "signin" ? "Don't have an account? " : "Already have one? "}
             <button
               type="button"
-              onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+              onClick={() => {
+                setMode(mode === "signin" ? "signup" : "signin");
+                setErrorMsg(null);
+                setInfoMsg(null);
+              }}
               className="text-foreground underline underline-offset-4"
             >
               {mode === "signin" ? "Create one" : "Sign in"}
             </button>
           </p>
+
+          {IS_DEV && (
+            <div className="mt-6 p-3 rounded border bg-muted/40 text-xs font-mono space-y-1">
+              <div className="font-semibold font-sans text-sm">Auth Debug (dev only)</div>
+              <div>Supabase URL: {import.meta.env.VITE_SUPABASE_URL ? "✓ set" : "✗ missing"}</div>
+              <div>Publishable key: {import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ? "✓ set" : "✗ missing"}</div>
+              <div>Session: {sessionEmail ? `✓ ${sessionEmail}` : "none"}</div>
+              <div className="break-words">Last error: {errorMsg ?? "—"}</div>
+            </div>
+          )}
         </Card>
       </div>
     </div>

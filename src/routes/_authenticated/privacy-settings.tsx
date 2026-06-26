@@ -9,10 +9,20 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { DEFAULT_PRIVACY_URL, DEFAULT_TERMS_URL, DEFAULT_PRIVACY_NOTICE_TEXT } from "@/lib/compliance";
 
 export const Route = createFileRoute("/_authenticated/privacy-settings")({
   component: Privacy,
 });
+
+const DEFAULT_ROW = {
+  privacy_policy_url: "",
+  terms_url: "",
+  privacy_notice_text: "",
+  show_privacy_notice: true,
+  direct_mail_enabled: false,
+  crm_export_enabled: false,
+};
 
 function Privacy() {
   const { companyId } = useAuth();
@@ -22,8 +32,9 @@ function Privacy() {
   useEffect(() => {
     if (!companyId) return;
     supabase.from("privacy_settings").select("*").eq("company_id", companyId).maybeSingle()
-      .then(({ data }) => setP(data ?? { company_id: companyId }));
+      .then(({ data }) => setP(data ?? { ...DEFAULT_ROW, company_id: companyId }));
   }, [companyId]);
+
 
   async function save() {
     setBusy(true);

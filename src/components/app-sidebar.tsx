@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   LogOut,
   ClipboardCheck,
+  FlaskConical,
 } from "lucide-react";
 import {
   Sidebar,

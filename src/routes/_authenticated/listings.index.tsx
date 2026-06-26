@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Copy, Eye, Pencil, BarChart3, Plus, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
+import { brandedTourUrl, unbrandedTourUrl } from "@/lib/public-url";
 
 export const Route = createFileRoute("/_authenticated/listings/")({
   component: ListingsIndex,
@@ -38,7 +39,7 @@ function ListingsIndex() {
     },
   });
 
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  // Canonical public base URL (never window.location.origin — that may be the editor preview).
 
   return (
     <div className="container-luxe py-10">
@@ -76,8 +77,8 @@ function ListingsIndex() {
                 </td></tr>
               )}
               {listings.map((l) => {
-                const branded = `${origin}/tour/${l.slug}`;
-                const unbranded = `${origin}/u/${l.slug}`;
+                const branded = brandedTourUrl(l.slug);
+                const unbranded = unbrandedTourUrl(l.slug);
                 return (
                   <tr key={l.id} className="hover:bg-muted/20">
                     <td className="py-3 px-4 font-medium">{l.address}</td>

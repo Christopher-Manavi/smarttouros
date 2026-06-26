@@ -44,11 +44,11 @@ export async function createDemoListing(
   return { id: data.id, slug: data.slug };
 }
 
+import { brandedTourUrl, unbrandedTourUrl } from "@/lib/public-url";
+
 export function tourUrls(slug: string) {
-  const origin =
-    typeof window !== "undefined" ? window.location.origin : "";
   return {
-    branded: `${origin}/tour/${slug}`,
-    unbranded: `${origin}/u/${slug}`,
+    branded: brandedTourUrl(slug),
+    unbranded: unbrandedTourUrl(slug),
   };
 }

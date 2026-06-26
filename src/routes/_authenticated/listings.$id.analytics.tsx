@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Copy, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { brandedTourUrl, unbrandedTourUrl } from "@/lib/public-url";
 import {
   LineChart as RLineChart,
   Line,
@@ -55,9 +56,8 @@ function ListingAnalytics() {
   events.forEach((e) => { if (e.referrer) referrers.set(e.referrer, (referrers.get(e.referrer) ?? 0) + 1); });
   const topRefs = [...referrers.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
 
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const brandedUrl = `${origin}/tour/${listing.slug}`;
-  const unbrandedUrl = `${origin}/u/${listing.slug}`;
+  const brandedUrl = brandedTourUrl(listing.slug);
+  const unbrandedUrl = unbrandedTourUrl(listing.slug);
 
   return (
     <div className="container-luxe py-10">

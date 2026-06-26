@@ -239,6 +239,15 @@ function TestCenter() {
         </Card>
       )}
 
+      <Card className="p-4 mb-6 text-sm bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900">
+        <p className="font-medium">True public-access check</p>
+        <p className="text-muted-foreground mt-1">
+          The in-app checks below run without an Authorization header to simulate an anonymous visitor.
+          For final acceptance, also open the Unbranded URL in a fresh Chrome Guest or Incognito window —
+          the tour must render without any sign-in prompt.
+        </p>
+      </Card>
+
       <Card className="p-2">
         <div className="px-4 py-3 border-b flex justify-between text-xs uppercase tracking-widest text-muted-foreground">
           <span>{tests.length} checks</span>

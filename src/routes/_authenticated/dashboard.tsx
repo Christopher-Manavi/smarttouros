@@ -97,6 +97,32 @@ function Dashboard() {
         </div>
       </div>
 
+      <Card className="p-6 mb-6 border-foreground/20 bg-muted/30">
+        <div className="flex items-start gap-3 mb-3">
+          <Youtube className="h-6 w-6 mt-0.5" />
+          <div>
+            <h2 className="font-display text-2xl">Turn a YouTube video into a smart MLS-safe tour</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Paste a YouTube or Shorts link, then finish the listing details in the normal create flow.
+            </p>
+            <p className="text-xs text-muted-foreground mt-2 italic">
+              Instead of pasting a raw YouTube link into MLS, paste your MLS-safe SmartTourOS link. Same video, better presentation, tracking, and seller reporting.
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Input
+            value={ytUrl}
+            onChange={(e) => setYtUrl(e.target.value)}
+            placeholder="Paste YouTube or Shorts URL"
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); startSmartTour(); } }}
+          />
+          <Button onClick={startSmartTour}>Start smart tour</Button>
+        </div>
+      </Card>
+
+
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon={Building2} label="Total listings" value={listings.length} />
         <StatCard icon={Activity} label="Active listings" value={listings.filter((l) => l.status === "active").length} />

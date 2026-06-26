@@ -243,9 +243,6 @@ function TourFooter({ privacy, company, unbranded }: { privacy: Privacy | null; 
     </>
   );
 }
-    </div>
-  );
-}
 
 export async function loadTourBundle(slug: string) {
   const { data: listing } = await supabase

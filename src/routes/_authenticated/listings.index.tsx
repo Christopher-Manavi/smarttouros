@@ -76,8 +76,8 @@ function ListingsIndex() {
                 </td></tr>
               )}
               {listings.map((l) => {
-                const branded = `${origin}/tour/${l.slug}`;
-                const unbranded = `${origin}/u/${l.slug}`;
+                const branded = brandedTourUrl(l.slug);
+                const unbranded = unbrandedTourUrl(l.slug);
                 return (
                   <tr key={l.id} className="hover:bg-muted/20">
                     <td className="py-3 px-4 font-medium">{l.address}</td>

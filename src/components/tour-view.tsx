@@ -15,6 +15,30 @@ function detectDevice(ua: string): string {
   return "desktop";
 }
 
+function GallerySection({ urls }: { urls: string[] }) {
+  const [bad, setBad] = useState<Set<number>>(new Set());
+  const visible = urls.filter((_, i) => !bad.has(i));
+  if (!urls.length || visible.length === 0) return null;
+  return (
+    <section className="container-luxe pb-16">
+      <h2 className="font-display text-3xl mb-6">Gallery</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {urls.map((u, i) => bad.has(i) ? null : (
+          <div key={i} className="aspect-[4/3] w-full overflow-hidden rounded bg-muted">
+            <img
+              src={u}
+              loading="lazy"
+              className="w-full h-full object-cover"
+              alt=""
+              onError={() => setBad((prev) => { const next = new Set(prev); next.add(i); return next; })}
+            />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 async function recordEvent(args: {
   listingId: string; companyId: string; pageType: "branded" | "unbranded";
   eventType: "page_view" | "media_click" | "video_play" | "cta_click" | "outbound_click";

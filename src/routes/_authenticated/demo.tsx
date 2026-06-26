@@ -87,6 +87,8 @@ function DemoSuccess() {
         </div>
       </Card>
 
+      <PublicAccessPanel slug={slug} />
+
       <div className="mt-8 flex flex-wrap gap-3 justify-end">
         <Button variant="outline" asChild>
           <Link to="/test-center">Run MVP test checklist</Link>

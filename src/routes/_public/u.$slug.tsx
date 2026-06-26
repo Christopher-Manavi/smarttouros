@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { TourView, loadTourBundle } from "@/components/tour-view";
 
-export const Route = createFileRoute("/u/$slug")({
+export const Route = createFileRoute("/_public/u/$slug")({
   ssr: false,
   component: UnbrandedTour,
 });

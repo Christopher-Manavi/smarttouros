@@ -81,9 +81,41 @@ function Company() {
         </div>
       </Card>
 
+      <Card className="p-6 space-y-4 mt-6">
+        <div>
+          <h2 className="font-display text-2xl">Public Domain Settings</h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            This is the domain used when generating MLS-safe tour links. Use your published domain or custom domain.
+          </p>
+        </div>
+        <div>
+          <Label>Public base URL</Label>
+          <Input
+            value={publicBase}
+            onChange={(e) => setPublicBase(e.target.value)}
+            placeholder={DEFAULT_PUBLIC_BASE_URL}
+            className="font-mono text-sm"
+          />
+          {isPreviewUrl(publicBase) && (
+            <p className="text-xs text-destructive mt-2">
+              Warning: this is a preview URL and should not be used in MLS.
+            </p>
+          )}
+        </div>
+        <div className="flex gap-2 justify-end">
+          <Button variant="outline" onClick={() => { setPublicBase(DEFAULT_PUBLIC_BASE_URL); setPublicBaseUrl(DEFAULT_PUBLIC_BASE_URL); toast.success("Reset to default"); }}>
+            Reset to default
+          </Button>
+          <Button onClick={() => { setPublicBaseUrl(publicBase); toast.success("Public base URL saved"); }}>
+            Save public domain
+          </Button>
+        </div>
+      </Card>
+
       <div className="mt-6 flex justify-end">
         <Button onClick={save} disabled={busy}>{busy ? "Saving…" : "Save"}</Button>
       </div>
+
     </div>
   );
 }

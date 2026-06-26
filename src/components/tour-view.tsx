@@ -143,16 +143,8 @@ export function TourView({
         )}
       </section>
 
-      {!!listing.gallery_urls?.length && (
-        <section className="container-luxe pb-16">
-          <h2 className="font-display text-3xl mb-6">Gallery</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {listing.gallery_urls.map((u: string, i: number) => (
-              <img key={i} src={u} loading="lazy" className="w-full h-72 object-cover" alt={`Photo ${i+1}`} />
-            ))}
-          </div>
-        </section>
-      )}
+      <GallerySection urls={(listing.gallery_urls ?? []).filter((u: unknown): u is string => typeof u === "string" && !!u.trim())} />
+
 
       {listing.secondary_media_url && (
         <section className="container-luxe pb-16">

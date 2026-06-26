@@ -16,7 +16,9 @@ import { Route as USlugRouteImport } from './routes/u.$slug'
 import { Route as TourSlugRouteImport } from './routes/tour.$slug'
 import { Route as AuthenticatedVisitorsRouteImport } from './routes/_authenticated/visitors'
 import { Route as AuthenticatedTrackingRouteImport } from './routes/_authenticated/tracking'
+import { Route as AuthenticatedTestCenterRouteImport } from './routes/_authenticated/test-center'
 import { Route as AuthenticatedPrivacyRouteImport } from './routes/_authenticated/privacy'
+import { Route as AuthenticatedDemoRouteImport } from './routes/_authenticated/demo'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCompanyRouteImport } from './routes/_authenticated/company'
 import { Route as AuthenticatedListingsIndexRouteImport } from './routes/_authenticated/listings.index'
@@ -58,9 +60,19 @@ const AuthenticatedTrackingRoute = AuthenticatedTrackingRouteImport.update({
   path: '/tracking',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTestCenterRoute = AuthenticatedTestCenterRouteImport.update({
+  id: '/test-center',
+  path: '/test-center',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPrivacyRoute = AuthenticatedPrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDemoRoute = AuthenticatedDemoRouteImport.update({
+  id: '/demo',
+  path: '/demo',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -102,7 +114,9 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/company': typeof AuthenticatedCompanyRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/demo': typeof AuthenticatedDemoRoute
   '/privacy': typeof AuthenticatedPrivacyRoute
+  '/test-center': typeof AuthenticatedTestCenterRoute
   '/tracking': typeof AuthenticatedTrackingRoute
   '/visitors': typeof AuthenticatedVisitorsRoute
   '/tour/$slug': typeof TourSlugRoute
@@ -117,7 +131,9 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/company': typeof AuthenticatedCompanyRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/demo': typeof AuthenticatedDemoRoute
   '/privacy': typeof AuthenticatedPrivacyRoute
+  '/test-center': typeof AuthenticatedTestCenterRoute
   '/tracking': typeof AuthenticatedTrackingRoute
   '/visitors': typeof AuthenticatedVisitorsRoute
   '/tour/$slug': typeof TourSlugRoute
@@ -134,7 +150,9 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/company': typeof AuthenticatedCompanyRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/demo': typeof AuthenticatedDemoRoute
   '/_authenticated/privacy': typeof AuthenticatedPrivacyRoute
+  '/_authenticated/test-center': typeof AuthenticatedTestCenterRoute
   '/_authenticated/tracking': typeof AuthenticatedTrackingRoute
   '/_authenticated/visitors': typeof AuthenticatedVisitorsRoute
   '/tour/$slug': typeof TourSlugRoute
@@ -151,7 +169,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/company'
     | '/dashboard'
+    | '/demo'
     | '/privacy'
+    | '/test-center'
     | '/tracking'
     | '/visitors'
     | '/tour/$slug'
@@ -166,7 +186,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/company'
     | '/dashboard'
+    | '/demo'
     | '/privacy'
+    | '/test-center'
     | '/tracking'
     | '/visitors'
     | '/tour/$slug'
@@ -182,7 +204,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/company'
     | '/_authenticated/dashboard'
+    | '/_authenticated/demo'
     | '/_authenticated/privacy'
+    | '/_authenticated/test-center'
     | '/_authenticated/tracking'
     | '/_authenticated/visitors'
     | '/tour/$slug'
@@ -252,11 +276,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTrackingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/test-center': {
+      id: '/_authenticated/test-center'
+      path: '/test-center'
+      fullPath: '/test-center'
+      preLoaderRoute: typeof AuthenticatedTestCenterRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/privacy': {
       id: '/_authenticated/privacy'
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof AuthenticatedPrivacyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/demo': {
+      id: '/_authenticated/demo'
+      path: '/demo'
+      fullPath: '/demo'
+      preLoaderRoute: typeof AuthenticatedDemoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -322,7 +360,9 @@ const AuthenticatedListingsIdRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedCompanyRoute: typeof AuthenticatedCompanyRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDemoRoute: typeof AuthenticatedDemoRoute
   AuthenticatedPrivacyRoute: typeof AuthenticatedPrivacyRoute
+  AuthenticatedTestCenterRoute: typeof AuthenticatedTestCenterRoute
   AuthenticatedTrackingRoute: typeof AuthenticatedTrackingRoute
   AuthenticatedVisitorsRoute: typeof AuthenticatedVisitorsRoute
   AuthenticatedListingsIdRoute: typeof AuthenticatedListingsIdRouteWithChildren
@@ -333,7 +373,9 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCompanyRoute: AuthenticatedCompanyRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDemoRoute: AuthenticatedDemoRoute,
   AuthenticatedPrivacyRoute: AuthenticatedPrivacyRoute,
+  AuthenticatedTestCenterRoute: AuthenticatedTestCenterRoute,
   AuthenticatedTrackingRoute: AuthenticatedTrackingRoute,
   AuthenticatedVisitorsRoute: AuthenticatedVisitorsRoute,
   AuthenticatedListingsIdRoute: AuthenticatedListingsIdRouteWithChildren,

@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { slugify, uniqueSuffix } from "@/lib/slug";
 import { Upload, X } from "lucide-react";
+import { extractYouTubeId, isYouTubeUrl, isYouTubeShorts, youTubeEmbedUrl, MediaEmbed } from "@/components/media-embed";
 
 type ListingValues = {
   id?: string;
@@ -195,6 +196,33 @@ export function ListingForm({
           </div>
           <div><Label>Primary media URL</Label><Input value={v.primary_media_url} onChange={(e) => update("primary_media_url", e.target.value)} placeholder="https://..." /></div>
           <div className="md:col-span-2"><Label>Secondary media URL (optional)</Label><Input value={v.secondary_media_url} onChange={(e) => update("secondary_media_url", e.target.value)} /></div>
+
+          {v.primary_media_url && (
+            <div className="md:col-span-2 rounded-md border bg-muted/30 p-4">
+              <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Media preview</div>
+              {isYouTubeUrl(v.primary_media_url) ? (
+                (() => {
+                  const id = extractYouTubeId(v.primary_media_url);
+                  if (!id) {
+                    return <p className="text-sm text-destructive">YouTube URL detected but no video ID could be extracted.</p>;
+                  }
+                  const embed = youTubeEmbedUrl(id);
+                  return (
+                    <div className="space-y-3">
+                      <dl className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                        <div><dt className="text-muted-foreground">Platform</dt><dd>YouTube{isYouTubeShorts(v.primary_media_url) ? " (Shorts)" : ""}</dd></div>
+                        <div><dt className="text-muted-foreground">Video ID</dt><dd className="font-mono">{id}</dd></div>
+                        <div className="sm:col-span-3"><dt className="text-muted-foreground">Embed URL</dt><dd className="font-mono break-all">{embed}</dd></div>
+                      </dl>
+                      <MediaEmbed type="youtube" url={v.primary_media_url} />
+                    </div>
+                  );
+                })()
+              ) : (
+                <MediaEmbed type={v.primary_media_type} url={v.primary_media_url} />
+              )}
+            </div>
+          )}
         </div>
       </Card>
 

@@ -61,11 +61,32 @@ async function uploadFile(file: File, folder: string): Promise<string> {
 export function ListingForm({
   initial,
   companyId,
-}: { initial: ListingValues; companyId: string }) {
+  highlightMedia,
+}: { initial: ListingValues; companyId: string; highlightMedia?: boolean }) {
   const navigate = useNavigate();
   const [v, setV] = useState<ListingValues>(initial);
   const [busy, setBusy] = useState(false);
+  const [ytQuick, setYtQuick] = useState("");
+  const mediaSectionRef = useRef<HTMLDivElement>(null);
   const update = <K extends keyof ListingValues>(k: K, val: ListingValues[K]) => setV((p) => ({ ...p, [k]: val }));
+
+  useEffect(() => {
+    if (highlightMedia && mediaSectionRef.current) {
+      mediaSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [highlightMedia]);
+
+  function applyYouTubeQuick() {
+    const raw = ytQuick.trim();
+    if (!raw) { toast.error("Paste a YouTube or Shorts URL"); return; }
+    if (!isYouTubeUrl(raw)) { toast.error("That doesn't look like a YouTube URL"); return; }
+    const normalized = normalizeYouTubeUrl(raw);
+    if (!normalized) { toast.error("Could not extract video ID"); return; }
+    update("primary_media_type", "youtube");
+    update("primary_media_url", normalized);
+    toast.success(isYouTubeShorts(raw) ? "Vertical Shorts video added" : "YouTube video added");
+    mediaSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   async function onHero(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]; if (!f) return;

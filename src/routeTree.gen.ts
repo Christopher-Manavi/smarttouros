@@ -16,6 +16,7 @@ import { Route as USlugRouteImport } from './routes/u.$slug'
 import { Route as TourSlugRouteImport } from './routes/tour.$slug'
 import { Route as AuthenticatedVisitorsRouteImport } from './routes/_authenticated/visitors'
 import { Route as AuthenticatedTrackingRouteImport } from './routes/_authenticated/tracking'
+import { Route as AuthenticatedTestCenterRouteImport } from './routes/_authenticated/test-center'
 import { Route as AuthenticatedPrivacyRouteImport } from './routes/_authenticated/privacy'
 import { Route as AuthenticatedDemoRouteImport } from './routes/_authenticated/demo'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -57,6 +58,11 @@ const AuthenticatedVisitorsRoute = AuthenticatedVisitorsRouteImport.update({
 const AuthenticatedTrackingRoute = AuthenticatedTrackingRouteImport.update({
   id: '/tracking',
   path: '/tracking',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTestCenterRoute = AuthenticatedTestCenterRouteImport.update({
+  id: '/test-center',
+  path: '/test-center',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPrivacyRoute = AuthenticatedPrivacyRouteImport.update({
@@ -110,6 +116,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/demo': typeof AuthenticatedDemoRoute
   '/privacy': typeof AuthenticatedPrivacyRoute
+  '/test-center': typeof AuthenticatedTestCenterRoute
   '/tracking': typeof AuthenticatedTrackingRoute
   '/visitors': typeof AuthenticatedVisitorsRoute
   '/tour/$slug': typeof TourSlugRoute
@@ -126,6 +133,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/demo': typeof AuthenticatedDemoRoute
   '/privacy': typeof AuthenticatedPrivacyRoute
+  '/test-center': typeof AuthenticatedTestCenterRoute
   '/tracking': typeof AuthenticatedTrackingRoute
   '/visitors': typeof AuthenticatedVisitorsRoute
   '/tour/$slug': typeof TourSlugRoute
@@ -144,6 +152,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/demo': typeof AuthenticatedDemoRoute
   '/_authenticated/privacy': typeof AuthenticatedPrivacyRoute
+  '/_authenticated/test-center': typeof AuthenticatedTestCenterRoute
   '/_authenticated/tracking': typeof AuthenticatedTrackingRoute
   '/_authenticated/visitors': typeof AuthenticatedVisitorsRoute
   '/tour/$slug': typeof TourSlugRoute
@@ -162,6 +171,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/demo'
     | '/privacy'
+    | '/test-center'
     | '/tracking'
     | '/visitors'
     | '/tour/$slug'
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/demo'
     | '/privacy'
+    | '/test-center'
     | '/tracking'
     | '/visitors'
     | '/tour/$slug'
@@ -195,6 +206,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/demo'
     | '/_authenticated/privacy'
+    | '/_authenticated/test-center'
     | '/_authenticated/tracking'
     | '/_authenticated/visitors'
     | '/tour/$slug'
@@ -262,6 +274,13 @@ declare module '@tanstack/react-router' {
       path: '/tracking'
       fullPath: '/tracking'
       preLoaderRoute: typeof AuthenticatedTrackingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/test-center': {
+      id: '/_authenticated/test-center'
+      path: '/test-center'
+      fullPath: '/test-center'
+      preLoaderRoute: typeof AuthenticatedTestCenterRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/privacy': {
@@ -343,6 +362,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDemoRoute: typeof AuthenticatedDemoRoute
   AuthenticatedPrivacyRoute: typeof AuthenticatedPrivacyRoute
+  AuthenticatedTestCenterRoute: typeof AuthenticatedTestCenterRoute
   AuthenticatedTrackingRoute: typeof AuthenticatedTrackingRoute
   AuthenticatedVisitorsRoute: typeof AuthenticatedVisitorsRoute
   AuthenticatedListingsIdRoute: typeof AuthenticatedListingsIdRouteWithChildren
@@ -355,6 +375,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDemoRoute: AuthenticatedDemoRoute,
   AuthenticatedPrivacyRoute: AuthenticatedPrivacyRoute,
+  AuthenticatedTestCenterRoute: AuthenticatedTestCenterRoute,
   AuthenticatedTrackingRoute: AuthenticatedTrackingRoute,
   AuthenticatedVisitorsRoute: AuthenticatedVisitorsRoute,
   AuthenticatedListingsIdRoute: AuthenticatedListingsIdRouteWithChildren,

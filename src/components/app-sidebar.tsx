@@ -8,6 +8,7 @@ import {
   Settings2,
   ShieldCheck,
   LogOut,
+  ClipboardCheck,
 } from "lucide-react";
 import {
   Sidebar,

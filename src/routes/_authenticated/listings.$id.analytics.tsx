@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Copy, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { brandedTourUrl, unbrandedTourUrl } from "@/lib/public-url";
 import {
   LineChart as RLineChart,
   Line,

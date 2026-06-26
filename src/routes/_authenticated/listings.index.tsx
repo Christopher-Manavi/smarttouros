@@ -47,7 +47,7 @@ function ListingsIndex() {
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Properties</p>
           <h1 className="font-display text-4xl mt-2">Listings</h1>
         </div>
-        <Link to="/listings/new"><Button><Plus className="h-4 w-4 mr-1" /> New listing</Button></Link>
+        <Link to="/create-listing"><Button><Plus className="h-4 w-4 mr-1" /> New listing</Button></Link>
       </div>
 
       <Card className="overflow-hidden">
@@ -72,7 +72,7 @@ function ListingsIndex() {
               {!isLoading && listings.length === 0 && (
                 <tr><td colSpan={8} className="text-center py-16">
                   <p className="text-muted-foreground mb-4">No listings yet.</p>
-                  <Link to="/listings/new"><Button size="sm">Create your first listing</Button></Link>
+                  <Link to="/create-listing"><Button size="sm">Create your first listing</Button></Link>
                 </td></tr>
               )}
               {listings.map((l) => {

@@ -19,7 +19,7 @@ function toCsv(rows: any[]): string {
   return head + "\n" + body;
 }
 
-function Visitors() {
+export function Visitors() {
   const qc = useQueryClient();
   const { data: visitors = [] } = useQuery({
     queryKey: ["visitors"],

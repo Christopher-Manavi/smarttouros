@@ -27,8 +27,8 @@ import { supabase } from "@/integrations/supabase/client";
 const items = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Listings", url: "/listings", icon: Building2 },
-  { title: "Create Listing", url: "/listings/new", icon: Plus },
-  { title: "Resolved Visitors", url: "/visitors", icon: Users },
+  { title: "Create Listing", url: "/create-listing", icon: Plus },
+  { title: "Resolved Visitors", url: "/resolved-visitors", icon: Users },
   { title: "Tracking", url: "/tracking", icon: LineChart },
   { title: "Company", url: "/company", icon: Settings2 },
   { title: "Privacy", url: "/privacy", icon: ShieldCheck },

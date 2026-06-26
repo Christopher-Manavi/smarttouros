@@ -6,7 +6,7 @@ export const Route = createFileRoute("/_authenticated/listings/new")({
   component: NewListing,
 });
 
-function NewListing() {
+export function NewListing() {
   const { companyId } = useAuth();
   return (
     <div className="container-luxe py-10">

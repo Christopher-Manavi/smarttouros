@@ -55,6 +55,31 @@ function Tracking() {
         </p>
       </div>
 
+      <Card className="p-4 mb-6 border-amber-500/40 bg-amber-500/5 flex gap-3 items-start">
+        <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+        <p className="text-sm">
+          Only install third-party identity or advertising tags after confirming privacy policy,
+          client authorization, and applicable MLS/advertising rules.
+        </p>
+      </Card>
+
+      <Card className="p-5 mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="font-medium text-sm flex items-center gap-2"><FlaskConical className="h-4 w-4" />Tracking verification</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Insert a safe test snippet, then verify it fires on public tour pages.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => { set("custom_header_script", TEST_TRACKING_SCRIPT); toast.success("Test script inserted into Custom header script. Click Save."); }}>
+            Insert Test Tracking Script
+          </Button>
+          <Button variant="ghost" asChild>
+            <Link to="/tracking-verify">Open verifier</Link>
+          </Button>
+        </div>
+      </Card>
+
       <Card className="p-6 space-y-5">
         {[
           ["untitled_script", "Untitled ID Tag script"],

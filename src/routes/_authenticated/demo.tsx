@@ -88,6 +88,9 @@ function DemoSuccess() {
           <p className="text-xs text-muted-foreground mt-2">
             MLS-safe: no agent name, phone, email, brokerage name, brokerage logo, or contact CTAs.
           </p>
+          <p className="text-xs font-medium text-foreground mt-1">
+            Use this MLS-safe link in the MLS Virtual Tour / Unbranded Tour field.
+          </p>
         </div>
         <div className="grid sm:grid-cols-2 gap-3">
           <CopyBtn value={unbranded} label="Copy Unbranded MLS URL" />

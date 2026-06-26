@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Copy, Eye, Pencil, BarChart3, Plus, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
+import { brandedTourUrl, unbrandedTourUrl } from "@/lib/public-url";
 
 export const Route = createFileRoute("/_authenticated/listings/")({
   component: ListingsIndex,

@@ -13,11 +13,15 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PublicTermsRouteImport } from './routes/_public/terms'
+import { Route as PublicPrivacyChoicesRouteImport } from './routes/_public/privacy-choices'
+import { Route as PublicPrivacyRouteImport } from './routes/_public/privacy'
+import { Route as PublicCookiesRouteImport } from './routes/_public/cookies'
 import { Route as AuthenticatedTrackingVerifyRouteImport } from './routes/_authenticated/tracking-verify'
 import { Route as AuthenticatedTrackingRouteImport } from './routes/_authenticated/tracking'
 import { Route as AuthenticatedTestCenterRouteImport } from './routes/_authenticated/test-center'
 import { Route as AuthenticatedResolvedVisitorsRouteImport } from './routes/_authenticated/resolved-visitors'
-import { Route as AuthenticatedPrivacyRouteImport } from './routes/_authenticated/privacy'
+import { Route as AuthenticatedPrivacySettingsRouteImport } from './routes/_authenticated/privacy-settings'
 import { Route as AuthenticatedDemoRouteImport } from './routes/_authenticated/demo'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCreateListingRouteImport } from './routes/_authenticated/create-listing'
@@ -47,6 +51,26 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PublicTermsRoute = PublicTermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicPrivacyChoicesRoute = PublicPrivacyChoicesRouteImport.update({
+  id: '/privacy-choices',
+  path: '/privacy-choices',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicPrivacyRoute = PublicPrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicCookiesRoute = PublicCookiesRouteImport.update({
+  id: '/cookies',
+  path: '/cookies',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
 const AuthenticatedTrackingVerifyRoute =
   AuthenticatedTrackingVerifyRouteImport.update({
     id: '/tracking-verify',
@@ -69,11 +93,12 @@ const AuthenticatedResolvedVisitorsRoute =
     path: '/resolved-visitors',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedPrivacyRoute = AuthenticatedPrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
+const AuthenticatedPrivacySettingsRoute =
+  AuthenticatedPrivacySettingsRouteImport.update({
+    id: '/privacy-settings',
+    path: '/privacy-settings',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDemoRoute = AuthenticatedDemoRouteImport.update({
   id: '/demo',
   path: '/demo',
@@ -136,11 +161,15 @@ export interface FileRoutesByFullPath {
   '/create-listing': typeof AuthenticatedCreateListingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/demo': typeof AuthenticatedDemoRoute
-  '/privacy': typeof AuthenticatedPrivacyRoute
+  '/privacy-settings': typeof AuthenticatedPrivacySettingsRoute
   '/resolved-visitors': typeof AuthenticatedResolvedVisitorsRoute
   '/test-center': typeof AuthenticatedTestCenterRoute
   '/tracking': typeof AuthenticatedTrackingRoute
   '/tracking-verify': typeof AuthenticatedTrackingVerifyRoute
+  '/cookies': typeof PublicCookiesRoute
+  '/privacy': typeof PublicPrivacyRoute
+  '/privacy-choices': typeof PublicPrivacyChoicesRoute
+  '/terms': typeof PublicTermsRoute
   '/listings/$id': typeof AuthenticatedListingsIdRouteWithChildren
   '/tour/$slug': typeof PublicTourSlugRoute
   '/u/$slug': typeof PublicUSlugRoute
@@ -155,11 +184,15 @@ export interface FileRoutesByTo {
   '/create-listing': typeof AuthenticatedCreateListingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/demo': typeof AuthenticatedDemoRoute
-  '/privacy': typeof AuthenticatedPrivacyRoute
+  '/privacy-settings': typeof AuthenticatedPrivacySettingsRoute
   '/resolved-visitors': typeof AuthenticatedResolvedVisitorsRoute
   '/test-center': typeof AuthenticatedTestCenterRoute
   '/tracking': typeof AuthenticatedTrackingRoute
   '/tracking-verify': typeof AuthenticatedTrackingVerifyRoute
+  '/cookies': typeof PublicCookiesRoute
+  '/privacy': typeof PublicPrivacyRoute
+  '/privacy-choices': typeof PublicPrivacyChoicesRoute
+  '/terms': typeof PublicTermsRoute
   '/listings/$id': typeof AuthenticatedListingsIdRouteWithChildren
   '/tour/$slug': typeof PublicTourSlugRoute
   '/u/$slug': typeof PublicUSlugRoute
@@ -177,11 +210,15 @@ export interface FileRoutesById {
   '/_authenticated/create-listing': typeof AuthenticatedCreateListingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/demo': typeof AuthenticatedDemoRoute
-  '/_authenticated/privacy': typeof AuthenticatedPrivacyRoute
+  '/_authenticated/privacy-settings': typeof AuthenticatedPrivacySettingsRoute
   '/_authenticated/resolved-visitors': typeof AuthenticatedResolvedVisitorsRoute
   '/_authenticated/test-center': typeof AuthenticatedTestCenterRoute
   '/_authenticated/tracking': typeof AuthenticatedTrackingRoute
   '/_authenticated/tracking-verify': typeof AuthenticatedTrackingVerifyRoute
+  '/_public/cookies': typeof PublicCookiesRoute
+  '/_public/privacy': typeof PublicPrivacyRoute
+  '/_public/privacy-choices': typeof PublicPrivacyChoicesRoute
+  '/_public/terms': typeof PublicTermsRoute
   '/_authenticated/listings/$id': typeof AuthenticatedListingsIdRouteWithChildren
   '/_public/tour/$slug': typeof PublicTourSlugRoute
   '/_public/u/$slug': typeof PublicUSlugRoute
@@ -198,11 +235,15 @@ export interface FileRouteTypes {
     | '/create-listing'
     | '/dashboard'
     | '/demo'
-    | '/privacy'
+    | '/privacy-settings'
     | '/resolved-visitors'
     | '/test-center'
     | '/tracking'
     | '/tracking-verify'
+    | '/cookies'
+    | '/privacy'
+    | '/privacy-choices'
+    | '/terms'
     | '/listings/$id'
     | '/tour/$slug'
     | '/u/$slug'
@@ -217,11 +258,15 @@ export interface FileRouteTypes {
     | '/create-listing'
     | '/dashboard'
     | '/demo'
-    | '/privacy'
+    | '/privacy-settings'
     | '/resolved-visitors'
     | '/test-center'
     | '/tracking'
     | '/tracking-verify'
+    | '/cookies'
+    | '/privacy'
+    | '/privacy-choices'
+    | '/terms'
     | '/listings/$id'
     | '/tour/$slug'
     | '/u/$slug'
@@ -238,11 +283,15 @@ export interface FileRouteTypes {
     | '/_authenticated/create-listing'
     | '/_authenticated/dashboard'
     | '/_authenticated/demo'
-    | '/_authenticated/privacy'
+    | '/_authenticated/privacy-settings'
     | '/_authenticated/resolved-visitors'
     | '/_authenticated/test-center'
     | '/_authenticated/tracking'
     | '/_authenticated/tracking-verify'
+    | '/_public/cookies'
+    | '/_public/privacy'
+    | '/_public/privacy-choices'
+    | '/_public/terms'
     | '/_authenticated/listings/$id'
     | '/_public/tour/$slug'
     | '/_public/u/$slug'
@@ -288,6 +337,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_public/terms': {
+      id: '/_public/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof PublicTermsRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/privacy-choices': {
+      id: '/_public/privacy-choices'
+      path: '/privacy-choices'
+      fullPath: '/privacy-choices'
+      preLoaderRoute: typeof PublicPrivacyChoicesRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/privacy': {
+      id: '/_public/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PublicPrivacyRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/cookies': {
+      id: '/_public/cookies'
+      path: '/cookies'
+      fullPath: '/cookies'
+      preLoaderRoute: typeof PublicCookiesRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
     '/_authenticated/tracking-verify': {
       id: '/_authenticated/tracking-verify'
       path: '/tracking-verify'
@@ -316,11 +393,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedResolvedVisitorsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/privacy': {
-      id: '/_authenticated/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof AuthenticatedPrivacyRouteImport
+    '/_authenticated/privacy-settings': {
+      id: '/_authenticated/privacy-settings'
+      path: '/privacy-settings'
+      fullPath: '/privacy-settings'
+      preLoaderRoute: typeof AuthenticatedPrivacySettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/demo': {
@@ -418,7 +495,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCreateListingRoute: typeof AuthenticatedCreateListingRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDemoRoute: typeof AuthenticatedDemoRoute
-  AuthenticatedPrivacyRoute: typeof AuthenticatedPrivacyRoute
+  AuthenticatedPrivacySettingsRoute: typeof AuthenticatedPrivacySettingsRoute
   AuthenticatedResolvedVisitorsRoute: typeof AuthenticatedResolvedVisitorsRoute
   AuthenticatedTestCenterRoute: typeof AuthenticatedTestCenterRoute
   AuthenticatedTrackingRoute: typeof AuthenticatedTrackingRoute
@@ -432,7 +509,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCreateListingRoute: AuthenticatedCreateListingRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDemoRoute: AuthenticatedDemoRoute,
-  AuthenticatedPrivacyRoute: AuthenticatedPrivacyRoute,
+  AuthenticatedPrivacySettingsRoute: AuthenticatedPrivacySettingsRoute,
   AuthenticatedResolvedVisitorsRoute: AuthenticatedResolvedVisitorsRoute,
   AuthenticatedTestCenterRoute: AuthenticatedTestCenterRoute,
   AuthenticatedTrackingRoute: AuthenticatedTrackingRoute,
@@ -445,11 +522,19 @@ const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 interface PublicRouteRouteChildren {
+  PublicCookiesRoute: typeof PublicCookiesRoute
+  PublicPrivacyRoute: typeof PublicPrivacyRoute
+  PublicPrivacyChoicesRoute: typeof PublicPrivacyChoicesRoute
+  PublicTermsRoute: typeof PublicTermsRoute
   PublicTourSlugRoute: typeof PublicTourSlugRoute
   PublicUSlugRoute: typeof PublicUSlugRoute
 }
 
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
+  PublicCookiesRoute: PublicCookiesRoute,
+  PublicPrivacyRoute: PublicPrivacyRoute,
+  PublicPrivacyChoicesRoute: PublicPrivacyChoicesRoute,
+  PublicTermsRoute: PublicTermsRoute,
   PublicTourSlugRoute: PublicTourSlugRoute,
   PublicUSlugRoute: PublicUSlugRoute,
 }

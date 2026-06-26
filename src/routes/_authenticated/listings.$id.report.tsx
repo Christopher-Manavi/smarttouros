@@ -135,6 +135,7 @@ function ListingReport() {
               <Button size="sm" variant="outline" onClick={() => copy(unbrandedUrl, "Unbranded URL")}><Copy className="h-3 w-3" /></Button>
               <a href={unbrandedUrl} target="_blank" rel="noreferrer"><Button size="sm" variant="outline"><ExternalLink className="h-3 w-3" /></Button></a>
             </div>
+            <p className="text-[11px] text-muted-foreground mt-1.5">Use this MLS-safe link in the MLS Virtual Tour / Unbranded Tour field.</p>
           </div>
         </div>
       </Card>

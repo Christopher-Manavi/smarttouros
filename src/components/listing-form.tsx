@@ -144,6 +144,33 @@ export function ListingForm({
 
   return (
     <div className="space-y-6">
+      <Card className="p-6 border-foreground/20 bg-muted/30">
+        <div className="flex items-start gap-3 mb-3">
+          <Youtube className="h-5 w-5 mt-0.5 text-foreground" />
+          <div>
+            <h2 className="font-display text-xl">Have a YouTube or Shorts video?</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Paste it below and we'll embed it automatically. Then finish the listing details and generate your branded and MLS-safe URLs.
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Input
+            value={ytQuick}
+            onChange={(e) => setYtQuick(e.target.value)}
+            placeholder="https://youtube.com/shorts/… or https://youtu.be/…"
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyYouTubeQuick(); } }}
+          />
+          <Button type="button" onClick={applyYouTubeQuick}>Use this video</Button>
+        </div>
+        {v.primary_media_url && isYouTubeUrl(v.primary_media_url) && (
+          <p className="text-xs text-muted-foreground mt-2">
+            {isYouTubeShorts(v.primary_media_url) ? "Vertical video detected · " : ""}
+            Embed ready in the Media section below.
+          </p>
+        )}
+      </Card>
+
       <Card className="p-6">
         <h2 className="font-display text-2xl mb-4">Property</h2>
         <div className="grid md:grid-cols-2 gap-4">

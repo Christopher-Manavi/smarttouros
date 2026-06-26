@@ -1,7 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
+// NOTE: Google OAuth intentionally disabled. The default Lovable broker shows
+// a "Sign in to continue to Lovable" consent screen which is not acceptable
+// for the white-label SmartTourOS product. Only re-enable after configuring a
+// custom Google OAuth app branded as SmartTourOS (or the client's white-label
+// domain) in Cloud → Users → Auth Settings → Google.
+// import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -61,22 +66,9 @@ function AuthPage() {
     }
   }
 
-  async function handleGoogle() {
-    setBusy(true);
-    try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-      });
-      if (result.error) {
-        toast.error(result.error.message ?? "Google sign-in failed");
-        return;
-      }
-      if (result.redirected) return;
-      navigate({ to: "/dashboard", replace: true });
-    } finally {
-      setBusy(false);
-    }
-  }
+  // Google OAuth handler intentionally removed for white-label MVP.
+  // See note at top of file before re-enabling.
+
 
   return (
     <div className="min-h-screen flex">
@@ -103,15 +95,7 @@ function AuthPage() {
             </p>
           </div>
 
-          <Button type="button" variant="outline" className="w-full" disabled={busy} onClick={handleGoogle}>
-            Continue with Google
-          </Button>
 
-          <div className="flex items-center gap-3 my-5">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-xs uppercase tracking-widest text-muted-foreground">or</span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
 
           <form onSubmit={handleEmail} className="space-y-4">
             {mode === "signup" && (

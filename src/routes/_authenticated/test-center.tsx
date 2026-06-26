@@ -39,6 +39,14 @@ function TestCenter() {
   const [verifiedBranded, setVerifiedBranded] = useState(false);
   const [verifiedUnbranded, setVerifiedUnbranded] = useState(false);
 
+  useEffect(() => {
+    setTests((prev) => prev.map((t) => {
+      if (t.id === "branded_manual") return { ...t, status: verifiedBranded ? "pass" : "manual", detail: verifiedBranded ? "Confirmed in Guest/Incognito" : "Open branded URL in Guest then tick the box" };
+      if (t.id === "unbranded_manual") return { ...t, status: verifiedUnbranded ? "pass" : "manual", detail: verifiedUnbranded ? "Confirmed in Guest/Incognito" : "Open unbranded URL in Guest then tick the box" };
+      return t;
+    }));
+  }, [verifiedBranded, verifiedUnbranded]);
+
   function setTest(id: string, patch: Partial<Test>) {
     setTests((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
   }

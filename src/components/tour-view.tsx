@@ -1,6 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { MediaEmbed } from "@/components/media-embed";
+import { SmartImage } from "@/components/smart-image";
+
 
 type Listing = any;
 type Company = any;
@@ -11,6 +13,30 @@ function detectDevice(ua: string): string {
   if (/mobile/i.test(ua)) return "mobile";
   if (/tablet|ipad/i.test(ua)) return "tablet";
   return "desktop";
+}
+
+function GallerySection({ urls }: { urls: string[] }) {
+  const [bad, setBad] = useState<Set<number>>(new Set());
+  const visible = urls.filter((_, i) => !bad.has(i));
+  if (!urls.length || visible.length === 0) return null;
+  return (
+    <section className="container-luxe pb-16">
+      <h2 className="font-display text-3xl mb-6">Gallery</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {urls.map((u, i) => bad.has(i) ? null : (
+          <div key={i} className="aspect-[4/3] w-full overflow-hidden rounded bg-muted">
+            <img
+              src={u}
+              loading="lazy"
+              className="w-full h-full object-cover"
+              alt=""
+              onError={() => setBad((prev) => { const next = new Set(prev); next.add(i); return next; })}
+            />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 async function recordEvent(args: {
@@ -100,9 +126,16 @@ export function TourView({
         <div
           onClick={() => recordEvent({ listingId: listing.id, companyId: listing.company_id, pageType: mode, eventType: "media_click" })}
         >
-          <MediaEmbed type={listing.primary_media_type} url={listing.primary_media_url} />
+          {listing.primary_media_url ? (
+            <MediaEmbed type={listing.primary_media_type} url={listing.primary_media_url} />
+          ) : listing.hero_image_url ? (
+            <div className="aspect-video w-full overflow-hidden">
+              <SmartImage src={listing.hero_image_url} alt="" className="w-full h-full object-cover" loading="eager" hideOnError />
+            </div>
+          ) : null}
         </div>
       </section>
+
 
       <section className="container-luxe py-12 md:py-16">
         {showAddress ? (
@@ -134,16 +167,8 @@ export function TourView({
         )}
       </section>
 
-      {!!listing.gallery_urls?.length && (
-        <section className="container-luxe pb-16">
-          <h2 className="font-display text-3xl mb-6">Gallery</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {listing.gallery_urls.map((u: string, i: number) => (
-              <img key={i} src={u} loading="lazy" className="w-full h-72 object-cover" alt={`Photo ${i+1}`} />
-            ))}
-          </div>
-        </section>
-      )}
+      <GallerySection urls={(listing.gallery_urls ?? []).filter((u: unknown): u is string => typeof u === "string" && !!u.trim())} />
+
 
       {listing.secondary_media_url && (
         <section className="container-luxe pb-16">
@@ -159,7 +184,7 @@ export function TourView({
         <section className="border-t bg-muted/30">
           <div className="container-luxe py-12 grid md:grid-cols-2 gap-10 items-center">
             <div>
-              {listing.brokerage_logo_url && <img src={listing.brokerage_logo_url} alt="" className="h-12 object-contain mb-4" />}
+              {listing.brokerage_logo_url && <SmartImage src={listing.brokerage_logo_url} alt="" className="h-12 object-contain mb-4" hideOnError />}
               {listing.brokerage_name && <p className="text-sm uppercase tracking-widest text-muted-foreground">{listing.brokerage_name}</p>}
               {listing.agent_name && <h3 className="font-display text-3xl mt-2">{listing.agent_name}</h3>}
               <div className="mt-4 space-y-1 text-sm">

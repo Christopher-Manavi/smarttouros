@@ -38,11 +38,13 @@ function Company() {
   async function uploadLogo(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]; if (!f || !c) return;
     const path = `${c.id}/${crypto.randomUUID()}.${f.name.split(".").pop()}`;
-    const { error } = await supabase.storage.from("company-logos").upload(path, f);
+    const { error } = await supabase.storage.from("company-logos").upload(path, f, { contentType: f.type });
     if (error) return toast.error(error.message);
-    const { data } = supabase.storage.from("company-logos").getPublicUrl(path);
-    setC({ ...c, logo_url: data.publicUrl });
+    const { data, error: signErr } = await supabase.storage.from("company-logos").createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+    if (signErr || !data?.signedUrl) return toast.error(signErr?.message ?? "Could not sign URL");
+    setC({ ...c, logo_url: data.signedUrl });
   }
+
 
   if (!c) return <div className="container-luxe py-10 text-muted-foreground">Loading…</div>;
   const set = (k: string, v: any) => setC({ ...c, [k]: v });

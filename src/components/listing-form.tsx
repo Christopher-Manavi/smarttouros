@@ -49,14 +49,32 @@ export const EMPTY_LISTING: ListingValues = {
   status: "active", show_address_on_unbranded: true,
 };
 
-async function uploadFile(file: File, folder: string): Promise<string> {
+const SIGNED_URL_TTL = 60 * 60 * 24 * 365 * 10; // ~10 years
+
+type UploadResult = { url: string; width?: number; height?: number; filename: string; size: number };
+
+async function readImageDimensions(file: File): Promise<{ width: number; height: number } | null> {
+  if (!file.type.startsWith("image/")) return null;
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { resolve({ width: img.naturalWidth, height: img.naturalHeight }); URL.revokeObjectURL(url); };
+    img.onerror = () => { resolve(null); URL.revokeObjectURL(url); };
+    img.src = url;
+  });
+}
+
+async function uploadFile(file: File, folder: string): Promise<UploadResult> {
   const ext = file.name.split(".").pop();
   const path = `${folder}/${crypto.randomUUID()}.${ext}`;
-  const { error } = await supabase.storage.from("listing-media").upload(path, file, { upsert: false });
+  const { error } = await supabase.storage.from("listing-media").upload(path, file, { upsert: false, contentType: file.type });
   if (error) throw error;
-  const { data } = supabase.storage.from("listing-media").getPublicUrl(path);
-  return data.publicUrl;
+  const { data, error: signErr } = await supabase.storage.from("listing-media").createSignedUrl(path, SIGNED_URL_TTL);
+  if (signErr || !data?.signedUrl) throw signErr ?? new Error("Could not create signed URL");
+  const dims = await readImageDimensions(file);
+  return { url: data.signedUrl, filename: file.name, size: file.size, width: dims?.width, height: dims?.height };
 }
+
 
 export function ListingForm({
   initial,
@@ -88,19 +106,28 @@ export function ListingForm({
     mediaSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  const [heroMeta, setHeroMeta] = useState<UploadResult | null>(null);
+  const [galleryMeta, setGalleryMeta] = useState<UploadResult[]>([]);
+
   async function onHero(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]; if (!f) return;
-    try { const url = await uploadFile(f, "hero"); update("hero_image_url", url); toast.success("Hero uploaded"); }
-    catch (err) { toast.error(err instanceof Error ? err.message : "Upload failed"); }
+    try {
+      const res = await uploadFile(f, "hero");
+      update("hero_image_url", res.url);
+      setHeroMeta(res);
+      toast.success(`Upload successful · ${res.filename}${res.width ? ` · ${res.width}×${res.height}` : ""}`);
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Upload failed"); }
   }
   async function onGallery(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []); if (!files.length) return;
     try {
-      const urls = await Promise.all(files.map((f) => uploadFile(f, "gallery")));
-      update("gallery_urls", [...v.gallery_urls, ...urls]);
-      toast.success(`${urls.length} image(s) added`);
+      const results = await Promise.all(files.map((f) => uploadFile(f, "gallery")));
+      update("gallery_urls", [...v.gallery_urls, ...results.map((r) => r.url)]);
+      setGalleryMeta((prev) => [...prev, ...results]);
+      toast.success(`${results.length} image(s) added`);
     } catch (err) { toast.error(err instanceof Error ? err.message : "Upload failed"); }
   }
+
 
   async function save() {
     if (!v.address.trim()) { toast.error("Address is required"); return; }
@@ -196,14 +223,32 @@ export function ListingForm({
       <Card ref={mediaSectionRef} className={`p-6 scroll-mt-6 ${highlightMedia ? "ring-2 ring-foreground/40" : ""}`}>
 
         <h2 className="font-display text-2xl mb-4">Media</h2>
+
+        <div className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground mb-4 space-y-1">
+          <p><strong className="text-foreground">Hero image:</strong> 1600×900 minimum · 16:9 landscape preferred · JPG, PNG, or WebP.</p>
+          <p><strong className="text-foreground">Gallery photos:</strong> 1200px wide minimum · JPG, PNG, or WebP · landscape preferred (portrait works too).</p>
+          <p>Screenshots and imperfectly sized images are fine — we'll center-crop them cleanly.</p>
+        </div>
+
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <Label>Hero image</Label>
             <div className="mt-1">
-              {v.hero_image_url && <img src={v.hero_image_url} className="w-full h-48 object-cover rounded mb-2" />}
+              {v.hero_image_url && (
+                <div className="mb-2">
+                  <div className="aspect-video w-full overflow-hidden rounded bg-muted">
+                    <img src={v.hero_image_url} className="w-full h-full object-cover" alt="Hero preview" />
+                  </div>
+                  {heroMeta && (
+                    <p className="text-xs text-muted-foreground mt-1 truncate">
+                      ✓ {heroMeta.filename}{heroMeta.width ? ` · ${heroMeta.width}×${heroMeta.height}` : ""}
+                    </p>
+                  )}
+                </div>
+              )}
               <label className="flex items-center gap-2 border border-dashed rounded p-3 text-sm cursor-pointer hover:bg-muted/30">
                 <Upload className="h-4 w-4" /> Upload hero
-                <input type="file" accept="image/*" className="hidden" onChange={onHero} />
+                <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={onHero} />
               </label>
             </div>
           </div>
@@ -211,22 +256,36 @@ export function ListingForm({
             <Label>Photo gallery</Label>
             <div className="mt-1">
               <div className="grid grid-cols-3 gap-2 mb-2">
-                {v.gallery_urls.map((u, i) => (
-                  <div key={u} className="relative group">
-                    <img src={u} className="w-full h-20 object-cover rounded" />
-                    <button onClick={() => update("gallery_urls", v.gallery_urls.filter((_, j) => j !== i))}
-                      className="absolute top-1 right-1 bg-black/70 text-white rounded p-0.5 opacity-0 group-hover:opacity-100">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
+                {v.gallery_urls.map((u, i) => {
+                  const meta = galleryMeta.find((m) => m.url === u);
+                  return (
+                    <div key={u} className="relative group">
+                      <div className="aspect-square w-full overflow-hidden rounded bg-muted">
+                        <img src={u} className="w-full h-full object-cover" alt={meta?.filename ?? ""} />
+                      </div>
+                      {meta && (
+                        <p className="text-[10px] text-muted-foreground mt-0.5 truncate" title={`${meta.filename}${meta.width ? ` · ${meta.width}×${meta.height}` : ""}`}>
+                          {meta.filename}
+                        </p>
+                      )}
+                      <button onClick={() => {
+                        update("gallery_urls", v.gallery_urls.filter((_, j) => j !== i));
+                        setGalleryMeta((prev) => prev.filter((m) => m.url !== u));
+                      }}
+                        className="absolute top-1 right-1 bg-black/70 text-white rounded p-0.5 opacity-0 group-hover:opacity-100">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
               <label className="flex items-center gap-2 border border-dashed rounded p-3 text-sm cursor-pointer hover:bg-muted/30">
                 <Upload className="h-4 w-4" /> Add photos
-                <input type="file" accept="image/*" multiple className="hidden" onChange={onGallery} />
+                <input type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={onGallery} />
               </label>
             </div>
           </div>
+
 
           <div>
             <Label>Primary media type</Label>

@@ -49,14 +49,32 @@ export const EMPTY_LISTING: ListingValues = {
   status: "active", show_address_on_unbranded: true,
 };
 
-async function uploadFile(file: File, folder: string): Promise<string> {
+const SIGNED_URL_TTL = 60 * 60 * 24 * 365 * 10; // ~10 years
+
+type UploadResult = { url: string; width?: number; height?: number; filename: string; size: number };
+
+async function readImageDimensions(file: File): Promise<{ width: number; height: number } | null> {
+  if (!file.type.startsWith("image/")) return null;
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { resolve({ width: img.naturalWidth, height: img.naturalHeight }); URL.revokeObjectURL(url); };
+    img.onerror = () => { resolve(null); URL.revokeObjectURL(url); };
+    img.src = url;
+  });
+}
+
+async function uploadFile(file: File, folder: string): Promise<UploadResult> {
   const ext = file.name.split(".").pop();
   const path = `${folder}/${crypto.randomUUID()}.${ext}`;
-  const { error } = await supabase.storage.from("listing-media").upload(path, file, { upsert: false });
+  const { error } = await supabase.storage.from("listing-media").upload(path, file, { upsert: false, contentType: file.type });
   if (error) throw error;
-  const { data } = supabase.storage.from("listing-media").getPublicUrl(path);
-  return data.publicUrl;
+  const { data, error: signErr } = await supabase.storage.from("listing-media").createSignedUrl(path, SIGNED_URL_TTL);
+  if (signErr || !data?.signedUrl) throw signErr ?? new Error("Could not create signed URL");
+  const dims = await readImageDimensions(file);
+  return { url: data.signedUrl, filename: file.name, size: file.size, width: dims?.width, height: dims?.height };
 }
+
 
 export function ListingForm({
   initial,

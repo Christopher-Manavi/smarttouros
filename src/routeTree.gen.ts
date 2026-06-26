@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as USlugRouteImport } from './routes/u.$slug'
+import { Route as TourSlugRouteImport } from './routes/tour.$slug'
 import { Route as AuthenticatedVisitorsRouteImport } from './routes/_authenticated/visitors'
 import { Route as AuthenticatedTrackingRouteImport } from './routes/_authenticated/tracking'
 import { Route as AuthenticatedPrivacyRouteImport } from './routes/_authenticated/privacy'
@@ -34,6 +36,16 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const USlugRoute = USlugRouteImport.update({
+  id: '/u/$slug',
+  path: '/u/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TourSlugRoute = TourSlugRouteImport.update({
+  id: '/tour/$slug',
+  path: '/tour/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedVisitorsRoute = AuthenticatedVisitorsRouteImport.update({
@@ -93,6 +105,8 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof AuthenticatedPrivacyRoute
   '/tracking': typeof AuthenticatedTrackingRoute
   '/visitors': typeof AuthenticatedVisitorsRoute
+  '/tour/$slug': typeof TourSlugRoute
+  '/u/$slug': typeof USlugRoute
   '/listings/$id': typeof AuthenticatedListingsIdRouteWithChildren
   '/listings/new': typeof AuthenticatedListingsNewRoute
   '/listings/': typeof AuthenticatedListingsIndexRoute
@@ -106,6 +120,8 @@ export interface FileRoutesByTo {
   '/privacy': typeof AuthenticatedPrivacyRoute
   '/tracking': typeof AuthenticatedTrackingRoute
   '/visitors': typeof AuthenticatedVisitorsRoute
+  '/tour/$slug': typeof TourSlugRoute
+  '/u/$slug': typeof USlugRoute
   '/listings/$id': typeof AuthenticatedListingsIdRouteWithChildren
   '/listings/new': typeof AuthenticatedListingsNewRoute
   '/listings': typeof AuthenticatedListingsIndexRoute
@@ -121,6 +137,8 @@ export interface FileRoutesById {
   '/_authenticated/privacy': typeof AuthenticatedPrivacyRoute
   '/_authenticated/tracking': typeof AuthenticatedTrackingRoute
   '/_authenticated/visitors': typeof AuthenticatedVisitorsRoute
+  '/tour/$slug': typeof TourSlugRoute
+  '/u/$slug': typeof USlugRoute
   '/_authenticated/listings/$id': typeof AuthenticatedListingsIdRouteWithChildren
   '/_authenticated/listings/new': typeof AuthenticatedListingsNewRoute
   '/_authenticated/listings/': typeof AuthenticatedListingsIndexRoute
@@ -136,6 +154,8 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/tracking'
     | '/visitors'
+    | '/tour/$slug'
+    | '/u/$slug'
     | '/listings/$id'
     | '/listings/new'
     | '/listings/'
@@ -149,6 +169,8 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/tracking'
     | '/visitors'
+    | '/tour/$slug'
+    | '/u/$slug'
     | '/listings/$id'
     | '/listings/new'
     | '/listings'
@@ -163,6 +185,8 @@ export interface FileRouteTypes {
     | '/_authenticated/privacy'
     | '/_authenticated/tracking'
     | '/_authenticated/visitors'
+    | '/tour/$slug'
+    | '/u/$slug'
     | '/_authenticated/listings/$id'
     | '/_authenticated/listings/new'
     | '/_authenticated/listings/'
@@ -173,6 +197,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  TourSlugRoute: typeof TourSlugRoute
+  USlugRoute: typeof USlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -196,6 +222,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/u/$slug': {
+      id: '/u/$slug'
+      path: '/u/$slug'
+      fullPath: '/u/$slug'
+      preLoaderRoute: typeof USlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tour/$slug': {
+      id: '/tour/$slug'
+      path: '/tour/$slug'
+      fullPath: '/tour/$slug'
+      preLoaderRoute: typeof TourSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/visitors': {
@@ -308,6 +348,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  TourSlugRoute: TourSlugRoute,
+  USlugRoute: USlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

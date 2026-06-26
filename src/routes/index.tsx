@@ -131,8 +131,18 @@ function Landing() {
       </section>
 
       <footer className="border-t py-10">
-        <div className="container-luxe flex justify-between text-xs text-muted-foreground">
-          <span>© SmartTourOS</span>
+        <div className="container-luxe flex flex-col gap-3 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span>© SmartTourOS</span>
+            <span aria-hidden="true">·</span>
+            <a href="/privacy" className="hover:text-foreground">Privacy</a>
+            <span aria-hidden="true">•</span>
+            <a href="/cookies" className="hover:text-foreground">Cookies</a>
+            <span aria-hidden="true">•</span>
+            <a href="/privacy-choices" className="hover:text-foreground">Privacy Choices</a>
+            <span aria-hidden="true">•</span>
+            <a href="/terms" className="hover:text-foreground">Terms</a>
+          </div>
           <span>Generate MLS-safe virtual tour links. Confirm local MLS rules before publishing.</span>
         </div>
       </footer>

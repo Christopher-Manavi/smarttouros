@@ -18,6 +18,7 @@ function Company() {
   const { companyId } = useAuth();
   const [c, setC] = useState<any>(null);
   const [busy, setBusy] = useState(false);
+  const [publicBase, setPublicBase] = useState(() => getPublicBaseUrl());
 
   useEffect(() => {
     if (!companyId) return;

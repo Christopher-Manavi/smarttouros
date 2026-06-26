@@ -184,7 +184,7 @@ export function TourView({
         <section className="border-t bg-muted/30">
           <div className="container-luxe py-12 grid md:grid-cols-2 gap-10 items-center">
             <div>
-              {listing.brokerage_logo_url && <img src={listing.brokerage_logo_url} alt="" className="h-12 object-contain mb-4" />}
+              {listing.brokerage_logo_url && <SmartImage src={listing.brokerage_logo_url} alt="" className="h-12 object-contain mb-4" hideOnError />}
               {listing.brokerage_name && <p className="text-sm uppercase tracking-widest text-muted-foreground">{listing.brokerage_name}</p>}
               {listing.agent_name && <h3 className="font-display text-3xl mt-2">{listing.agent_name}</h3>}
               <div className="mt-4 space-y-1 text-sm">

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Copy, Check, ExternalLink, ArrowLeft } from "lucide-react";
 import { tourUrls } from "@/lib/demo-listing";
+import { PublicAccessPanel } from "@/components/public-access-panel";
 import { toast } from "sonner";
 
 const search = z.object({ slug: z.string() });

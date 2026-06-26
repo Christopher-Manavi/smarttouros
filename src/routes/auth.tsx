@@ -1,7 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
+// NOTE: Google OAuth intentionally disabled. The default Lovable broker shows
+// a "Sign in to continue to Lovable" consent screen which is not acceptable
+// for the white-label SmartTourOS product. Only re-enable after configuring a
+// custom Google OAuth app branded as SmartTourOS (or the client's white-label
+// domain) in Cloud → Users → Auth Settings → Google.
+// import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

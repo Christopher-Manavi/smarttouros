@@ -9,10 +9,20 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { DEFAULT_PRIVACY_URL, DEFAULT_TERMS_URL, DEFAULT_PRIVACY_NOTICE_TEXT } from "@/lib/compliance";
 
-export const Route = createFileRoute("/_authenticated/privacy")({
+export const Route = createFileRoute("/_authenticated/privacy-settings")({
   component: Privacy,
 });
+
+const DEFAULT_ROW = {
+  privacy_policy_url: "",
+  terms_url: "",
+  privacy_notice_text: "",
+  show_privacy_notice: true,
+  direct_mail_enabled: false,
+  crm_export_enabled: false,
+};
 
 function Privacy() {
   const { companyId } = useAuth();
@@ -22,8 +32,9 @@ function Privacy() {
   useEffect(() => {
     if (!companyId) return;
     supabase.from("privacy_settings").select("*").eq("company_id", companyId).maybeSingle()
-      .then(({ data }) => setP(data ?? { company_id: companyId }));
+      .then(({ data }) => setP(data ?? { ...DEFAULT_ROW, company_id: companyId }));
   }, [companyId]);
+
 
   async function save() {
     setBusy(true);
@@ -43,11 +54,24 @@ function Privacy() {
       </div>
 
       <Card className="p-6 space-y-5">
-        <div><Label>Privacy policy URL</Label><Input value={p.privacy_policy_url ?? ""} onChange={(e) => set("privacy_policy_url", e.target.value)} /></div>
-        <div><Label>Terms URL</Label><Input value={p.terms_url ?? ""} onChange={(e) => set("terms_url", e.target.value)} /></div>
+        <p className="text-xs text-muted-foreground">
+          These fields are optional workspace-level overrides. If left blank, your public listing pages
+          will use the default SmartTourOS compliance pages.
+        </p>
+        <div>
+          <Label>Privacy policy URL</Label>
+          <Input value={p.privacy_policy_url ?? ""} onChange={(e) => set("privacy_policy_url", e.target.value)} placeholder={DEFAULT_PRIVACY_URL} />
+          <p className="text-xs text-muted-foreground mt-1">Default: <code className="font-mono">{DEFAULT_PRIVACY_URL}</code></p>
+        </div>
+        <div>
+          <Label>Terms URL</Label>
+          <Input value={p.terms_url ?? ""} onChange={(e) => set("terms_url", e.target.value)} placeholder={DEFAULT_TERMS_URL} />
+          <p className="text-xs text-muted-foreground mt-1">Default: <code className="font-mono">{DEFAULT_TERMS_URL}</code></p>
+        </div>
         <div>
           <Label>Privacy notice text</Label>
-          <Textarea rows={3} value={p.privacy_notice_text ?? ""} onChange={(e) => set("privacy_notice_text", e.target.value)} />
+          <Textarea rows={3} value={p.privacy_notice_text ?? ""} onChange={(e) => set("privacy_notice_text", e.target.value)} placeholder={DEFAULT_PRIVACY_NOTICE_TEXT} />
+          <p className="text-xs text-muted-foreground mt-1">If blank, the default notice is shown.</p>
         </div>
         {[
           ["show_privacy_notice", "Show privacy notice on listing pages"],

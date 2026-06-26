@@ -72,8 +72,8 @@ function ListingReport() {
   const brandedUrl = brandedTourUrl(listing.slug);
   const unbrandedUrl = unbrandedTourUrl(listing.slug);
 
-  const trackingBranded = !!tracking?.enabled_on_branded;
-  const trackingUnbranded = !!tracking?.enabled_on_unbranded;
+  const trackingBranded = !!tracking?.enable_branded_tracking;
+  const trackingUnbranded = !!(tracking as any)?.enable_unbranded_tracking;
   const untitledInstalled = !!(tracking?.custom_header_script && /untitled/i.test(tracking.custom_header_script));
 
   function exportCsv() {

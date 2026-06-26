@@ -73,8 +73,8 @@ function ListingReport() {
   const unbrandedUrl = unbrandedTourUrl(listing.slug);
 
   const trackingBranded = !!tracking?.enable_branded_tracking;
-  const trackingUnbranded = !!(tracking as any)?.enable_unbranded_tracking;
-  const untitledInstalled = !!(tracking?.custom_header_script && /untitled/i.test(tracking.custom_header_script));
+  const trackingUnbranded = !!tracking?.enable_unbranded_tracking;
+  const untitledInstalled = !!tracking?.untitled_script || !!(tracking?.custom_header_script && /untitled/i.test(tracking.custom_header_script));
 
   function exportCsv() {
     const headers = ["timestamp", "page_type", "event_type", "referrer", "utm_source", "device", "user_agent"];

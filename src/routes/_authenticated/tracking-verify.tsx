@@ -100,6 +100,7 @@ function TrackingVerify() {
                 <Button size="icon" variant="outline" onClick={() => copy(unbranded)}><Copy className="h-4 w-4" /></Button>
                 <Button size="icon" variant="outline" asChild><a href={unbranded} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" /></a></Button>
               </div>
+              <p className="text-[11px] text-muted-foreground mt-1">Use this MLS-safe link in the MLS Virtual Tour / Unbranded Tour field.</p>
             </div>
           </>
         ) : (

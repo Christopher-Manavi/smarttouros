@@ -95,15 +95,7 @@ function AuthPage() {
             </p>
           </div>
 
-          <Button type="button" variant="outline" className="w-full" disabled={busy} onClick={handleGoogle}>
-            Continue with Google
-          </Button>
 
-          <div className="flex items-center gap-3 my-5">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-xs uppercase tracking-widest text-muted-foreground">or</span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
 
           <form onSubmit={handleEmail} className="space-y-4">
             {mode === "signup" && (

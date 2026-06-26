@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,7 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { AlertTriangle, FlaskConical } from "lucide-react";
 import { toast } from "sonner";
+
+export const TEST_TRACKING_SCRIPT = `<script>
+(function(){
+  try {
+    window.smartTourTrackingTest = true;
+    console.log("SmartTourOS tracking script fired");
+  } catch(e) {}
+})();
+</script>`;
 
 export const Route = createFileRoute("/_authenticated/tracking")({
   component: Tracking,

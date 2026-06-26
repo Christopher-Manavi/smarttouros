@@ -223,14 +223,32 @@ export function ListingForm({
       <Card ref={mediaSectionRef} className={`p-6 scroll-mt-6 ${highlightMedia ? "ring-2 ring-foreground/40" : ""}`}>
 
         <h2 className="font-display text-2xl mb-4">Media</h2>
+
+        <div className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground mb-4 space-y-1">
+          <p><strong className="text-foreground">Hero image:</strong> 1600×900 minimum · 16:9 landscape preferred · JPG, PNG, or WebP.</p>
+          <p><strong className="text-foreground">Gallery photos:</strong> 1200px wide minimum · JPG, PNG, or WebP · landscape preferred (portrait works too).</p>
+          <p>Screenshots and imperfectly sized images are fine — we'll center-crop them cleanly.</p>
+        </div>
+
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <Label>Hero image</Label>
             <div className="mt-1">
-              {v.hero_image_url && <img src={v.hero_image_url} className="w-full h-48 object-cover rounded mb-2" />}
+              {v.hero_image_url && (
+                <div className="mb-2">
+                  <div className="aspect-video w-full overflow-hidden rounded bg-muted">
+                    <img src={v.hero_image_url} className="w-full h-full object-cover" alt="Hero preview" />
+                  </div>
+                  {heroMeta && (
+                    <p className="text-xs text-muted-foreground mt-1 truncate">
+                      ✓ {heroMeta.filename}{heroMeta.width ? ` · ${heroMeta.width}×${heroMeta.height}` : ""}
+                    </p>
+                  )}
+                </div>
+              )}
               <label className="flex items-center gap-2 border border-dashed rounded p-3 text-sm cursor-pointer hover:bg-muted/30">
                 <Upload className="h-4 w-4" /> Upload hero
-                <input type="file" accept="image/*" className="hidden" onChange={onHero} />
+                <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={onHero} />
               </label>
             </div>
           </div>
@@ -238,22 +256,36 @@ export function ListingForm({
             <Label>Photo gallery</Label>
             <div className="mt-1">
               <div className="grid grid-cols-3 gap-2 mb-2">
-                {v.gallery_urls.map((u, i) => (
-                  <div key={u} className="relative group">
-                    <img src={u} className="w-full h-20 object-cover rounded" />
-                    <button onClick={() => update("gallery_urls", v.gallery_urls.filter((_, j) => j !== i))}
-                      className="absolute top-1 right-1 bg-black/70 text-white rounded p-0.5 opacity-0 group-hover:opacity-100">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
+                {v.gallery_urls.map((u, i) => {
+                  const meta = galleryMeta.find((m) => m.url === u);
+                  return (
+                    <div key={u} className="relative group">
+                      <div className="aspect-square w-full overflow-hidden rounded bg-muted">
+                        <img src={u} className="w-full h-full object-cover" alt={meta?.filename ?? ""} />
+                      </div>
+                      {meta && (
+                        <p className="text-[10px] text-muted-foreground mt-0.5 truncate" title={`${meta.filename}${meta.width ? ` · ${meta.width}×${meta.height}` : ""}`}>
+                          {meta.filename}
+                        </p>
+                      )}
+                      <button onClick={() => {
+                        update("gallery_urls", v.gallery_urls.filter((_, j) => j !== i));
+                        setGalleryMeta((prev) => prev.filter((m) => m.url !== u));
+                      }}
+                        className="absolute top-1 right-1 bg-black/70 text-white rounded p-0.5 opacity-0 group-hover:opacity-100">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
               <label className="flex items-center gap-2 border border-dashed rounded p-3 text-sm cursor-pointer hover:bg-muted/30">
                 <Upload className="h-4 w-4" /> Add photos
-                <input type="file" accept="image/*" multiple className="hidden" onChange={onGallery} />
+                <input type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={onGallery} />
               </label>
             </div>
           </div>
+
 
           <div>
             <Label>Primary media type</Label>

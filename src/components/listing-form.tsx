@@ -45,7 +45,7 @@ export const EMPTY_LISTING: ListingValues = {
   primary_media_type: "youtube", primary_media_url: "", secondary_media_url: "",
   agent_name: "", agent_phone: "", agent_email: "",
   brokerage_name: "", brokerage_logo_url: "", mls_number: "",
-  status: "draft", show_address_on_unbranded: true,
+  status: "active", show_address_on_unbranded: true,
 };
 
 async function uploadFile(file: File, folder: string): Promise<string> {

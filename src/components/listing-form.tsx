@@ -12,7 +12,6 @@ import { toast } from "sonner";
 import { slugify, uniqueSuffix } from "@/lib/slug";
 import { Upload, X, Youtube } from "lucide-react";
 import { extractYouTubeId, isYouTubeUrl, isYouTubeShorts, youTubeEmbedUrl, normalizeYouTubeUrl, MediaEmbed } from "@/components/media-embed";
-import { useEffect, useRef } from "react";
 
 type ListingValues = {
   id?: string;

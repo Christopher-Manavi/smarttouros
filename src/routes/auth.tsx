@@ -66,22 +66,9 @@ function AuthPage() {
     }
   }
 
-  async function handleGoogle() {
-    setBusy(true);
-    try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-      });
-      if (result.error) {
-        toast.error(result.error.message ?? "Google sign-in failed");
-        return;
-      }
-      if (result.redirected) return;
-      navigate({ to: "/dashboard", replace: true });
-    } finally {
-      setBusy(false);
-    }
-  }
+  // Google OAuth handler intentionally removed for white-label MVP.
+  // See note at top of file before re-enabling.
+
 
   return (
     <div className="min-h-screen flex">

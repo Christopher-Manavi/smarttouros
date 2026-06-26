@@ -1,6 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { MediaEmbed } from "@/components/media-embed";
+import { SmartImage } from "@/components/smart-image";
+
 
 type Listing = any;
 type Company = any;

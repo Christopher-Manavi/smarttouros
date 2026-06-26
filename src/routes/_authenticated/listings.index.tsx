@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Copy, Eye, Pencil, BarChart3, Plus, ExternalLink } from "lucide-react";
+import { Copy, Pencil, BarChart3, Plus, ExternalLink, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { brandedTourUrl, unbrandedTourUrl } from "@/lib/public-url";
 
@@ -101,6 +101,9 @@ function ListingsIndex() {
                     <td className="py-3 px-4 text-right text-muted-foreground text-xs">{new Date(l.created_at).toLocaleDateString()}</td>
                     <td className="py-3 px-2">
                       <div className="flex gap-1 justify-end">
+                        <Link to="/listings/$id/report" params={{ id: l.id }}>
+                          <Button size="sm" variant="outline"><FileText className="h-3 w-3 mr-1" /> View Report</Button>
+                        </Link>
                         <a href={branded} target="_blank" rel="noreferrer">
                           <Button size="icon" variant="ghost"><ExternalLink className="h-4 w-4" /></Button>
                         </a>

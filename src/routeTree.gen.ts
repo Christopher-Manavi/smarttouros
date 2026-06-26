@@ -26,6 +26,7 @@ import { Route as AuthenticatedListingsIndexRouteImport } from './routes/_authen
 import { Route as PublicUSlugRouteImport } from './routes/_public/u.$slug'
 import { Route as PublicTourSlugRouteImport } from './routes/_public/tour.$slug'
 import { Route as AuthenticatedListingsIdRouteImport } from './routes/_authenticated/listings.$id'
+import { Route as AuthenticatedListingsIdReportRouteImport } from './routes/_authenticated/listings.$id.report'
 import { Route as AuthenticatedListingsIdAnalyticsRouteImport } from './routes/_authenticated/listings.$id.analytics'
 
 const AuthRoute = AuthRouteImport.update({
@@ -115,6 +116,12 @@ const AuthenticatedListingsIdRoute = AuthenticatedListingsIdRouteImport.update({
   path: '/listings/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedListingsIdReportRoute =
+  AuthenticatedListingsIdReportRouteImport.update({
+    id: '/report',
+    path: '/report',
+    getParentRoute: () => AuthenticatedListingsIdRoute,
+  } as any)
 const AuthenticatedListingsIdAnalyticsRoute =
   AuthenticatedListingsIdAnalyticsRouteImport.update({
     id: '/analytics',
@@ -139,6 +146,7 @@ export interface FileRoutesByFullPath {
   '/u/$slug': typeof PublicUSlugRoute
   '/listings/': typeof AuthenticatedListingsIndexRoute
   '/listings/$id/analytics': typeof AuthenticatedListingsIdAnalyticsRoute
+  '/listings/$id/report': typeof AuthenticatedListingsIdReportRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -157,6 +165,7 @@ export interface FileRoutesByTo {
   '/u/$slug': typeof PublicUSlugRoute
   '/listings': typeof AuthenticatedListingsIndexRoute
   '/listings/$id/analytics': typeof AuthenticatedListingsIdAnalyticsRoute
+  '/listings/$id/report': typeof AuthenticatedListingsIdReportRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -178,6 +187,7 @@ export interface FileRoutesById {
   '/_public/u/$slug': typeof PublicUSlugRoute
   '/_authenticated/listings/': typeof AuthenticatedListingsIndexRoute
   '/_authenticated/listings/$id/analytics': typeof AuthenticatedListingsIdAnalyticsRoute
+  '/_authenticated/listings/$id/report': typeof AuthenticatedListingsIdReportRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -198,6 +208,7 @@ export interface FileRouteTypes {
     | '/u/$slug'
     | '/listings/'
     | '/listings/$id/analytics'
+    | '/listings/$id/report'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -216,6 +227,7 @@ export interface FileRouteTypes {
     | '/u/$slug'
     | '/listings'
     | '/listings/$id/analytics'
+    | '/listings/$id/report'
   id:
     | '__root__'
     | '/'
@@ -236,6 +248,7 @@ export interface FileRouteTypes {
     | '/_public/u/$slug'
     | '/_authenticated/listings/'
     | '/_authenticated/listings/$id/analytics'
+    | '/_authenticated/listings/$id/report'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -366,6 +379,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedListingsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/listings/$id/report': {
+      id: '/_authenticated/listings/$id/report'
+      path: '/report'
+      fullPath: '/listings/$id/report'
+      preLoaderRoute: typeof AuthenticatedListingsIdReportRouteImport
+      parentRoute: typeof AuthenticatedListingsIdRoute
+    }
     '/_authenticated/listings/$id/analytics': {
       id: '/_authenticated/listings/$id/analytics'
       path: '/analytics'
@@ -378,12 +398,14 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedListingsIdRouteChildren {
   AuthenticatedListingsIdAnalyticsRoute: typeof AuthenticatedListingsIdAnalyticsRoute
+  AuthenticatedListingsIdReportRoute: typeof AuthenticatedListingsIdReportRoute
 }
 
 const AuthenticatedListingsIdRouteChildren: AuthenticatedListingsIdRouteChildren =
   {
     AuthenticatedListingsIdAnalyticsRoute:
       AuthenticatedListingsIdAnalyticsRoute,
+    AuthenticatedListingsIdReportRoute: AuthenticatedListingsIdReportRoute,
   }
 
 const AuthenticatedListingsIdRouteWithChildren =

@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { slugify, uniqueSuffix } from "@/lib/slug";
 import { Upload, X } from "lucide-react";
+import { extractYouTubeId, isYouTubeUrl, isYouTubeShorts, youTubeEmbedUrl, MediaEmbed } from "@/components/media-embed";
 
 type ListingValues = {
   id?: string;

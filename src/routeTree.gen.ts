@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedVisitorsRouteImport } from './routes/_authenticated/visitors'
@@ -29,6 +30,10 @@ import { Route as AuthenticatedListingsIdAnalyticsRouteImport } from './routes/_
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PublicRouteRoute = PublicRouteRouteImport.update({
+  id: '/_public',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -82,14 +87,14 @@ const AuthenticatedListingsIndexRoute =
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const PublicUSlugRoute = PublicUSlugRouteImport.update({
-  id: '/_public/u/$slug',
+  id: '/u/$slug',
   path: '/u/$slug',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => PublicRouteRoute,
 } as any)
 const PublicTourSlugRoute = PublicTourSlugRouteImport.update({
-  id: '/_public/tour/$slug',
+  id: '/tour/$slug',
   path: '/tour/$slug',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => PublicRouteRoute,
 } as any)
 const AuthenticatedListingsNewRoute =
   AuthenticatedListingsNewRouteImport.update({
@@ -147,6 +152,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/_public': typeof PublicRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/company': typeof AuthenticatedCompanyRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -201,6 +207,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/_public'
     | '/auth'
     | '/_authenticated/company'
     | '/_authenticated/dashboard'
@@ -220,9 +227,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  PublicRouteRoute: typeof PublicRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  PublicTourSlugRoute: typeof PublicTourSlugRoute
-  PublicUSlugRoute: typeof PublicUSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -232,6 +238,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_public': {
+      id: '/_public'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PublicRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -309,14 +322,14 @@ declare module '@tanstack/react-router' {
       path: '/u/$slug'
       fullPath: '/u/$slug'
       preLoaderRoute: typeof PublicUSlugRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof PublicRouteRoute
     }
     '/_public/tour/$slug': {
       id: '/_public/tour/$slug'
       path: '/tour/$slug'
       fullPath: '/tour/$slug'
       preLoaderRoute: typeof PublicTourSlugRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof PublicRouteRoute
     }
     '/_authenticated/listings/new': {
       id: '/_authenticated/listings/new'
@@ -386,12 +399,25 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface PublicRouteRouteChildren {
+  PublicTourSlugRoute: typeof PublicTourSlugRoute
+  PublicUSlugRoute: typeof PublicUSlugRoute
+}
+
+const PublicRouteRouteChildren: PublicRouteRouteChildren = {
+  PublicTourSlugRoute: PublicTourSlugRoute,
+  PublicUSlugRoute: PublicUSlugRoute,
+}
+
+const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
+  PublicRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  PublicRouteRoute: PublicRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  PublicTourSlugRoute: PublicTourSlugRoute,
-  PublicUSlugRoute: PublicUSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

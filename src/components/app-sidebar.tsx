@@ -33,7 +33,7 @@ const items = [
   { title: "Tracking", url: "/tracking", icon: LineChart },
   { title: "Tracking Verify", url: "/tracking-verify", icon: FlaskConical },
   { title: "Company", url: "/company", icon: Settings2 },
-  { title: "Privacy", url: "/privacy", icon: ShieldCheck },
+  { title: "Privacy", url: "/privacy-settings", icon: ShieldCheck },
   { title: "MVP Test Center", url: "/test-center", icon: ClipboardCheck },
 ];
 

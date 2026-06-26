@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/privacy")({
+export const Route = createFileRoute("/_authenticated/privacy-settings")({
   component: Privacy,
 });
 

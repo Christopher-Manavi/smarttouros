@@ -17,22 +17,27 @@ async function recordEvent(args: {
   listingId: string; companyId: string; pageType: "branded" | "unbranded";
   eventType: "page_view" | "media_click" | "video_play" | "cta_click" | "outbound_click";
 }) {
-  const params = new URLSearchParams(window.location.search);
-  const visitorHash = localStorage.getItem("stos_vh") ?? (() => {
-    const v = crypto.randomUUID(); localStorage.setItem("stos_vh", v); return v;
-  })();
-  await supabase.from("events").insert({
-    listing_id: args.listingId,
-    company_id: args.companyId,
-    page_type: args.pageType,
-    event_type: args.eventType,
-    referrer: document.referrer || null,
-    utm_source: params.get("utm_source"),
-    utm_campaign: params.get("utm_campaign"),
-    user_agent: navigator.userAgent,
-    device_type: detectDevice(navigator.userAgent),
-    visitor_hash: visitorHash,
-  });
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const visitorHash = localStorage.getItem("stos_vh") ?? (() => {
+      const v = crypto.randomUUID(); localStorage.setItem("stos_vh", v); return v;
+    })();
+    await supabase.from("events").insert({
+      listing_id: args.listingId,
+      company_id: args.companyId,
+      page_type: args.pageType,
+      event_type: args.eventType,
+      referrer: document.referrer || null,
+      utm_source: params.get("utm_source"),
+      utm_campaign: params.get("utm_campaign"),
+      user_agent: navigator.userAgent,
+      device_type: detectDevice(navigator.userAgent),
+      visitor_hash: visitorHash,
+    });
+  } catch (e) {
+    // Analytics must never break the public page.
+    console.warn("[tour] recordEvent failed", e);
+  }
 }
 
 function injectScripts(tracking: Tracking | null, mode: "branded" | "unbranded") {

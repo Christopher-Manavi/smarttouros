@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Copy, Check, ExternalLink, ArrowLeft } from "lucide-react";
 import { tourUrls } from "@/lib/demo-listing";
+import { isPreviewUrl, getPublicBaseUrl } from "@/lib/public-url";
+import { AlertTriangle } from "lucide-react";
 import { PublicAccessPanel } from "@/components/public-access-panel";
 import { toast } from "sonner";
 

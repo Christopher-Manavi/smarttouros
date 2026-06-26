@@ -83,6 +83,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "Smart virtual tour platform for luxury real estate media." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { name: "twitter:title", content: "SmartTourOS" },
+      { name: "twitter:description", content: "Smart virtual tour platform for luxury real estate media." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/47a6f78c-8fe3-4375-bdbb-6944f88e6f7a/id-preview-796e5c92--8a80f798-0f47-4111-8502-289864ef60cb.lovable.app-1782486186443.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/47a6f78c-8fe3-4375-bdbb-6944f88e6f7a/id-preview-796e5c92--8a80f798-0f47-4111-8502-289864ef60cb.lovable.app-1782486186443.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

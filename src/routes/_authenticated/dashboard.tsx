@@ -1,8 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
-import { Building2, Eye, Users, Activity } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Building2, Eye, Users, Activity, Sparkles, ClipboardCheck } from "lucide-react";
+import { useAuth } from "@/lib/use-auth";
+import { createDemoListing } from "@/lib/demo-listing";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -21,7 +26,11 @@ function StatCard({ icon: Icon, label, value }: { icon: any; label: string; valu
 }
 
 function Dashboard() {
-  const { data } = useQuery({
+  const navigate = useNavigate();
+  const { companyId } = useAuth();
+  const [creating, setCreating] = useState(false);
+
+  const { data, refetch } = useQuery({
     queryKey: ["dashboard"],
     queryFn: async () => {
       const [listings, events] = await Promise.all([
@@ -44,11 +53,36 @@ function Dashboard() {
     .map(([id, v]) => ({ listing: listings.find((l) => l.id === id), views: v }))
     .filter((r) => r.listing);
 
+  async function handleDemo() {
+    if (!companyId) { toast.error("Company not loaded yet"); return; }
+    setCreating(true);
+    try {
+      const { slug } = await createDemoListing(companyId);
+      await refetch();
+      navigate({ to: "/demo", search: { slug } });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to create demo");
+    } finally {
+      setCreating(false);
+    }
+  }
+
   return (
     <div className="container-luxe py-10">
-      <div className="mb-10">
-        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Overview</p>
-        <h1 className="font-display text-4xl mt-2">Dashboard</h1>
+      <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Overview</p>
+          <h1 className="font-display text-4xl mt-2">Dashboard</h1>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" asChild>
+            <Link to="/test-center"><ClipboardCheck className="h-4 w-4 mr-2" />MVP Test Center</Link>
+          </Button>
+          <Button onClick={handleDemo} disabled={creating || !companyId}>
+            <Sparkles className="h-4 w-4 mr-2" />
+            {creating ? "Creating…" : "Create Demo Listing"}
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

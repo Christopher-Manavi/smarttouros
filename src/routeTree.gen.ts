@@ -9,38 +9,188 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedVisitorsRouteImport } from './routes/_authenticated/visitors'
+import { Route as AuthenticatedTrackingRouteImport } from './routes/_authenticated/tracking'
+import { Route as AuthenticatedPrivacyRouteImport } from './routes/_authenticated/privacy'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCompanyRouteImport } from './routes/_authenticated/company'
+import { Route as AuthenticatedListingsIndexRouteImport } from './routes/_authenticated/listings.index'
+import { Route as AuthenticatedListingsNewRouteImport } from './routes/_authenticated/listings.new'
+import { Route as AuthenticatedListingsIdRouteImport } from './routes/_authenticated/listings.$id'
+import { Route as AuthenticatedListingsIdAnalyticsRouteImport } from './routes/_authenticated/listings.$id.analytics'
 
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedVisitorsRoute = AuthenticatedVisitorsRouteImport.update({
+  id: '/visitors',
+  path: '/visitors',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTrackingRoute = AuthenticatedTrackingRouteImport.update({
+  id: '/tracking',
+  path: '/tracking',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPrivacyRoute = AuthenticatedPrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCompanyRoute = AuthenticatedCompanyRouteImport.update({
+  id: '/company',
+  path: '/company',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedListingsIndexRoute =
+  AuthenticatedListingsIndexRouteImport.update({
+    id: '/listings/',
+    path: '/listings/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedListingsNewRoute =
+  AuthenticatedListingsNewRouteImport.update({
+    id: '/listings/new',
+    path: '/listings/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedListingsIdRoute = AuthenticatedListingsIdRouteImport.update({
+  id: '/listings/$id',
+  path: '/listings/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedListingsIdAnalyticsRoute =
+  AuthenticatedListingsIdAnalyticsRouteImport.update({
+    id: '/analytics',
+    path: '/analytics',
+    getParentRoute: () => AuthenticatedListingsIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/company': typeof AuthenticatedCompanyRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/privacy': typeof AuthenticatedPrivacyRoute
+  '/tracking': typeof AuthenticatedTrackingRoute
+  '/visitors': typeof AuthenticatedVisitorsRoute
+  '/listings/$id': typeof AuthenticatedListingsIdRouteWithChildren
+  '/listings/new': typeof AuthenticatedListingsNewRoute
+  '/listings/': typeof AuthenticatedListingsIndexRoute
+  '/listings/$id/analytics': typeof AuthenticatedListingsIdAnalyticsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/company': typeof AuthenticatedCompanyRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/privacy': typeof AuthenticatedPrivacyRoute
+  '/tracking': typeof AuthenticatedTrackingRoute
+  '/visitors': typeof AuthenticatedVisitorsRoute
+  '/listings/$id': typeof AuthenticatedListingsIdRouteWithChildren
+  '/listings/new': typeof AuthenticatedListingsNewRoute
+  '/listings': typeof AuthenticatedListingsIndexRoute
+  '/listings/$id/analytics': typeof AuthenticatedListingsIdAnalyticsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/company': typeof AuthenticatedCompanyRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/privacy': typeof AuthenticatedPrivacyRoute
+  '/_authenticated/tracking': typeof AuthenticatedTrackingRoute
+  '/_authenticated/visitors': typeof AuthenticatedVisitorsRoute
+  '/_authenticated/listings/$id': typeof AuthenticatedListingsIdRouteWithChildren
+  '/_authenticated/listings/new': typeof AuthenticatedListingsNewRoute
+  '/_authenticated/listings/': typeof AuthenticatedListingsIndexRoute
+  '/_authenticated/listings/$id/analytics': typeof AuthenticatedListingsIdAnalyticsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/company'
+    | '/dashboard'
+    | '/privacy'
+    | '/tracking'
+    | '/visitors'
+    | '/listings/$id'
+    | '/listings/new'
+    | '/listings/'
+    | '/listings/$id/analytics'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/company'
+    | '/dashboard'
+    | '/privacy'
+    | '/tracking'
+    | '/visitors'
+    | '/listings/$id'
+    | '/listings/new'
+    | '/listings'
+    | '/listings/$id/analytics'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/company'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/privacy'
+    | '/_authenticated/tracking'
+    | '/_authenticated/visitors'
+    | '/_authenticated/listings/$id'
+    | '/_authenticated/listings/new'
+    | '/_authenticated/listings/'
+    | '/_authenticated/listings/$id/analytics'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +198,116 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/visitors': {
+      id: '/_authenticated/visitors'
+      path: '/visitors'
+      fullPath: '/visitors'
+      preLoaderRoute: typeof AuthenticatedVisitorsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/tracking': {
+      id: '/_authenticated/tracking'
+      path: '/tracking'
+      fullPath: '/tracking'
+      preLoaderRoute: typeof AuthenticatedTrackingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/privacy': {
+      id: '/_authenticated/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof AuthenticatedPrivacyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/company': {
+      id: '/_authenticated/company'
+      path: '/company'
+      fullPath: '/company'
+      preLoaderRoute: typeof AuthenticatedCompanyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/listings/': {
+      id: '/_authenticated/listings/'
+      path: '/listings'
+      fullPath: '/listings/'
+      preLoaderRoute: typeof AuthenticatedListingsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/listings/new': {
+      id: '/_authenticated/listings/new'
+      path: '/listings/new'
+      fullPath: '/listings/new'
+      preLoaderRoute: typeof AuthenticatedListingsNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/listings/$id': {
+      id: '/_authenticated/listings/$id'
+      path: '/listings/$id'
+      fullPath: '/listings/$id'
+      preLoaderRoute: typeof AuthenticatedListingsIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/listings/$id/analytics': {
+      id: '/_authenticated/listings/$id/analytics'
+      path: '/analytics'
+      fullPath: '/listings/$id/analytics'
+      preLoaderRoute: typeof AuthenticatedListingsIdAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedListingsIdRoute
+    }
   }
 }
 
+interface AuthenticatedListingsIdRouteChildren {
+  AuthenticatedListingsIdAnalyticsRoute: typeof AuthenticatedListingsIdAnalyticsRoute
+}
+
+const AuthenticatedListingsIdRouteChildren: AuthenticatedListingsIdRouteChildren =
+  {
+    AuthenticatedListingsIdAnalyticsRoute:
+      AuthenticatedListingsIdAnalyticsRoute,
+  }
+
+const AuthenticatedListingsIdRouteWithChildren =
+  AuthenticatedListingsIdRoute._addFileChildren(
+    AuthenticatedListingsIdRouteChildren,
+  )
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCompanyRoute: typeof AuthenticatedCompanyRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedPrivacyRoute: typeof AuthenticatedPrivacyRoute
+  AuthenticatedTrackingRoute: typeof AuthenticatedTrackingRoute
+  AuthenticatedVisitorsRoute: typeof AuthenticatedVisitorsRoute
+  AuthenticatedListingsIdRoute: typeof AuthenticatedListingsIdRouteWithChildren
+  AuthenticatedListingsNewRoute: typeof AuthenticatedListingsNewRoute
+  AuthenticatedListingsIndexRoute: typeof AuthenticatedListingsIndexRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCompanyRoute: AuthenticatedCompanyRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedPrivacyRoute: AuthenticatedPrivacyRoute,
+  AuthenticatedTrackingRoute: AuthenticatedTrackingRoute,
+  AuthenticatedVisitorsRoute: AuthenticatedVisitorsRoute,
+  AuthenticatedListingsIdRoute: AuthenticatedListingsIdRouteWithChildren,
+  AuthenticatedListingsNewRoute: AuthenticatedListingsNewRoute,
+  AuthenticatedListingsIndexRoute: AuthenticatedListingsIndexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

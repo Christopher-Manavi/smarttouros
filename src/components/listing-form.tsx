@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -10,8 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { slugify, uniqueSuffix } from "@/lib/slug";
-import { Upload, X } from "lucide-react";
-import { extractYouTubeId, isYouTubeUrl, isYouTubeShorts, youTubeEmbedUrl, MediaEmbed } from "@/components/media-embed";
+import { Upload, X, Youtube } from "lucide-react";
+import { extractYouTubeId, isYouTubeUrl, isYouTubeShorts, youTubeEmbedUrl, normalizeYouTubeUrl, MediaEmbed } from "@/components/media-embed";
 
 type ListingValues = {
   id?: string;
@@ -61,11 +61,32 @@ async function uploadFile(file: File, folder: string): Promise<string> {
 export function ListingForm({
   initial,
   companyId,
-}: { initial: ListingValues; companyId: string }) {
+  highlightMedia,
+}: { initial: ListingValues; companyId: string; highlightMedia?: boolean }) {
   const navigate = useNavigate();
   const [v, setV] = useState<ListingValues>(initial);
   const [busy, setBusy] = useState(false);
+  const [ytQuick, setYtQuick] = useState("");
+  const mediaSectionRef = useRef<HTMLDivElement>(null);
   const update = <K extends keyof ListingValues>(k: K, val: ListingValues[K]) => setV((p) => ({ ...p, [k]: val }));
+
+  useEffect(() => {
+    if (highlightMedia && mediaSectionRef.current) {
+      mediaSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [highlightMedia]);
+
+  function applyYouTubeQuick() {
+    const raw = ytQuick.trim();
+    if (!raw) { toast.error("Paste a YouTube or Shorts URL"); return; }
+    if (!isYouTubeUrl(raw)) { toast.error("That doesn't look like a YouTube URL"); return; }
+    const normalized = normalizeYouTubeUrl(raw);
+    if (!normalized) { toast.error("Could not extract video ID"); return; }
+    update("primary_media_type", "youtube");
+    update("primary_media_url", normalized);
+    toast.success(isYouTubeShorts(raw) ? "Vertical Shorts video added" : "YouTube video added");
+    mediaSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   async function onHero(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]; if (!f) return;
@@ -123,6 +144,33 @@ export function ListingForm({
 
   return (
     <div className="space-y-6">
+      <Card className="p-6 border-foreground/20 bg-muted/30">
+        <div className="flex items-start gap-3 mb-3">
+          <Youtube className="h-5 w-5 mt-0.5 text-foreground" />
+          <div>
+            <h2 className="font-display text-xl">Have a YouTube or Shorts video?</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Paste it below and we'll embed it automatically. Then finish the listing details and generate your branded and MLS-safe URLs.
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Input
+            value={ytQuick}
+            onChange={(e) => setYtQuick(e.target.value)}
+            placeholder="https://youtube.com/shorts/… or https://youtu.be/…"
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyYouTubeQuick(); } }}
+          />
+          <Button type="button" onClick={applyYouTubeQuick}>Use this video</Button>
+        </div>
+        {v.primary_media_url && isYouTubeUrl(v.primary_media_url) && (
+          <p className="text-xs text-muted-foreground mt-2">
+            {isYouTubeShorts(v.primary_media_url) ? "Vertical video detected · " : ""}
+            Embed ready in the Media section below.
+          </p>
+        )}
+      </Card>
+
       <Card className="p-6">
         <h2 className="font-display text-2xl mb-4">Property</h2>
         <div className="grid md:grid-cols-2 gap-4">
@@ -145,7 +193,8 @@ export function ListingForm({
         </div>
       </Card>
 
-      <Card className="p-6">
+      <Card ref={mediaSectionRef} className={`p-6 scroll-mt-6 ${highlightMedia ? "ring-2 ring-foreground/40" : ""}`}>
+
         <h2 className="font-display text-2xl mb-4">Media</h2>
         <div className="grid md:grid-cols-2 gap-4">
           <div>

@@ -4,7 +4,9 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Building2, Eye, Users, Activity, Sparkles, ClipboardCheck } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Building2, Eye, Users, Activity, Sparkles, ClipboardCheck, Youtube } from "lucide-react";
+import { isYouTubeUrl } from "@/components/media-embed";
 import { useAuth } from "@/lib/use-auth";
 import { createDemoListing } from "@/lib/demo-listing";
 import { toast } from "sonner";
@@ -29,6 +31,16 @@ function Dashboard() {
   const navigate = useNavigate();
   const { companyId } = useAuth();
   const [creating, setCreating] = useState(false);
+  const [ytUrl, setYtUrl] = useState("");
+
+  function startSmartTour() {
+    const raw = ytUrl.trim();
+    if (!raw) { toast.error("Paste a YouTube or Shorts URL first"); return; }
+    if (!isYouTubeUrl(raw)) { toast.error("That doesn't look like a YouTube URL"); return; }
+    navigate({ to: "/create-listing", search: { yt: raw } });
+  }
+
+
 
   const { data, refetch } = useQuery({
     queryKey: ["dashboard"],
@@ -84,6 +96,32 @@ function Dashboard() {
           </Button>
         </div>
       </div>
+
+      <Card className="p-6 mb-6 border-foreground/20 bg-muted/30">
+        <div className="flex items-start gap-3 mb-3">
+          <Youtube className="h-6 w-6 mt-0.5" />
+          <div>
+            <h2 className="font-display text-2xl">Turn a YouTube video into a smart MLS-safe tour</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Paste a YouTube or Shorts link, then finish the listing details in the normal create flow.
+            </p>
+            <p className="text-xs text-muted-foreground mt-2 italic">
+              Instead of pasting a raw YouTube link into MLS, paste your MLS-safe SmartTourOS link. Same video, better presentation, tracking, and seller reporting.
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Input
+            value={ytUrl}
+            onChange={(e) => setYtUrl(e.target.value)}
+            placeholder="Paste YouTube or Shorts URL"
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); startSmartTour(); } }}
+          />
+          <Button onClick={startSmartTour}>Start smart tour</Button>
+        </div>
+      </Card>
+
+
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon={Building2} label="Total listings" value={listings.length} />

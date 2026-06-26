@@ -40,6 +40,15 @@ export function youTubeEmbedUrl(id: string): string {
   return `https://www.youtube.com/embed/${id}`;
 }
 
+// Normalize any YouTube/Shorts URL to a canonical form with the video ID only —
+// strips si, feature, utm_*, and other tracking params.
+export function normalizeYouTubeUrl(url: string): string | null {
+  const id = extractYouTubeId(url);
+  if (!id) return null;
+  if (isYouTubeShorts(url)) return `https://www.youtube.com/shorts/${id}`;
+  return `https://www.youtube.com/watch?v=${id}`;
+}
+
 function vimeoId(url: string): string | null {
   const m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
   return m ? m[1] : null;

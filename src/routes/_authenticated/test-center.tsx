@@ -98,31 +98,20 @@ function TestCenter() {
     setDemoSlug(demo.slug);
     const { branded, unbranded } = tourUrls(demo.slug);
 
-    // 1 + 2: public URLs load
+    // 1 + 2: public URLs load (no credentials)
     const [b, u] = await Promise.all([checkUrl(branded), checkUrl(unbranded)]);
-    setTest("branded_loads", { status: b.ok ? "pass" : "fail", detail: b.detail });
-    setTest("unbranded_loads", { status: u.ok ? "pass" : "fail", detail: u.detail });
-
-    // 3-7: unbranded route nullifies PII before render. We verify by re-applying the same
-    // transform used in src/routes/u.$slug.tsx and asserting each field is null/empty.
-    const sanitized: Record<string, unknown> = {
-      agent_name: null, agent_phone: null, agent_email: null,
-      brokerage_name: null, brokerage_logo_url: null,
-    };
-    const piiMap: Record<string, (typeof PII_FIELDS)[number]> = {
-      strip_agent_name: "agent_name",
-      strip_agent_phone: "agent_phone",
-      strip_agent_email: "agent_email",
-      strip_brokerage_name: "brokerage_name",
-      strip_brokerage_logo: "brokerage_logo_url",
-    };
-    const [b, u] = await Promise.all([checkUrl(branded), checkUrl(unbranded)]);
-    setTest("branded_loads", { status: b.ok ? "pass" : "fail", detail: b.ok ? `HTTP ${b.detail.replace(/\D/g,'')}` : `BLOCKED — ${b.detail}. Public route is protected. This must be fixed before MLS/Zillow usage.` });
-    setTest("unbranded_loads", { status: u.ok ? "pass" : "fail", detail: u.ok ? `HTTP ${u.detail.replace(/\D/g,'')}` : `BLOCKED — ${u.detail}. Public route is protected. This must be fixed before MLS/Zillow usage.` });
+    setTest("branded_loads", {
+      status: b.ok ? "pass" : "fail",
+      detail: b.ok ? b.detail : `BLOCKED — ${b.detail}. Public route is protected. This must be fixed before MLS/Zillow usage.`,
+    });
+    setTest("unbranded_loads", {
+      status: u.ok ? "pass" : "fail",
+      detail: u.ok ? u.detail : `BLOCKED — ${u.detail}. Public route is protected. This must be fixed before MLS/Zillow usage.`,
+    });
 
     // 2b: anonymous PostgREST SELECT on the active listing (no Authorization header)
     const sel = await checkAnonSupabase(`listings?slug=eq.${demo.slug}&select=id,status`);
-    setTest("anon_select", { status: sel.ok ? "pass" : "fail", detail: sel.ok ? `HTTP ${sel.status}` : `HTTP ${sel.status} ${sel.body.slice(0,140)}` });
+    setTest("anon_select", { status: sel.ok ? "pass" : "fail", detail: sel.ok ? `HTTP ${sel.status}` : `HTTP ${sel.status} ${sel.body.slice(0, 140)}` });
 
     // 2c: anonymous PostgREST INSERT into events
     const ins0 = await checkAnonSupabase(`events`, {
@@ -134,7 +123,24 @@ function TestCenter() {
         visitor_hash: "anon-probe-" + crypto.randomUUID(),
       }),
     });
-    setTest("anon_insert", { status: ins0.ok ? "pass" : "fail", detail: ins0.ok ? `HTTP ${ins0.status}` : `HTTP ${ins0.status} ${ins0.body.slice(0,140)}` });
+    setTest("anon_insert", { status: ins0.ok ? "pass" : "fail", detail: ins0.ok ? `HTTP ${ins0.status}` : `HTTP ${ins0.status} ${ins0.body.slice(0, 140)}` });
+
+    // 3-7: unbranded route nullifies PII before render. Mirrors src/routes/u.$slug.tsx.
+    const sanitized: Record<string, unknown> = {
+      agent_name: null, agent_phone: null, agent_email: null,
+      brokerage_name: null, brokerage_logo_url: null,
+    };
+    const piiMap: Record<string, (typeof PII_FIELDS)[number]> = {
+      strip_agent_name: "agent_name",
+      strip_agent_phone: "agent_phone",
+      strip_agent_email: "agent_email",
+      strip_brokerage_name: "brokerage_name",
+      strip_brokerage_logo: "brokerage_logo_url",
+    };
+    for (const [tid, field] of Object.entries(piiMap)) {
+      const stripped = sanitized[field] == null;
+      setTest(tid, { status: stripped ? "pass" : "fail", detail: stripped ? "Field nullified before render" : "Field still present" });
+    }
 
     // 8: events recording — count events for this listing before, insert a test page_view, count after
     const before = await supabase

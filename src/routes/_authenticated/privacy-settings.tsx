@@ -60,6 +60,26 @@ function Privacy() {
           <Label>Privacy notice text</Label>
           <Textarea rows={3} value={p.privacy_notice_text ?? ""} onChange={(e) => set("privacy_notice_text", e.target.value)} />
         </div>
+      <Card className="p-6 space-y-5">
+        <p className="text-xs text-muted-foreground">
+          These fields are optional workspace-level overrides. If left blank, your public listing pages
+          will use the default SmartTourOS compliance pages.
+        </p>
+        <div>
+          <Label>Privacy policy URL</Label>
+          <Input value={p.privacy_policy_url ?? ""} onChange={(e) => set("privacy_policy_url", e.target.value)} placeholder={DEFAULT_PRIVACY_URL} />
+          <p className="text-xs text-muted-foreground mt-1">Default: <code className="font-mono">{DEFAULT_PRIVACY_URL}</code></p>
+        </div>
+        <div>
+          <Label>Terms URL</Label>
+          <Input value={p.terms_url ?? ""} onChange={(e) => set("terms_url", e.target.value)} placeholder={DEFAULT_TERMS_URL} />
+          <p className="text-xs text-muted-foreground mt-1">Default: <code className="font-mono">{DEFAULT_TERMS_URL}</code></p>
+        </div>
+        <div>
+          <Label>Privacy notice text</Label>
+          <Textarea rows={3} value={p.privacy_notice_text ?? ""} onChange={(e) => set("privacy_notice_text", e.target.value)} placeholder={DEFAULT_PRIVACY_NOTICE_TEXT} />
+          <p className="text-xs text-muted-foreground mt-1">If blank, the default notice is shown.</p>
+        </div>
         {[
           ["show_privacy_notice", "Show privacy notice on listing pages"],
           ["direct_mail_enabled", "Direct mail activation enabled"],

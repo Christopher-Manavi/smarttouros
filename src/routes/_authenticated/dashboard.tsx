@@ -100,16 +100,19 @@ function Dashboard() {
           ) : (
             <ul className="divide-y">
               {top.map((r) => (
-                <li key={r.listing!.id} className="py-3 flex justify-between items-center">
+                <li key={r.listing!.id} className="py-3 flex justify-between items-center gap-3">
                   <Link
-                    to="/listings/$id/analytics"
+                    to="/listings/$id/report"
                     params={{ id: r.listing!.id }}
-                    className="text-sm hover:underline"
+                    className="text-sm hover:underline flex-1 truncate"
                   >
                     {r.listing!.address}
                     <span className="text-muted-foreground"> · {r.listing!.city}, {r.listing!.state}</span>
                   </Link>
-                  <span className="font-mono text-sm">{r.views}</span>
+                  <span className="font-mono text-sm text-muted-foreground">{r.views}</span>
+                  <Link to="/listings/$id/report" params={{ id: r.listing!.id }}>
+                    <Button size="sm" variant="outline">View Report</Button>
+                  </Link>
                 </li>
               ))}
             </ul>

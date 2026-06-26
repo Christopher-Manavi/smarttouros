@@ -106,19 +106,28 @@ export function ListingForm({
     mediaSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  const [heroMeta, setHeroMeta] = useState<UploadResult | null>(null);
+  const [galleryMeta, setGalleryMeta] = useState<UploadResult[]>([]);
+
   async function onHero(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]; if (!f) return;
-    try { const url = await uploadFile(f, "hero"); update("hero_image_url", url); toast.success("Hero uploaded"); }
-    catch (err) { toast.error(err instanceof Error ? err.message : "Upload failed"); }
+    try {
+      const res = await uploadFile(f, "hero");
+      update("hero_image_url", res.url);
+      setHeroMeta(res);
+      toast.success(`Upload successful · ${res.filename}${res.width ? ` · ${res.width}×${res.height}` : ""}`);
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Upload failed"); }
   }
   async function onGallery(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []); if (!files.length) return;
     try {
-      const urls = await Promise.all(files.map((f) => uploadFile(f, "gallery")));
-      update("gallery_urls", [...v.gallery_urls, ...urls]);
-      toast.success(`${urls.length} image(s) added`);
+      const results = await Promise.all(files.map((f) => uploadFile(f, "gallery")));
+      update("gallery_urls", [...v.gallery_urls, ...results.map((r) => r.url)]);
+      setGalleryMeta((prev) => [...prev, ...results]);
+      toast.success(`${results.length} image(s) added`);
     } catch (err) { toast.error(err instanceof Error ? err.message : "Upload failed"); }
   }
+
 
   async function save() {
     if (!v.address.trim()) { toast.error("Address is required"); return; }

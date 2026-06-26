@@ -38,7 +38,7 @@ function ListingsIndex() {
     },
   });
 
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  // Canonical public base URL (never window.location.origin — that may be the editor preview).
 
   return (
     <div className="container-luxe py-10">

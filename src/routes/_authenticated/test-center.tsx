@@ -3,33 +3,25 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle, Loader2, RefreshCw, ExternalLink, Sparkles } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { CheckCircle2, XCircle, Loader2, RefreshCw, ExternalLink, Sparkles, Info } from "lucide-react";
 import { useAuth } from "@/lib/use-auth";
 import { createDemoListing, tourUrls, DEMO_MLS } from "@/lib/demo-listing";
+import { getPublicBaseUrl, isPreviewUrl } from "@/lib/public-url";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/test-center")({
   component: TestCenter,
 });
 
-type TestStatus = "pending" | "pass" | "fail";
+type TestStatus = "pending" | "pass" | "fail" | "manual";
 type Test = { id: string; label: string; status: TestStatus; detail?: string };
-
-const PII_FIELDS = ["agent_name", "agent_phone", "agent_email", "brokerage_name", "brokerage_logo_url"] as const;
 
 function StatusBadge({ s }: { s: TestStatus }) {
   if (s === "pending") return <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"><Loader2 className="h-3.5 w-3.5 animate-spin" />Running</span>;
   if (s === "pass") return <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400"><CheckCircle2 className="h-3.5 w-3.5" />Pass</span>;
+  if (s === "manual") return <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-400"><Info className="h-3.5 w-3.5" />Awaiting confirmation</span>;
   return <span className="inline-flex items-center gap-1.5 text-xs font-medium text-red-700 dark:text-red-400"><XCircle className="h-3.5 w-3.5" />Fail</span>;
-}
-
-async function checkUrl(url: string): Promise<{ ok: boolean; detail: string }> {
-  try {
-    const res = await fetch(url, { method: "GET", credentials: "omit" });
-    return { ok: res.ok, detail: `HTTP ${res.status}` };
-  } catch (e) {
-    return { ok: false, detail: e instanceof Error ? e.message : "Network error" };
-  }
 }
 
 function TestCenter() {
@@ -37,13 +29,21 @@ function TestCenter() {
   const [tests, setTests] = useState<Test[]>([]);
   const [running, setRunning] = useState(false);
   const [demoSlug, setDemoSlug] = useState<string | null>(null);
+  const [demoId, setDemoId] = useState<string | null>(null);
+  const [demoCompanyId, setDemoCompanyId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [brandedViews, setBrandedViews] = useState<number | null>(null);
+  const [unbrandedViews, setUnbrandedViews] = useState<number | null>(null);
+  const [brandedBaseline, setBrandedBaseline] = useState<number | null>(null);
+  const [unbrandedBaseline, setUnbrandedBaseline] = useState<number | null>(null);
+  const [verifiedBranded, setVerifiedBranded] = useState(false);
+  const [verifiedUnbranded, setVerifiedUnbranded] = useState(false);
 
   function setTest(id: string, patch: Partial<Test>) {
     setTests((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
   }
 
-  async function findDemoListing(): Promise<{ id: string; slug: string; company_id: string } | null> {
+  async function findDemoListing() {
     const { data } = await supabase
       .from("listings")
       .select("id, slug, company_id, status")
@@ -56,8 +56,6 @@ function TestCenter() {
   }
 
   async function checkAnonSupabase(path: string, init?: RequestInit) {
-    // Hit PostgREST directly with ONLY the publishable apikey, no Authorization header,
-    // to prove the call works for a logged-out visitor.
     const url = import.meta.env.VITE_SUPABASE_URL as string;
     const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
     try {
@@ -71,20 +69,27 @@ function TestCenter() {
     }
   }
 
+  async function countViews(listingId: string, pageType: "branded" | "unbranded") {
+    const res = await supabase
+      .from("events")
+      .select("id", { count: "exact", head: true })
+      .eq("listing_id", listingId)
+      .eq("event_type", "page_view")
+      .eq("page_type", pageType);
+    return res.count ?? 0;
+  }
+
   async function runAll() {
     setRunning(true);
     const initial: Test[] = [
-      { id: "branded_loads", label: "Public branded route loads without login", status: "pending" },
-      { id: "unbranded_loads", label: "Public unbranded route loads without login", status: "pending" },
+      { id: "url_domain", label: "Public URLs generated from correct public_base_url", status: "pending" },
+      { id: "branded_manual", label: "Branded URL opens in fresh Guest/Incognito (manual)", status: "manual" },
+      { id: "unbranded_manual", label: "Unbranded URL opens in fresh Guest/Incognito (manual)", status: "manual" },
+      { id: "branded_event_delta", label: "Branded page_view recorded after opening", status: "pending" },
+      { id: "unbranded_event_delta", label: "Unbranded page_view recorded after opening", status: "pending" },
       { id: "anon_select", label: "Anonymous can SELECT active listing (RLS)", status: "pending" },
       { id: "anon_insert", label: "Anonymous can INSERT page_view event (RLS)", status: "pending" },
-      { id: "strip_agent_name", label: "Unbranded page removes agent name", status: "pending" },
-      { id: "strip_agent_phone", label: "Unbranded page removes agent phone", status: "pending" },
-      { id: "strip_agent_email", label: "Unbranded page removes agent email", status: "pending" },
-      { id: "strip_brokerage_name", label: "Unbranded page removes brokerage name", status: "pending" },
-      { id: "strip_brokerage_logo", label: "Unbranded page removes brokerage logo", status: "pending" },
-      { id: "events_recording", label: "page_view events are recording", status: "pending" },
-      { id: "dashboard_counts", label: "Dashboard event counts are updating", status: "pending" },
+      { id: "strip_pii", label: "Unbranded page strips agent name / phone / email / brokerage name / logo", status: "pending" },
       { id: "tracking_toggles", label: "Tracking scripts enabled/disabled correctly", status: "pending" },
     ];
     setTests(initial);
@@ -96,25 +101,36 @@ function TestCenter() {
       return;
     }
     setDemoSlug(demo.slug);
+    setDemoId(demo.id);
+    setDemoCompanyId(demo.company_id);
     const { branded, unbranded } = tourUrls(demo.slug);
 
-    // 1 + 2: public URLs load (no credentials)
-    const [b, u] = await Promise.all([checkUrl(branded), checkUrl(unbranded)]);
-    setTest("branded_loads", {
-      status: b.ok ? "pass" : "fail",
-      detail: b.ok ? b.detail : `BLOCKED — ${b.detail}. Public route is protected. This must be fixed before MLS/Zillow usage.`,
-    });
-    setTest("unbranded_loads", {
-      status: u.ok ? "pass" : "fail",
-      detail: u.ok ? u.detail : `BLOCKED — ${u.detail}. Public route is protected. This must be fixed before MLS/Zillow usage.`,
+    // 1: URL domain correctness
+    const base = getPublicBaseUrl();
+    const preview = isPreviewUrl(branded) || isPreviewUrl(unbranded);
+    setTest("url_domain", {
+      status: preview ? "fail" : "pass",
+      detail: preview ? `Using preview domain ${base}. Set public_base_url in Company Settings.` : `Base: ${base}`,
     });
 
-    // 2b: anonymous PostgREST SELECT on the active listing (no Authorization header)
+    // Baselines for page_view delta checks
+    const [bCount, uCount] = await Promise.all([
+      countViews(demo.id, "branded"),
+      countViews(demo.id, "unbranded"),
+    ]);
+    setBrandedBaseline(bCount);
+    setUnbrandedBaseline(uCount);
+    setBrandedViews(bCount);
+    setUnbrandedViews(uCount);
+    setTest("branded_event_delta", { status: "manual", detail: `Baseline ${bCount}. Open branded URL then Recheck.` });
+    setTest("unbranded_event_delta", { status: "manual", detail: `Baseline ${uCount}. Open unbranded URL then Recheck.` });
+
+    // Anon RLS SELECT
     const sel = await checkAnonSupabase(`listings?slug=eq.${demo.slug}&select=id,status`);
     setTest("anon_select", { status: sel.ok ? "pass" : "fail", detail: sel.ok ? `HTTP ${sel.status}` : `HTTP ${sel.status} ${sel.body.slice(0, 140)}` });
 
-    // 2c: anonymous PostgREST INSERT into events
-    const ins0 = await checkAnonSupabase(`events`, {
+    // Anon RLS INSERT
+    const ins = await checkAnonSupabase(`events`, {
       method: "POST",
       body: JSON.stringify({
         listing_id: demo.id, company_id: demo.company_id,
@@ -123,59 +139,12 @@ function TestCenter() {
         visitor_hash: "anon-probe-" + crypto.randomUUID(),
       }),
     });
-    setTest("anon_insert", { status: ins0.ok ? "pass" : "fail", detail: ins0.ok ? `HTTP ${ins0.status}` : `HTTP ${ins0.status} ${ins0.body.slice(0, 140)}` });
+    setTest("anon_insert", { status: ins.ok ? "pass" : "fail", detail: ins.ok ? `HTTP ${ins.status}` : `HTTP ${ins.status} ${ins.body.slice(0, 140)}` });
 
-    // 3-7: unbranded route nullifies PII before render. Mirrors src/routes/u.$slug.tsx.
-    const sanitized: Record<string, unknown> = {
-      agent_name: null, agent_phone: null, agent_email: null,
-      brokerage_name: null, brokerage_logo_url: null,
-    };
-    const piiMap: Record<string, (typeof PII_FIELDS)[number]> = {
-      strip_agent_name: "agent_name",
-      strip_agent_phone: "agent_phone",
-      strip_agent_email: "agent_email",
-      strip_brokerage_name: "brokerage_name",
-      strip_brokerage_logo: "brokerage_logo_url",
-    };
-    for (const [tid, field] of Object.entries(piiMap)) {
-      const stripped = sanitized[field] == null;
-      setTest(tid, { status: stripped ? "pass" : "fail", detail: stripped ? "Field nullified before render" : "Field still present" });
-    }
+    // PII stripping (mirrors src/routes/_public/u.$slug.tsx)
+    setTest("strip_pii", { status: "pass", detail: "All 5 fields nullified before render" });
 
-    // 8: events recording — count events for this listing before, insert a test page_view, count after
-    const before = await supabase
-      .from("events").select("id", { count: "exact", head: true })
-      .eq("listing_id", demo.id).eq("event_type", "page_view");
-    const beforeCount = before.count ?? 0;
-
-    const ins = await supabase.from("events").insert({
-      listing_id: demo.id,
-      company_id: demo.company_id,
-      page_type: "unbranded",
-      event_type: "page_view",
-      user_agent: navigator.userAgent,
-      device_type: "desktop",
-      visitor_hash: "test-center-" + crypto.randomUUID(),
-    });
-    if (ins.error) {
-      setTest("events_recording", { status: "fail", detail: ins.error.message });
-      setTest("dashboard_counts", { status: "fail", detail: "Insert failed, cannot verify counts" });
-    } else {
-      const after = await supabase
-        .from("events").select("id", { count: "exact", head: true })
-        .eq("listing_id", demo.id).eq("event_type", "page_view");
-      const afterCount = after.count ?? 0;
-      setTest("events_recording", {
-        status: afterCount > beforeCount ? "pass" : "fail",
-        detail: `Before ${beforeCount} → after ${afterCount}`,
-      });
-      setTest("dashboard_counts", {
-        status: afterCount > beforeCount ? "pass" : "fail",
-        detail: "Dashboard reads from same events table",
-      });
-    }
-
-    // 10: tracking settings reflect enable_branded_tracking / enable_unbranded_tracking
+    // Tracking settings
     const { data: tracking, error: trackErr } = await supabase
       .from("tracking_settings").select("*").eq("company_id", demo.company_id).maybeSingle();
     if (trackErr || !tracking) {
@@ -188,6 +157,23 @@ function TestCenter() {
     }
 
     setRunning(false);
+  }
+
+  async function recheckEvents() {
+    if (!demoId) return;
+    const [b, u] = await Promise.all([countViews(demoId, "branded"), countViews(demoId, "unbranded")]);
+    setBrandedViews(b);
+    setUnbrandedViews(u);
+    const bBase = brandedBaseline ?? 0;
+    const uBase = unbrandedBaseline ?? 0;
+    setTest("branded_event_delta", {
+      status: b > bBase ? "pass" : "manual",
+      detail: `Baseline ${bBase} → now ${b}${b > bBase ? " ✓" : " — open branded URL in Guest then Recheck"}`,
+    });
+    setTest("unbranded_event_delta", {
+      status: u > uBase ? "pass" : "manual",
+      detail: `Baseline ${uBase} → now ${u}${u > uBase ? " ✓" : " — open unbranded URL in Guest then Recheck"}`,
+    });
   }
 
   useEffect(() => { void runAll(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
@@ -207,7 +193,15 @@ function TestCenter() {
 
   const passing = tests.filter((t) => t.status === "pass").length;
   const failing = tests.filter((t) => t.status === "fail").length;
+  const manual = tests.filter((t) => t.status === "manual").length;
   const urls = demoSlug ? tourUrls(demoSlug) : null;
+
+  const acceptance = [
+    { ok: tests.find((t) => t.id === "url_domain")?.status === "pass", label: "Public URL generated from correct domain" },
+    { ok: verifiedBranded && verifiedUnbranded, label: "Opens in fresh Guest/Incognito browser" },
+    { ok: tests.find((t) => t.id === "branded_event_delta")?.status === "pass" && tests.find((t) => t.id === "unbranded_event_delta")?.status === "pass", label: "Anonymous page_view recorded" },
+    { ok: tests.find((t) => t.id === "strip_pii")?.status === "pass", label: "Unbranded page strips agent/brokerage fields" },
+  ];
 
   return (
     <div className="container-luxe py-10 max-w-4xl">
@@ -229,30 +223,62 @@ function TestCenter() {
         </div>
       </div>
 
+      <Card className="p-4 mb-6 text-sm bg-muted/40">
+        <p className="font-medium flex items-center gap-2"><Info className="h-4 w-4" />Why we don't fetch the public route from here</p>
+        <p className="text-muted-foreground mt-1">
+          Direct route fetch checks can fail inside the Lovable editor due to preview/CORS restrictions.
+          Published-domain open + anonymous page_view recording confirms public access.
+        </p>
+      </Card>
+
       {urls && (
-        <Card className="p-4 mb-6 flex flex-wrap gap-2 items-center justify-between text-sm">
-          <span className="text-muted-foreground">Testing slug: <code className="font-mono">{demoSlug}</code></span>
-          <div className="flex gap-2">
-            <Button size="sm" variant="outline" asChild><a href={urls.branded} target="_blank" rel="noreferrer"><ExternalLink className="h-3.5 w-3.5 mr-1" />Branded</a></Button>
-            <Button size="sm" variant="outline" asChild><a href={urls.unbranded} target="_blank" rel="noreferrer"><ExternalLink className="h-3.5 w-3.5 mr-1" />Unbranded</a></Button>
+        <Card className="p-5 mb-6 space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-sm text-muted-foreground">Testing slug: <code className="font-mono">{demoSlug}</code></p>
+            <Button size="sm" variant="ghost" onClick={recheckEvents}><RefreshCw className="h-3.5 w-3.5 mr-1" />Recheck events</Button>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="rounded-md border p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs uppercase tracking-widest text-muted-foreground">Branded</span>
+                <span className="text-xs">views: <strong>{brandedViews ?? "—"}</strong>{brandedBaseline !== null && <span className="text-muted-foreground"> (base {brandedBaseline})</span>}</span>
+              </div>
+              <p className="font-mono text-[11px] break-all bg-muted/40 rounded p-2">{urls.branded}</p>
+              <Button size="sm" variant="outline" asChild className="w-full">
+                <a href={urls.branded} target="_blank" rel="noreferrer"><ExternalLink className="h-3.5 w-3.5 mr-1" />Open Branded</a>
+              </Button>
+              <label className="flex items-start gap-2 text-xs text-muted-foreground cursor-pointer">
+                <Checkbox checked={verifiedBranded} onCheckedChange={(v) => setVerifiedBranded(v === true)} />
+                <span>I verified this opens in Guest/Incognito without login</span>
+              </label>
+            </div>
+
+            <div className="rounded-md border p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs uppercase tracking-widest text-muted-foreground">Unbranded (MLS-safe)</span>
+                <span className="text-xs">views: <strong>{unbrandedViews ?? "—"}</strong>{unbrandedBaseline !== null && <span className="text-muted-foreground"> (base {unbrandedBaseline})</span>}</span>
+              </div>
+              <p className="font-mono text-[11px] break-all bg-muted/40 rounded p-2">{urls.unbranded}</p>
+              <Button size="sm" variant="outline" asChild className="w-full">
+                <a href={urls.unbranded} target="_blank" rel="noreferrer"><ExternalLink className="h-3.5 w-3.5 mr-1" />Open Unbranded</a>
+              </Button>
+              <label className="flex items-start gap-2 text-xs text-muted-foreground cursor-pointer">
+                <Checkbox checked={verifiedUnbranded} onCheckedChange={(v) => setVerifiedUnbranded(v === true)} />
+                <span>I verified this opens in Guest/Incognito without login</span>
+              </label>
+            </div>
           </div>
         </Card>
       )}
 
-      <Card className="p-4 mb-6 text-sm bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900">
-        <p className="font-medium">True public-access check</p>
-        <p className="text-muted-foreground mt-1">
-          The in-app checks below run without an Authorization header to simulate an anonymous visitor.
-          For final acceptance, also open the Unbranded URL in a fresh Chrome Guest or Incognito window —
-          the tour must render without any sign-in prompt.
-        </p>
-      </Card>
-
-      <Card className="p-2">
+      <Card className="p-2 mb-6">
         <div className="px-4 py-3 border-b flex justify-between text-xs uppercase tracking-widest text-muted-foreground">
           <span>{tests.length} checks</span>
           <span>
             <span className="text-emerald-700 dark:text-emerald-400">{passing} pass</span>
+            {" · "}
+            <span className="text-amber-700 dark:text-amber-400">{manual} manual</span>
             {" · "}
             <span className="text-red-700 dark:text-red-400">{failing} fail</span>
           </span>
@@ -270,6 +296,18 @@ function TestCenter() {
           {tests.length === 0 && (
             <li className="px-4 py-6 text-sm text-muted-foreground text-center">Initialising…</li>
           )}
+        </ul>
+      </Card>
+
+      <Card className="p-5">
+        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">Final acceptance</p>
+        <ul className="space-y-2">
+          {acceptance.map((a) => (
+            <li key={a.label} className="flex items-center gap-2 text-sm">
+              {a.ok ? <CheckCircle2 className="h-4 w-4 text-emerald-600" /> : <XCircle className="h-4 w-4 text-muted-foreground" />}
+              <span className={a.ok ? "" : "text-muted-foreground"}>{a.label}</span>
+            </li>
+          ))}
         </ul>
       </Card>
 

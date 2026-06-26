@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Download, CheckCheck, BanIcon, Send } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/visitors")({
+export const Route = createFileRoute("/_authenticated/resolved-visitors")({
   component: Visitors,
 });
 

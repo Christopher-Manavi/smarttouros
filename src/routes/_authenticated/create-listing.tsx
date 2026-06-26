@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useAuth } from "@/lib/use-auth";
 import { EMPTY_LISTING, ListingForm } from "@/components/listing-form";
 
-export const Route = createFileRoute("/_authenticated/listings/new")({
+export const Route = createFileRoute("/_authenticated/create-listing")({
   component: NewListing,
 });
 

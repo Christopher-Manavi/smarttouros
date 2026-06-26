@@ -10,25 +10,30 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as USlugRouteImport } from './routes/u.$slug'
-import { Route as TourSlugRouteImport } from './routes/tour.$slug'
-import { Route as AuthenticatedVisitorsRouteImport } from './routes/_authenticated/visitors'
 import { Route as AuthenticatedTrackingRouteImport } from './routes/_authenticated/tracking'
 import { Route as AuthenticatedTestCenterRouteImport } from './routes/_authenticated/test-center'
+import { Route as AuthenticatedResolvedVisitorsRouteImport } from './routes/_authenticated/resolved-visitors'
 import { Route as AuthenticatedPrivacyRouteImport } from './routes/_authenticated/privacy'
 import { Route as AuthenticatedDemoRouteImport } from './routes/_authenticated/demo'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCreateListingRouteImport } from './routes/_authenticated/create-listing'
 import { Route as AuthenticatedCompanyRouteImport } from './routes/_authenticated/company'
 import { Route as AuthenticatedListingsIndexRouteImport } from './routes/_authenticated/listings.index'
-import { Route as AuthenticatedListingsNewRouteImport } from './routes/_authenticated/listings.new'
+import { Route as PublicUSlugRouteImport } from './routes/_public/u.$slug'
+import { Route as PublicTourSlugRouteImport } from './routes/_public/tour.$slug'
 import { Route as AuthenticatedListingsIdRouteImport } from './routes/_authenticated/listings.$id'
 import { Route as AuthenticatedListingsIdAnalyticsRouteImport } from './routes/_authenticated/listings.$id.analytics'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PublicRouteRoute = PublicRouteRouteImport.update({
+  id: '/_public',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -40,21 +45,6 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const USlugRoute = USlugRouteImport.update({
-  id: '/u/$slug',
-  path: '/u/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TourSlugRoute = TourSlugRouteImport.update({
-  id: '/tour/$slug',
-  path: '/tour/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedVisitorsRoute = AuthenticatedVisitorsRouteImport.update({
-  id: '/visitors',
-  path: '/visitors',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedTrackingRoute = AuthenticatedTrackingRouteImport.update({
   id: '/tracking',
   path: '/tracking',
@@ -65,6 +55,12 @@ const AuthenticatedTestCenterRoute = AuthenticatedTestCenterRouteImport.update({
   path: '/test-center',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedResolvedVisitorsRoute =
+  AuthenticatedResolvedVisitorsRouteImport.update({
+    id: '/resolved-visitors',
+    path: '/resolved-visitors',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedPrivacyRoute = AuthenticatedPrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -80,6 +76,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCreateListingRoute =
+  AuthenticatedCreateListingRouteImport.update({
+    id: '/create-listing',
+    path: '/create-listing',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCompanyRoute = AuthenticatedCompanyRouteImport.update({
   id: '/company',
   path: '/company',
@@ -91,12 +93,16 @@ const AuthenticatedListingsIndexRoute =
     path: '/listings/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedListingsNewRoute =
-  AuthenticatedListingsNewRouteImport.update({
-    id: '/listings/new',
-    path: '/listings/new',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
+const PublicUSlugRoute = PublicUSlugRouteImport.update({
+  id: '/u/$slug',
+  path: '/u/$slug',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicTourSlugRoute = PublicTourSlugRouteImport.update({
+  id: '/tour/$slug',
+  path: '/tour/$slug',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
 const AuthenticatedListingsIdRoute = AuthenticatedListingsIdRouteImport.update({
   id: '/listings/$id',
   path: '/listings/$id',
@@ -113,16 +119,16 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/company': typeof AuthenticatedCompanyRoute
+  '/create-listing': typeof AuthenticatedCreateListingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/demo': typeof AuthenticatedDemoRoute
   '/privacy': typeof AuthenticatedPrivacyRoute
+  '/resolved-visitors': typeof AuthenticatedResolvedVisitorsRoute
   '/test-center': typeof AuthenticatedTestCenterRoute
   '/tracking': typeof AuthenticatedTrackingRoute
-  '/visitors': typeof AuthenticatedVisitorsRoute
-  '/tour/$slug': typeof TourSlugRoute
-  '/u/$slug': typeof USlugRoute
   '/listings/$id': typeof AuthenticatedListingsIdRouteWithChildren
-  '/listings/new': typeof AuthenticatedListingsNewRoute
+  '/tour/$slug': typeof PublicTourSlugRoute
+  '/u/$slug': typeof PublicUSlugRoute
   '/listings/': typeof AuthenticatedListingsIndexRoute
   '/listings/$id/analytics': typeof AuthenticatedListingsIdAnalyticsRoute
 }
@@ -130,16 +136,16 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/company': typeof AuthenticatedCompanyRoute
+  '/create-listing': typeof AuthenticatedCreateListingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/demo': typeof AuthenticatedDemoRoute
   '/privacy': typeof AuthenticatedPrivacyRoute
+  '/resolved-visitors': typeof AuthenticatedResolvedVisitorsRoute
   '/test-center': typeof AuthenticatedTestCenterRoute
   '/tracking': typeof AuthenticatedTrackingRoute
-  '/visitors': typeof AuthenticatedVisitorsRoute
-  '/tour/$slug': typeof TourSlugRoute
-  '/u/$slug': typeof USlugRoute
   '/listings/$id': typeof AuthenticatedListingsIdRouteWithChildren
-  '/listings/new': typeof AuthenticatedListingsNewRoute
+  '/tour/$slug': typeof PublicTourSlugRoute
+  '/u/$slug': typeof PublicUSlugRoute
   '/listings': typeof AuthenticatedListingsIndexRoute
   '/listings/$id/analytics': typeof AuthenticatedListingsIdAnalyticsRoute
 }
@@ -147,18 +153,19 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/_public': typeof PublicRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/company': typeof AuthenticatedCompanyRoute
+  '/_authenticated/create-listing': typeof AuthenticatedCreateListingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/demo': typeof AuthenticatedDemoRoute
   '/_authenticated/privacy': typeof AuthenticatedPrivacyRoute
+  '/_authenticated/resolved-visitors': typeof AuthenticatedResolvedVisitorsRoute
   '/_authenticated/test-center': typeof AuthenticatedTestCenterRoute
   '/_authenticated/tracking': typeof AuthenticatedTrackingRoute
-  '/_authenticated/visitors': typeof AuthenticatedVisitorsRoute
-  '/tour/$slug': typeof TourSlugRoute
-  '/u/$slug': typeof USlugRoute
   '/_authenticated/listings/$id': typeof AuthenticatedListingsIdRouteWithChildren
-  '/_authenticated/listings/new': typeof AuthenticatedListingsNewRoute
+  '/_public/tour/$slug': typeof PublicTourSlugRoute
+  '/_public/u/$slug': typeof PublicUSlugRoute
   '/_authenticated/listings/': typeof AuthenticatedListingsIndexRoute
   '/_authenticated/listings/$id/analytics': typeof AuthenticatedListingsIdAnalyticsRoute
 }
@@ -168,16 +175,16 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/company'
+    | '/create-listing'
     | '/dashboard'
     | '/demo'
     | '/privacy'
+    | '/resolved-visitors'
     | '/test-center'
     | '/tracking'
-    | '/visitors'
+    | '/listings/$id'
     | '/tour/$slug'
     | '/u/$slug'
-    | '/listings/$id'
-    | '/listings/new'
     | '/listings/'
     | '/listings/$id/analytics'
   fileRoutesByTo: FileRoutesByTo
@@ -185,34 +192,35 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/company'
+    | '/create-listing'
     | '/dashboard'
     | '/demo'
     | '/privacy'
+    | '/resolved-visitors'
     | '/test-center'
     | '/tracking'
-    | '/visitors'
+    | '/listings/$id'
     | '/tour/$slug'
     | '/u/$slug'
-    | '/listings/$id'
-    | '/listings/new'
     | '/listings'
     | '/listings/$id/analytics'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/_public'
     | '/auth'
     | '/_authenticated/company'
+    | '/_authenticated/create-listing'
     | '/_authenticated/dashboard'
     | '/_authenticated/demo'
     | '/_authenticated/privacy'
+    | '/_authenticated/resolved-visitors'
     | '/_authenticated/test-center'
     | '/_authenticated/tracking'
-    | '/_authenticated/visitors'
-    | '/tour/$slug'
-    | '/u/$slug'
     | '/_authenticated/listings/$id'
-    | '/_authenticated/listings/new'
+    | '/_public/tour/$slug'
+    | '/_public/u/$slug'
     | '/_authenticated/listings/'
     | '/_authenticated/listings/$id/analytics'
   fileRoutesById: FileRoutesById
@@ -220,9 +228,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  PublicRouteRoute: typeof PublicRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  TourSlugRoute: typeof TourSlugRoute
-  USlugRoute: typeof USlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -232,6 +239,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_public': {
+      id: '/_public'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof PublicRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -248,27 +262,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/u/$slug': {
-      id: '/u/$slug'
-      path: '/u/$slug'
-      fullPath: '/u/$slug'
-      preLoaderRoute: typeof USlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/tour/$slug': {
-      id: '/tour/$slug'
-      path: '/tour/$slug'
-      fullPath: '/tour/$slug'
-      preLoaderRoute: typeof TourSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/visitors': {
-      id: '/_authenticated/visitors'
-      path: '/visitors'
-      fullPath: '/visitors'
-      preLoaderRoute: typeof AuthenticatedVisitorsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/tracking': {
       id: '/_authenticated/tracking'
       path: '/tracking'
@@ -281,6 +274,13 @@ declare module '@tanstack/react-router' {
       path: '/test-center'
       fullPath: '/test-center'
       preLoaderRoute: typeof AuthenticatedTestCenterRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/resolved-visitors': {
+      id: '/_authenticated/resolved-visitors'
+      path: '/resolved-visitors'
+      fullPath: '/resolved-visitors'
+      preLoaderRoute: typeof AuthenticatedResolvedVisitorsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/privacy': {
@@ -304,6 +304,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/create-listing': {
+      id: '/_authenticated/create-listing'
+      path: '/create-listing'
+      fullPath: '/create-listing'
+      preLoaderRoute: typeof AuthenticatedCreateListingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/company': {
       id: '/_authenticated/company'
       path: '/company'
@@ -318,12 +325,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedListingsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/listings/new': {
-      id: '/_authenticated/listings/new'
-      path: '/listings/new'
-      fullPath: '/listings/new'
-      preLoaderRoute: typeof AuthenticatedListingsNewRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/_public/u/$slug': {
+      id: '/_public/u/$slug'
+      path: '/u/$slug'
+      fullPath: '/u/$slug'
+      preLoaderRoute: typeof PublicUSlugRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/tour/$slug': {
+      id: '/_public/tour/$slug'
+      path: '/tour/$slug'
+      fullPath: '/tour/$slug'
+      preLoaderRoute: typeof PublicTourSlugRouteImport
+      parentRoute: typeof PublicRouteRoute
     }
     '/_authenticated/listings/$id': {
       id: '/_authenticated/listings/$id'
@@ -359,39 +373,52 @@ const AuthenticatedListingsIdRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedCompanyRoute: typeof AuthenticatedCompanyRoute
+  AuthenticatedCreateListingRoute: typeof AuthenticatedCreateListingRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDemoRoute: typeof AuthenticatedDemoRoute
   AuthenticatedPrivacyRoute: typeof AuthenticatedPrivacyRoute
+  AuthenticatedResolvedVisitorsRoute: typeof AuthenticatedResolvedVisitorsRoute
   AuthenticatedTestCenterRoute: typeof AuthenticatedTestCenterRoute
   AuthenticatedTrackingRoute: typeof AuthenticatedTrackingRoute
-  AuthenticatedVisitorsRoute: typeof AuthenticatedVisitorsRoute
   AuthenticatedListingsIdRoute: typeof AuthenticatedListingsIdRouteWithChildren
-  AuthenticatedListingsNewRoute: typeof AuthenticatedListingsNewRoute
   AuthenticatedListingsIndexRoute: typeof AuthenticatedListingsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCompanyRoute: AuthenticatedCompanyRoute,
+  AuthenticatedCreateListingRoute: AuthenticatedCreateListingRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDemoRoute: AuthenticatedDemoRoute,
   AuthenticatedPrivacyRoute: AuthenticatedPrivacyRoute,
+  AuthenticatedResolvedVisitorsRoute: AuthenticatedResolvedVisitorsRoute,
   AuthenticatedTestCenterRoute: AuthenticatedTestCenterRoute,
   AuthenticatedTrackingRoute: AuthenticatedTrackingRoute,
-  AuthenticatedVisitorsRoute: AuthenticatedVisitorsRoute,
   AuthenticatedListingsIdRoute: AuthenticatedListingsIdRouteWithChildren,
-  AuthenticatedListingsNewRoute: AuthenticatedListingsNewRoute,
   AuthenticatedListingsIndexRoute: AuthenticatedListingsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface PublicRouteRouteChildren {
+  PublicTourSlugRoute: typeof PublicTourSlugRoute
+  PublicUSlugRoute: typeof PublicUSlugRoute
+}
+
+const PublicRouteRouteChildren: PublicRouteRouteChildren = {
+  PublicTourSlugRoute: PublicTourSlugRoute,
+  PublicUSlugRoute: PublicUSlugRoute,
+}
+
+const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
+  PublicRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  PublicRouteRoute: PublicRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  TourSlugRoute: TourSlugRoute,
-  USlugRoute: USlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

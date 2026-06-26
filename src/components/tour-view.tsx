@@ -102,9 +102,16 @@ export function TourView({
         <div
           onClick={() => recordEvent({ listingId: listing.id, companyId: listing.company_id, pageType: mode, eventType: "media_click" })}
         >
-          <MediaEmbed type={listing.primary_media_type} url={listing.primary_media_url} />
+          {listing.primary_media_url ? (
+            <MediaEmbed type={listing.primary_media_type} url={listing.primary_media_url} />
+          ) : listing.hero_image_url ? (
+            <div className="aspect-video w-full overflow-hidden">
+              <SmartImage src={listing.hero_image_url} alt="" className="w-full h-full object-cover" loading="eager" hideOnError />
+            </div>
+          ) : null}
         </div>
       </section>
+
 
       <section className="container-luxe py-12 md:py-16">
         {showAddress ? (

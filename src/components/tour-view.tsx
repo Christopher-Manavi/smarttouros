@@ -213,21 +213,36 @@ export function TourView({
         </section>
       )}
 
+      <TourFooter privacy={privacy} company={company} unbranded={unbranded} />
+    </div>
+  );
+}
+
+function TourFooter({ privacy, company, unbranded }: { privacy: Privacy | null; company: Company | null; unbranded: boolean }) {
+  const c = resolveCompliance(privacy);
+  const showNotice = privacy?.show_privacy_notice !== false; // default ON
+  return (
+    <>
       <footer className="border-t py-10 text-xs text-muted-foreground">
         <div className="container-luxe flex flex-wrap justify-between gap-3">
           <span>{unbranded ? "Virtual tour" : (company?.name ?? "")}</span>
           <div className="flex gap-4">
-            {privacy?.privacy_policy_url && <a href={privacy.privacy_policy_url} target="_blank" rel="noreferrer">Privacy</a>}
-            {!unbranded && privacy?.terms_url && <a href={privacy.terms_url} target="_blank" rel="noreferrer">Terms</a>}
+            <a href={c.privacyUrl} target="_blank" rel="noreferrer">Privacy</a>
+            <a href={c.cookiesUrl} target="_blank" rel="noreferrer">Cookies</a>
+            <a href={c.privacyChoicesUrl} target="_blank" rel="noreferrer">Privacy Choices</a>
+            <a href={c.termsUrl} target="_blank" rel="noreferrer">Terms</a>
           </div>
         </div>
       </footer>
 
-      {privacy?.show_privacy_notice && tracking?.enable_privacy_banner && (
+      {showNotice && (
         <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:max-w-md bg-foreground text-background p-4 rounded shadow-lg text-xs">
-          {privacy.privacy_notice_text}
+          {c.noticeText}
         </div>
       )}
+    </>
+  );
+}
     </div>
   );
 }

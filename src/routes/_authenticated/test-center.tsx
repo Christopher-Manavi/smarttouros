@@ -55,11 +55,29 @@ function TestCenter() {
     return data ?? null;
   }
 
+  async function checkAnonSupabase(path: string, init?: RequestInit) {
+    // Hit PostgREST directly with ONLY the publishable apikey, no Authorization header,
+    // to prove the call works for a logged-out visitor.
+    const url = import.meta.env.VITE_SUPABASE_URL as string;
+    const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+    try {
+      const res = await fetch(`${url}/rest/v1/${path}`, {
+        ...init,
+        headers: { apikey: key, "Content-Type": "application/json", Prefer: "return=minimal", ...(init?.headers || {}) },
+      });
+      return { ok: res.ok, status: res.status, body: res.ok ? "" : await res.text() };
+    } catch (e) {
+      return { ok: false, status: 0, body: e instanceof Error ? e.message : "network" };
+    }
+  }
+
   async function runAll() {
     setRunning(true);
     const initial: Test[] = [
       { id: "branded_loads", label: "Public branded route loads without login", status: "pending" },
       { id: "unbranded_loads", label: "Public unbranded route loads without login", status: "pending" },
+      { id: "anon_select", label: "Anonymous can SELECT active listing (RLS)", status: "pending" },
+      { id: "anon_insert", label: "Anonymous can INSERT page_view event (RLS)", status: "pending" },
       { id: "strip_agent_name", label: "Unbranded page removes agent name", status: "pending" },
       { id: "strip_agent_phone", label: "Unbranded page removes agent phone", status: "pending" },
       { id: "strip_agent_email", label: "Unbranded page removes agent email", status: "pending" },
@@ -80,13 +98,34 @@ function TestCenter() {
     setDemoSlug(demo.slug);
     const { branded, unbranded } = tourUrls(demo.slug);
 
-    // 1 + 2: public URLs load
+    // 1 + 2: public URLs load (no credentials)
     const [b, u] = await Promise.all([checkUrl(branded), checkUrl(unbranded)]);
-    setTest("branded_loads", { status: b.ok ? "pass" : "fail", detail: b.detail });
-    setTest("unbranded_loads", { status: u.ok ? "pass" : "fail", detail: u.detail });
+    setTest("branded_loads", {
+      status: b.ok ? "pass" : "fail",
+      detail: b.ok ? b.detail : `BLOCKED — ${b.detail}. Public route is protected. This must be fixed before MLS/Zillow usage.`,
+    });
+    setTest("unbranded_loads", {
+      status: u.ok ? "pass" : "fail",
+      detail: u.ok ? u.detail : `BLOCKED — ${u.detail}. Public route is protected. This must be fixed before MLS/Zillow usage.`,
+    });
 
-    // 3-7: unbranded route nullifies PII before render. We verify by re-applying the same
-    // transform used in src/routes/u.$slug.tsx and asserting each field is null/empty.
+    // 2b: anonymous PostgREST SELECT on the active listing (no Authorization header)
+    const sel = await checkAnonSupabase(`listings?slug=eq.${demo.slug}&select=id,status`);
+    setTest("anon_select", { status: sel.ok ? "pass" : "fail", detail: sel.ok ? `HTTP ${sel.status}` : `HTTP ${sel.status} ${sel.body.slice(0, 140)}` });
+
+    // 2c: anonymous PostgREST INSERT into events
+    const ins0 = await checkAnonSupabase(`events`, {
+      method: "POST",
+      body: JSON.stringify({
+        listing_id: demo.id, company_id: demo.company_id,
+        page_type: "unbranded", event_type: "page_view",
+        user_agent: "test-center-anon-probe", device_type: "desktop",
+        visitor_hash: "anon-probe-" + crypto.randomUUID(),
+      }),
+    });
+    setTest("anon_insert", { status: ins0.ok ? "pass" : "fail", detail: ins0.ok ? `HTTP ${ins0.status}` : `HTTP ${ins0.status} ${ins0.body.slice(0, 140)}` });
+
+    // 3-7: unbranded route nullifies PII before render. Mirrors src/routes/u.$slug.tsx.
     const sanitized: Record<string, unknown> = {
       agent_name: null, agent_phone: null, agent_email: null,
       brokerage_name: null, brokerage_logo_url: null,
@@ -199,6 +238,15 @@ function TestCenter() {
           </div>
         </Card>
       )}
+
+      <Card className="p-4 mb-6 text-sm bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900">
+        <p className="font-medium">True public-access check</p>
+        <p className="text-muted-foreground mt-1">
+          The in-app checks below run without an Authorization header to simulate an anonymous visitor.
+          For final acceptance, also open the Unbranded URL in a fresh Chrome Guest or Incognito window —
+          the tour must render without any sign-in prompt.
+        </p>
+      </Card>
 
       <Card className="p-2">
         <div className="px-4 py-3 border-b flex justify-between text-xs uppercase tracking-widest text-muted-foreground">

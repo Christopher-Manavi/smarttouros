@@ -193,7 +193,8 @@ export function ListingForm({
         </div>
       </Card>
 
-      <Card className="p-6">
+      <Card ref={mediaSectionRef} className={`p-6 scroll-mt-6 ${highlightMedia ? "ring-2 ring-foreground/40" : ""}`}>
+
         <h2 className="font-display text-2xl mb-4">Media</h2>
         <div className="grid md:grid-cols-2 gap-4">
           <div>

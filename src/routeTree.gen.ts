@@ -13,7 +13,6 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedVisitorsRouteImport } from './routes/_authenticated/visitors'
 import { Route as AuthenticatedTrackingRouteImport } from './routes/_authenticated/tracking'
 import { Route as AuthenticatedTestCenterRouteImport } from './routes/_authenticated/test-center'
 import { Route as AuthenticatedResolvedVisitorsRouteImport } from './routes/_authenticated/resolved-visitors'
@@ -25,7 +24,6 @@ import { Route as AuthenticatedCompanyRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedListingsIndexRouteImport } from './routes/_authenticated/listings.index'
 import { Route as PublicUSlugRouteImport } from './routes/_public/u.$slug'
 import { Route as PublicTourSlugRouteImport } from './routes/_public/tour.$slug'
-import { Route as AuthenticatedListingsNewRouteImport } from './routes/_authenticated/listings.new'
 import { Route as AuthenticatedListingsIdRouteImport } from './routes/_authenticated/listings.$id'
 import { Route as AuthenticatedListingsIdAnalyticsRouteImport } from './routes/_authenticated/listings.$id.analytics'
 
@@ -46,11 +44,6 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedVisitorsRoute = AuthenticatedVisitorsRouteImport.update({
-  id: '/visitors',
-  path: '/visitors',
-  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedTrackingRoute = AuthenticatedTrackingRouteImport.update({
   id: '/tracking',
@@ -110,12 +103,6 @@ const PublicTourSlugRoute = PublicTourSlugRouteImport.update({
   path: '/tour/$slug',
   getParentRoute: () => PublicRouteRoute,
 } as any)
-const AuthenticatedListingsNewRoute =
-  AuthenticatedListingsNewRouteImport.update({
-    id: '/listings/new',
-    path: '/listings/new',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedListingsIdRoute = AuthenticatedListingsIdRouteImport.update({
   id: '/listings/$id',
   path: '/listings/$id',
@@ -139,9 +126,7 @@ export interface FileRoutesByFullPath {
   '/resolved-visitors': typeof AuthenticatedResolvedVisitorsRoute
   '/test-center': typeof AuthenticatedTestCenterRoute
   '/tracking': typeof AuthenticatedTrackingRoute
-  '/visitors': typeof AuthenticatedVisitorsRoute
   '/listings/$id': typeof AuthenticatedListingsIdRouteWithChildren
-  '/listings/new': typeof AuthenticatedListingsNewRoute
   '/tour/$slug': typeof PublicTourSlugRoute
   '/u/$slug': typeof PublicUSlugRoute
   '/listings/': typeof AuthenticatedListingsIndexRoute
@@ -158,9 +143,7 @@ export interface FileRoutesByTo {
   '/resolved-visitors': typeof AuthenticatedResolvedVisitorsRoute
   '/test-center': typeof AuthenticatedTestCenterRoute
   '/tracking': typeof AuthenticatedTrackingRoute
-  '/visitors': typeof AuthenticatedVisitorsRoute
   '/listings/$id': typeof AuthenticatedListingsIdRouteWithChildren
-  '/listings/new': typeof AuthenticatedListingsNewRoute
   '/tour/$slug': typeof PublicTourSlugRoute
   '/u/$slug': typeof PublicUSlugRoute
   '/listings': typeof AuthenticatedListingsIndexRoute
@@ -180,9 +163,7 @@ export interface FileRoutesById {
   '/_authenticated/resolved-visitors': typeof AuthenticatedResolvedVisitorsRoute
   '/_authenticated/test-center': typeof AuthenticatedTestCenterRoute
   '/_authenticated/tracking': typeof AuthenticatedTrackingRoute
-  '/_authenticated/visitors': typeof AuthenticatedVisitorsRoute
   '/_authenticated/listings/$id': typeof AuthenticatedListingsIdRouteWithChildren
-  '/_authenticated/listings/new': typeof AuthenticatedListingsNewRoute
   '/_public/tour/$slug': typeof PublicTourSlugRoute
   '/_public/u/$slug': typeof PublicUSlugRoute
   '/_authenticated/listings/': typeof AuthenticatedListingsIndexRoute
@@ -201,9 +182,7 @@ export interface FileRouteTypes {
     | '/resolved-visitors'
     | '/test-center'
     | '/tracking'
-    | '/visitors'
     | '/listings/$id'
-    | '/listings/new'
     | '/tour/$slug'
     | '/u/$slug'
     | '/listings/'
@@ -220,9 +199,7 @@ export interface FileRouteTypes {
     | '/resolved-visitors'
     | '/test-center'
     | '/tracking'
-    | '/visitors'
     | '/listings/$id'
-    | '/listings/new'
     | '/tour/$slug'
     | '/u/$slug'
     | '/listings'
@@ -241,9 +218,7 @@ export interface FileRouteTypes {
     | '/_authenticated/resolved-visitors'
     | '/_authenticated/test-center'
     | '/_authenticated/tracking'
-    | '/_authenticated/visitors'
     | '/_authenticated/listings/$id'
-    | '/_authenticated/listings/new'
     | '/_public/tour/$slug'
     | '/_public/u/$slug'
     | '/_authenticated/listings/'
@@ -286,13 +261,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/visitors': {
-      id: '/_authenticated/visitors'
-      path: '/visitors'
-      fullPath: '/visitors'
-      preLoaderRoute: typeof AuthenticatedVisitorsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/tracking': {
       id: '/_authenticated/tracking'
@@ -371,13 +339,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicTourSlugRouteImport
       parentRoute: typeof PublicRouteRoute
     }
-    '/_authenticated/listings/new': {
-      id: '/_authenticated/listings/new'
-      path: '/listings/new'
-      fullPath: '/listings/new'
-      preLoaderRoute: typeof AuthenticatedListingsNewRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/listings/$id': {
       id: '/_authenticated/listings/$id'
       path: '/listings/$id'
@@ -419,9 +380,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedResolvedVisitorsRoute: typeof AuthenticatedResolvedVisitorsRoute
   AuthenticatedTestCenterRoute: typeof AuthenticatedTestCenterRoute
   AuthenticatedTrackingRoute: typeof AuthenticatedTrackingRoute
-  AuthenticatedVisitorsRoute: typeof AuthenticatedVisitorsRoute
   AuthenticatedListingsIdRoute: typeof AuthenticatedListingsIdRouteWithChildren
-  AuthenticatedListingsNewRoute: typeof AuthenticatedListingsNewRoute
   AuthenticatedListingsIndexRoute: typeof AuthenticatedListingsIndexRoute
 }
 
@@ -434,9 +393,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedResolvedVisitorsRoute: AuthenticatedResolvedVisitorsRoute,
   AuthenticatedTestCenterRoute: AuthenticatedTestCenterRoute,
   AuthenticatedTrackingRoute: AuthenticatedTrackingRoute,
-  AuthenticatedVisitorsRoute: AuthenticatedVisitorsRoute,
   AuthenticatedListingsIdRoute: AuthenticatedListingsIdRouteWithChildren,
-  AuthenticatedListingsNewRoute: AuthenticatedListingsNewRoute,
   AuthenticatedListingsIndexRoute: AuthenticatedListingsIndexRoute,
 }
 

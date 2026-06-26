@@ -116,10 +116,25 @@ function TestCenter() {
       strip_brokerage_name: "brokerage_name",
       strip_brokerage_logo: "brokerage_logo_url",
     };
-    for (const [tid, field] of Object.entries(piiMap)) {
-      const stripped = sanitized[field] == null;
-      setTest(tid, { status: stripped ? "pass" : "fail", detail: stripped ? "Field nullified before render" : "Field still present" });
-    }
+    const [b, u] = await Promise.all([checkUrl(branded), checkUrl(unbranded)]);
+    setTest("branded_loads", { status: b.ok ? "pass" : "fail", detail: b.ok ? `HTTP ${b.detail.replace(/\D/g,'')}` : `BLOCKED — ${b.detail}. Public route is protected. This must be fixed before MLS/Zillow usage.` });
+    setTest("unbranded_loads", { status: u.ok ? "pass" : "fail", detail: u.ok ? `HTTP ${u.detail.replace(/\D/g,'')}` : `BLOCKED — ${u.detail}. Public route is protected. This must be fixed before MLS/Zillow usage.` });
+
+    // 2b: anonymous PostgREST SELECT on the active listing (no Authorization header)
+    const sel = await checkAnonSupabase(`listings?slug=eq.${demo.slug}&select=id,status`);
+    setTest("anon_select", { status: sel.ok ? "pass" : "fail", detail: sel.ok ? `HTTP ${sel.status}` : `HTTP ${sel.status} ${sel.body.slice(0,140)}` });
+
+    // 2c: anonymous PostgREST INSERT into events
+    const ins0 = await checkAnonSupabase(`events`, {
+      method: "POST",
+      body: JSON.stringify({
+        listing_id: demo.id, company_id: demo.company_id,
+        page_type: "unbranded", event_type: "page_view",
+        user_agent: "test-center-anon-probe", device_type: "desktop",
+        visitor_hash: "anon-probe-" + crypto.randomUUID(),
+      }),
+    });
+    setTest("anon_insert", { status: ins0.ok ? "pass" : "fail", detail: ins0.ok ? `HTTP ${ins0.status}` : `HTTP ${ins0.status} ${ins0.body.slice(0,140)}` });
 
     // 8: events recording — count events for this listing before, insert a test page_view, count after
     const before = await supabase

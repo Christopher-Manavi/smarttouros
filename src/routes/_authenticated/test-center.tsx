@@ -55,11 +55,29 @@ function TestCenter() {
     return data ?? null;
   }
 
+  async function checkAnonSupabase(path: string, init?: RequestInit) {
+    // Hit PostgREST directly with ONLY the publishable apikey, no Authorization header,
+    // to prove the call works for a logged-out visitor.
+    const url = import.meta.env.VITE_SUPABASE_URL as string;
+    const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+    try {
+      const res = await fetch(`${url}/rest/v1/${path}`, {
+        ...init,
+        headers: { apikey: key, "Content-Type": "application/json", Prefer: "return=minimal", ...(init?.headers || {}) },
+      });
+      return { ok: res.ok, status: res.status, body: res.ok ? "" : await res.text() };
+    } catch (e) {
+      return { ok: false, status: 0, body: e instanceof Error ? e.message : "network" };
+    }
+  }
+
   async function runAll() {
     setRunning(true);
     const initial: Test[] = [
       { id: "branded_loads", label: "Public branded route loads without login", status: "pending" },
       { id: "unbranded_loads", label: "Public unbranded route loads without login", status: "pending" },
+      { id: "anon_select", label: "Anonymous can SELECT active listing (RLS)", status: "pending" },
+      { id: "anon_insert", label: "Anonymous can INSERT page_view event (RLS)", status: "pending" },
       { id: "strip_agent_name", label: "Unbranded page removes agent name", status: "pending" },
       { id: "strip_agent_phone", label: "Unbranded page removes agent phone", status: "pending" },
       { id: "strip_agent_email", label: "Unbranded page removes agent email", status: "pending" },

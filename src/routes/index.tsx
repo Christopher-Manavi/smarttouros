@@ -50,6 +50,70 @@ function Landing() {
         </div>
       </section>
 
+      <section className="border-t bg-muted/30">
+        <div className="container-luxe py-20 lg:py-28">
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-6">
+            The highest-intent click on the listing
+          </p>
+          <h2 className="font-display text-4xl md:text-5xl leading-[1.1] max-w-4xl">
+            Your best buyers are already clicking the tour. You just can't see them.
+          </h2>
+          <p className="mt-6 text-lg text-muted-foreground max-w-3xl">
+            A virtual-tour click is not casual browsing. It is the digital showing before the showing.
+            SmartTourOS helps agents capture the buyer and seller opportunity hidden inside that moment.
+          </p>
+
+          <div className="mt-12 grid md:grid-cols-3 gap-6">
+            {[
+              {
+                stat: "99.2%",
+                lead: "of submitted-offer buyers viewed the listing's virtual tour",
+                body: "Before serious buyers write offers, they inspect the layout, flow, and feel of the home. The virtual tour is where passive browsing turns into real intent.",
+              },
+              {
+                stat: "75%+",
+                lead: "of these high-intent buyers also had a home to sell",
+                body: "Your next buyer may also be your next listing. Tour traffic does not just reveal buyer demand — it can reveal future seller opportunity.",
+              },
+              {
+                stat: "Invisible",
+                lead: "to the agent — until now",
+                body: "When tour clicks go to YouTube, Dropbox, Matterport, or generic property pages, the highest-intent audience on the listing disappears into someone else's platform.",
+              },
+            ].map((c) => (
+              <div
+                key={c.stat}
+                className="rounded-xl border bg-background p-8 shadow-sm flex flex-col"
+              >
+                <div className="font-display text-5xl md:text-6xl leading-none tracking-tight">
+                  {c.stat}
+                </div>
+                <p className="mt-4 text-sm font-medium text-foreground">{c.lead}</p>
+                <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{c.body}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-12 max-w-3xl">
+            <p className="font-display text-2xl md:text-3xl leading-snug">
+              SmartTourOS turns virtual-tour clicks into buyer and seller discovery.
+            </p>
+            <p className="mt-3 text-muted-foreground">
+              Stop losing your most valuable listing traffic. Capture the moment serious buyers raise their hand.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link to="/auth"><Button size="lg">Start with one listing</Button></Link>
+              <a href="mailto:hello@smarttouros.com?subject=Free%20Tour%20Audit">
+                <Button size="lg" variant="outline">Request free tour audit</Button>
+              </a>
+            </div>
+            <p className="mt-8 text-xs text-muted-foreground italic">
+              Stats shown are placeholder market-research figures for positioning and will be updated with verified source data.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section id="features" className="border-t">
         <div className="container-luxe py-20 grid md:grid-cols-3 gap-12">
           {[

@@ -14,7 +14,7 @@ function UnbrandedTour() {
     queryFn: () => loadTourBundle(slug),
   });
   if (isLoading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading…</div>;
-  // Strip branding fields client-side for the unbranded page
+  // Hard-strip every branding signal before TourView ever sees the listing.
   const sanitized = data?.listing ? {
     ...data.listing,
     agent_name: null, agent_phone: null, agent_email: null,
@@ -23,7 +23,7 @@ function UnbrandedTour() {
   return (
     <TourView
       listing={sanitized}
-      company={data?.company}
+      company={null}
       tracking={data?.tracking}
       privacy={data?.privacy}
       mode="unbranded"

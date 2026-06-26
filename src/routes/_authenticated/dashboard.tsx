@@ -30,6 +30,7 @@ function StatCard({ icon: Icon, label, value }: { icon: any; label: string; valu
 function Dashboard() {
   const navigate = useNavigate();
   const { companyId } = useAuth();
+  const [creating, setCreating] = useState(false);
   const [ytUrl, setYtUrl] = useState("");
 
   function startSmartTour() {
@@ -38,6 +39,7 @@ function Dashboard() {
     if (!isYouTubeUrl(raw)) { toast.error("That doesn't look like a YouTube URL"); return; }
     navigate({ to: "/create-listing", search: { yt: raw } });
   }
+
 
 
   const { data, refetch } = useQuery({

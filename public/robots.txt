@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Disallow: /auth
+Disallow: /dashboard
+Disallow: /create-listing
+Disallow: /listings
+Disallow: /tracking
+Disallow: /tracking-verify
+Disallow: /company
+Disallow: /demo
+Disallow: /privacy-settings
+Disallow: /resolved-visitors
+Disallow: /test-center
+
+Sitemap: https://smarttouros.com/sitemap.xml

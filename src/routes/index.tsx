@@ -587,19 +587,188 @@ function LeakVisualizer() {
 
       {/* Local keyframes — page-scoped */}
       <style>{`
-        @keyframes leakDot {
-          0%   { transform: translate(0, 0) scale(1);   opacity: 0; }
-          10%  { opacity: 1; }
-          55%  { transform: translate(var(--leak-x, 0px), 130px) scale(1); opacity: 1; }
-          75%  { transform: translate(calc(var(--leak-x, 0px) * 3), 180px) scale(0.6); opacity: 0.4; }
-          100% { transform: translate(calc(var(--leak-x, 0px) * 5), 220px) scale(0); opacity: 0; }
-        }
         @keyframes resolveIn {
           from { opacity: 0; transform: translateY(6px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        @keyframes flowDash {
+          to { stroke-dashoffset: -32; }
+        }
+        @keyframes flowPulse {
+          0%, 100% { opacity: 0.55; }
+          50%      { opacity: 1; }
+        }
+        @keyframes nodeGlow {
+          0%, 100% { box-shadow: 0 0 0 1px var(--node-ring), 0 0 28px -6px var(--node-glow); }
+          50%      { box-shadow: 0 0 0 1px var(--node-ring), 0 0 48px -4px var(--node-glow); }
+        }
       `}</style>
     </section>
+  );
+}
+
+type FlowNode = { label: string; sub: string; size: "sm" | "xl" };
+
+function FlowPath({
+  tone,
+  badge,
+  icon,
+  nodes,
+  result,
+}: {
+  tone: "leak" | "own";
+  badge: string;
+  icon: React.ReactNode;
+  nodes: FlowNode[];
+  result: { title: string; sub: string };
+}) {
+  const accent = tone === "leak" ? "#ff6b6b" : INDIGO;
+  const accentSoft = tone === "leak" ? "rgba(255,107,107,0.18)" : "rgba(99,102,241,0.22)";
+  const accentRing = tone === "leak" ? "rgba(255,107,107,0.45)" : "rgba(99,102,241,0.55)";
+  const accentGlow = tone === "leak" ? "rgba(255,107,107,0.55)" : "rgba(99,102,241,0.6)";
+
+  return (
+    <div
+      className="rounded-2xl p-6 lg:p-8 relative overflow-hidden backdrop-blur-xl"
+      style={{
+        background:
+          tone === "leak"
+            ? "radial-gradient(120% 70% at 50% 0%, rgba(255,107,107,0.10), transparent 60%), linear-gradient(180deg, rgba(22,20,23,0.85), rgba(17,15,18,0.9))"
+            : "radial-gradient(120% 70% at 50% 0%, rgba(99,102,241,0.14), transparent 60%), linear-gradient(180deg, rgba(21,21,27,0.85), rgba(17,17,24,0.9))",
+        border: `1px solid ${accentRing}`,
+        boxShadow: `0 0 0 1px ${accentSoft}, 0 30px 80px -30px ${accentGlow}`,
+      }}
+    >
+      <div className="flex items-center justify-between mb-6 relative z-10">
+        <span
+          className="inline-flex items-center gap-2 text-[10px] uppercase font-semibold"
+          style={{ color: accent, letterSpacing: "0.22em" }}
+        >
+          {icon} {badge}
+        </span>
+      </div>
+
+      <div className="space-y-2 relative z-10">
+        {nodes.map((n, i) => (
+          <div key={n.label}>
+            <FlowNodeCard node={n} accent={accent} accentRing={accentRing} accentGlow={accentGlow} delay={i * 0.12} />
+            {i < nodes.length - 1 && <FlowConnector accent={accent} />}
+          </div>
+        ))}
+      </div>
+
+      <div
+        className="mt-6 rounded-xl p-5 relative z-10"
+        style={{
+          background:
+            tone === "leak"
+              ? "linear-gradient(180deg, rgba(255,107,107,0.16), rgba(255,107,107,0.06))"
+              : "linear-gradient(180deg, rgba(34,197,94,0.18), rgba(34,197,94,0.06))",
+          border: `1px solid ${tone === "leak" ? "rgba(255,107,107,0.55)" : "rgba(34,197,94,0.55)"}`,
+        }}
+      >
+        <div className="flex items-start gap-3">
+          {tone === "leak" ? (
+            <AlertTriangle className="h-5 w-5 mt-0.5 shrink-0" style={{ color: "#ff8a8a" }} />
+          ) : (
+            <Check className="h-5 w-5 mt-0.5 shrink-0" style={{ color: "#86efac" }} />
+          )}
+          <div>
+            <p
+              className="font-display"
+              style={{
+                fontSize: "1.15rem",
+                fontWeight: 600,
+                letterSpacing: "-0.01em",
+                color: tone === "leak" ? "#ffb3b3" : "#bbf7d0",
+              }}
+            >
+              {result.title}
+            </p>
+            <p className="mt-1 text-xs font-mono" style={{ color: MUTED }}>{result.sub}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FlowNodeCard({
+  node,
+  accent,
+  accentRing,
+  accentGlow,
+  delay,
+}: {
+  node: FlowNode;
+  accent: string;
+  accentRing: string;
+  accentGlow: string;
+  delay: number;
+}) {
+  const isHero = node.size === "xl";
+  return (
+    <div
+      className="rounded-xl px-4 flex items-center justify-between"
+      style={
+        {
+          padding: isHero ? "1.1rem 1.25rem" : "0.75rem 1rem",
+          background: isHero
+            ? `linear-gradient(180deg, ${accent}22, ${accent}0a)`
+            : "rgba(255,255,255,0.025)",
+          border: `1px solid ${isHero ? accentRing : BORDER}`,
+          animation: isHero ? "nodeGlow 2.6s ease-in-out infinite" : `resolveIn 0.5s ${delay}s both ease-out`,
+          ["--node-ring" as string]: accentRing,
+          ["--node-glow" as string]: accentGlow,
+        } as React.CSSProperties
+      }
+    >
+      <div>
+        <p
+          className={isHero ? "font-display" : "font-mono"}
+          style={{
+            color: isHero ? accent : TEXT,
+            fontSize: isHero ? "1.6rem" : "0.875rem",
+            fontWeight: isHero ? 700 : 500,
+            letterSpacing: isHero ? "0.04em" : "0",
+            textShadow: isHero ? `0 0 24px ${accentGlow}` : "none",
+          }}
+        >
+          {node.label}
+        </p>
+        <p className="text-[11px] mt-0.5" style={{ color: MUTED }}>{node.sub}</p>
+      </div>
+      <span
+        className="h-2 w-2 rounded-full shrink-0"
+        style={{ background: accent, boxShadow: `0 0 10px ${accentGlow}` }}
+      />
+    </div>
+  );
+}
+
+function FlowConnector({ accent }: { accent: string }) {
+  return (
+    <div className="flex justify-center" aria-hidden>
+      <svg width="24" height="34" viewBox="0 0 24 34" className="my-0.5">
+        <defs>
+          <linearGradient id={`g-${accent.replace("#", "")}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={accent} stopOpacity="0.2" />
+            <stop offset="100%" stopColor={accent} stopOpacity="1" />
+          </linearGradient>
+        </defs>
+        <line
+          x1="12" y1="0" x2="12" y2="24"
+          stroke={accent} strokeOpacity="0.25" strokeWidth="2"
+        />
+        <line
+          x1="12" y1="0" x2="12" y2="24"
+          stroke={accent} strokeWidth="2"
+          strokeDasharray="6 10"
+          style={{ animation: "flowDash 1.2s linear infinite, flowPulse 2s ease-in-out infinite", filter: `drop-shadow(0 0 4px ${accent})` }}
+        />
+        <polygon points="6,22 18,22 12,32" fill={accent} style={{ filter: `drop-shadow(0 0 6px ${accent})` }} />
+      </svg>
+    </div>
   );
 }
 

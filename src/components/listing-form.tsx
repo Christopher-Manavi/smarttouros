@@ -112,7 +112,7 @@ export function ListingForm({
   async function onHero(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]; if (!f) return;
     try {
-      const res = await uploadFile(f, "hero");
+      const res = await uploadFile(f, "hero", companyId);
       update("hero_image_url", res.url);
       setHeroMeta(res);
       toast.success(`Upload successful · ${res.filename}${res.width ? ` · ${res.width}×${res.height}` : ""}`);
@@ -121,7 +121,7 @@ export function ListingForm({
   async function onGallery(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []); if (!files.length) return;
     try {
-      const results = await Promise.all(files.map((f) => uploadFile(f, "gallery")));
+      const results = await Promise.all(files.map((f) => uploadFile(f, "gallery", companyId)));
       update("gallery_urls", [...v.gallery_urls, ...results.map((r) => r.url)]);
       setGalleryMeta((prev) => [...prev, ...results]);
       toast.success(`${results.length} image(s) added`);

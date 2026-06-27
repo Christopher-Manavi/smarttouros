@@ -5,15 +5,22 @@ import { ArrowRight, Building2, ShieldCheck, LineChart } from "lucide-react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "SmartTourOS — Smart virtual tour platform for luxury real estate" },
+      { title: "SmartTourOS — Smart Virtual Tour Platform for Real Estate" },
       {
         name: "description",
         content:
-          "White-label virtual tour pages with branded and MLS-safe URLs for photographers, media companies, and brokerages.",
+          "SmartTourOS turns virtual-tour clicks into buyer and seller discovery with MLS-safe smart tour pages, listing analytics, and household-level follow-up opportunities.",
       },
-      { property: "og:title", content: "SmartTourOS" },
-      { property: "og:description", content: "Smart virtual tour platform for luxury real estate." },
+      { property: "og:title", content: "SmartTourOS — Smart Virtual Tour Platform for Real Estate" },
+      {
+        property: "og:description",
+        content:
+          "SmartTourOS turns virtual-tour clicks into buyer and seller discovery with MLS-safe smart tour pages, listing analytics, and household-level follow-up opportunities.",
+      },
+      { property: "og:url", content: "https://smarttouros.com/" },
+      { property: "og:type", content: "website" },
     ],
+    links: [{ rel: "canonical", href: "https://smarttouros.com/" }],
   }),
   component: Landing,
 });

@@ -19,6 +19,7 @@ export const Route = createFileRoute("/auth")({
     meta: [
       { title: "Sign in — SmartTourOS" },
       { name: "description", content: "Sign in to your SmartTourOS workspace." },
+      { name: "robots", content: "noindex, nofollow" },
     ],
   }),
   component: AuthPage,

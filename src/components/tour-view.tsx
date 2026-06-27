@@ -245,13 +245,15 @@ function TourFooter({ privacy, company, unbranded }: { privacy: Privacy | null; 
 }
 
 export async function loadTourBundle(slug: string) {
-  const { data: listing } = await supabase
-    .from("listings").select("*").eq("slug", slug).eq("status", "active").maybeSingle();
-  if (!listing) return { listing: null, company: null, tracking: null, privacy: null };
-  const [{ data: company }, { data: tracking }, { data: privacy }] = await Promise.all([
-    supabase.from("companies").select("*").eq("id", listing.company_id).maybeSingle(),
-    supabase.from("tracking_settings").select("*").eq("company_id", listing.company_id).maybeSingle(),
-    supabase.from("privacy_settings").select("*").eq("company_id", listing.company_id).maybeSingle(),
-  ]);
-  return { listing, company, tracking, privacy };
+  // Use a SECURITY DEFINER RPC so anonymous visitors only receive public-safe
+  // fields (no owner emails, phone, or unrelated tenant data).
+  const { data, error } = await supabase.rpc("get_public_tour", { p_slug: slug });
+  if (error || !data) return { listing: null, company: null, tracking: null, privacy: null };
+  const bundle = data as { listing: any; company: any; tracking: any; privacy: any };
+  return {
+    listing: bundle.listing ?? null,
+    company: bundle.company ?? null,
+    tracking: bundle.tracking ?? null,
+    privacy: bundle.privacy ?? null,
+  };
 }

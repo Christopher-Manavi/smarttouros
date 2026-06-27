@@ -64,9 +64,9 @@ async function readImageDimensions(file: File): Promise<{ width: number; height:
   });
 }
 
-async function uploadFile(file: File, folder: string): Promise<UploadResult> {
+async function uploadFile(file: File, folder: string, companyId: string): Promise<UploadResult> {
   const ext = file.name.split(".").pop();
-  const path = `${folder}/${crypto.randomUUID()}.${ext}`;
+  const path = `${companyId}/${folder}/${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage.from("listing-media").upload(path, file, { upsert: false, contentType: file.type });
   if (error) throw error;
   const { data, error: signErr } = await supabase.storage.from("listing-media").createSignedUrl(path, SIGNED_URL_TTL);
@@ -112,7 +112,7 @@ export function ListingForm({
   async function onHero(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]; if (!f) return;
     try {
-      const res = await uploadFile(f, "hero");
+      const res = await uploadFile(f, "hero", companyId);
       update("hero_image_url", res.url);
       setHeroMeta(res);
       toast.success(`Upload successful · ${res.filename}${res.width ? ` · ${res.width}×${res.height}` : ""}`);
@@ -121,7 +121,7 @@ export function ListingForm({
   async function onGallery(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []); if (!files.length) return;
     try {
-      const results = await Promise.all(files.map((f) => uploadFile(f, "gallery")));
+      const results = await Promise.all(files.map((f) => uploadFile(f, "gallery", companyId)));
       update("gallery_urls", [...v.gallery_urls, ...results.map((r) => r.url)]);
       setGalleryMeta((prev) => [...prev, ...results]);
       toast.success(`${results.length} image(s) added`);

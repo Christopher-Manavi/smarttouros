@@ -377,17 +377,8 @@ function LeakVisualizer() {
   const [url, setUrl] = useState("");
   const [diagnosed, setDiagnosed] = useState(false);
 
-  // Pre-compute 60 dot positions for the funnel animation
-  const dots = useMemo(
-    () =>
-      Array.from({ length: 60 }, (_, i) => ({
-        id: i,
-        delay: (i % 20) * 0.18,
-        lane: (i % 5) - 2, // -2..2
-        leaks: i % 4 !== 0, // 75% leak, 25% pass through
-      })),
-    [],
-  );
+
+
 
   const handleDiagnose = (e: React.FormEvent) => {
     e.preventDefault();

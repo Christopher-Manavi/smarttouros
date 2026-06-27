@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, ShieldCheck, Zap, Gift, X, Check, AlertTriangle, Activity, Database, Radar } from "lucide-react";
-import { useMemo, useState } from "react";
+import { ArrowRight, ShieldCheck, Zap, Gift, X, Check, AlertTriangle, Radar } from "lucide-react";
+import { useState } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -377,17 +377,8 @@ function LeakVisualizer() {
   const [url, setUrl] = useState("");
   const [diagnosed, setDiagnosed] = useState(false);
 
-  // Pre-compute 60 dot positions for the funnel animation
-  const dots = useMemo(
-    () =>
-      Array.from({ length: 60 }, (_, i) => ({
-        id: i,
-        delay: (i % 20) * 0.18,
-        lane: (i % 5) - 2, // -2..2
-        leaks: i % 4 !== 0, // 75% leak, 25% pass through
-      })),
-    [],
-  );
+
+
 
   const handleDiagnose = (e: React.FormEvent) => {
     e.preventDefault();
@@ -464,153 +455,38 @@ function LeakVisualizer() {
           </button>
         </form>
 
-        {/* 3-part flow */}
-        <div className="mt-12 grid lg:grid-cols-3 gap-5">
-          {/* LEFT — Traffic Source */}
-          <div
-            className="rounded-xl p-6 backdrop-blur-xl"
-            style={{
-              background: "linear-gradient(180deg, rgba(23,23,27,0.85), rgba(18,18,20,0.85))",
-              border: `1px solid ${BORDER}`,
+        {/* Lead Routing Flowchart — two paths */}
+        <div className="mt-14 grid lg:grid-cols-2 gap-5">
+          <FlowPath
+            tone="leak"
+            badge="Path 1 · The Zillow Leak"
+            icon={<AlertTriangle className="h-4 w-4" />}
+            nodes={[
+              { label: "The Buyer", sub: "High-intent search", size: "sm" },
+              { label: "ZILLOW", sub: "Third-party portal", size: "xl" },
+              { label: "Your Listing", sub: "Rendered on zillow.com", size: "sm" },
+              { label: "Zillow's CRM", sub: "Buyer identity captured — by them", size: "sm" },
+            ]}
+            result={{
+              title: "Zillow sells YOUR buyer back to YOU.",
+              sub: "Premier Agent · $$$ per lead · recurring",
             }}
-          >
-            <div className="flex items-center justify-between mb-5">
-              <p className="text-[10px] uppercase font-semibold" style={{ color: MUTED, letterSpacing: "0.22em" }}>
-                Source · Zillow
-              </p>
-              <Activity className="h-4 w-4" style={{ color: MUTED }} />
-            </div>
-            <p className="text-xs mb-1" style={{ color: MUTED }}>Listing URL</p>
-            <p className="text-sm font-mono truncate mb-6" style={{ color: TEXT }}>
-              {url || "zillow.com/homedetails/sample"}
-            </p>
-            <div className="space-y-3">
-              <Stat label="Listing Views" value="1,000" tone="neutral" />
-              <Stat label="Virtual Tour Clicks" value="250" tone="neutral" />
-              <Stat label="Avg. Session" value="2m 41s" tone="neutral" />
-            </div>
-            <p className="mt-6 text-xs" style={{ color: MUTED }}>
-              Raw incoming demand. Every one of these is a high-intent buyer signal.
-            </p>
-          </div>
-
-          {/* CENTER — Leak Zone */}
-          <div
-            className="rounded-xl p-6 relative overflow-hidden"
-            style={{
-              background:
-                "radial-gradient(120% 80% at 50% 0%, rgba(255,107,107,0.10), transparent 60%), linear-gradient(180deg, #161417, #121013)",
-              border: "1px solid rgba(255,107,107,0.35)",
-              boxShadow: "0 0 0 1px rgba(255,107,107,0.12), 0 30px 80px -30px rgba(255,80,80,0.35)",
+          />
+          <FlowPath
+            tone="own"
+            badge="Path 2 · The SmartTourOS Way"
+            icon={<ShieldCheck className="h-4 w-4" />}
+            nodes={[
+              { label: "The Buyer", sub: "High-intent search", size: "sm" },
+              { label: "SmartTourOS", sub: "Your branded tour layer", size: "xl" },
+              { label: "Your Listing", sub: "On your owned domain", size: "sm" },
+              { label: "Your CRM", sub: "Identity resolved & synced", size: "sm" },
+            ]}
+            result={{
+              title: "You capture and own the buyer for FREE.",
+              sub: "$0 lead cost · 100% audience ownership",
             }}
-          >
-            <div className="flex items-center justify-between mb-5 relative z-10">
-              <p className="text-[10px] uppercase font-semibold" style={{ color: "#ff8a8a", letterSpacing: "0.22em" }}>
-                The Leak Zone
-              </p>
-              <AlertTriangle className="h-4 w-4" style={{ color: "#ff8a8a" }} />
-            </div>
-
-            {/* Funnel visualization */}
-            <div className="relative h-56 w-full mb-4" aria-hidden>
-              {/* funnel shape */}
-              <div
-                className="absolute inset-x-6 top-0 bottom-0"
-                style={{
-                  background:
-                    "linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,107,107,0.06))",
-                  clipPath: "polygon(0 0, 100% 0, 65% 100%, 35% 100%)",
-                  border: "0",
-                }}
-              />
-              {/* dots */}
-              {dots.map((d) => (
-                <span
-                  key={d.id}
-                  className="absolute top-0 h-1.5 w-1.5 rounded-full"
-                  style={{
-                    left: `calc(50% + ${d.lane * 14}px)`,
-                    background: d.leaks ? "#ff6b6b" : "#a5b4fc",
-                    boxShadow: d.leaks
-                      ? "0 0 8px rgba(255,107,107,0.8)"
-                      : "0 0 8px rgba(165,180,252,0.9)",
-                    animation: `leakDot 3.6s ${d.delay}s linear infinite`,
-                    opacity: 0,
-                  }}
-                />
-              ))}
-              {/* overlay text */}
-              <div className="absolute inset-x-0 bottom-2 text-center">
-                <p
-                  className="font-display text-lg"
-                  style={{ color: "#ff8a8a", letterSpacing: "-0.01em", fontWeight: 600 }}
-                >
-                  This is where your buyers disappear.
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-3 relative z-10">
-              <Stat label="Uncaptured Anonymous Traffic" value="970" tone="bad" />
-              <Stat label="Lost Buyer Identity" value="100%" tone="bad" />
-              <Stat label="CRM-Routed Leads" value="0" tone="bad" />
-            </div>
-          </div>
-
-          {/* RIGHT — Recovery */}
-          <div
-            className="rounded-xl p-6 relative overflow-hidden"
-            style={{
-              background:
-                "radial-gradient(120% 80% at 50% 0%, rgba(99,102,241,0.14), transparent 60%), linear-gradient(180deg, #15151b, #111118)",
-              border: `1px solid ${INDIGO}`,
-              boxShadow: "0 0 0 1px rgba(99,102,241,0.2), 0 30px 80px -30px rgba(99,102,241,0.45)",
-            }}
-          >
-            <div className="flex items-center justify-between mb-5">
-              <p className="text-[10px] uppercase font-semibold" style={{ color: INDIGO, letterSpacing: "0.22em" }}>
-                SmartTourOS · Recovery Layer
-              </p>
-              <Database className="h-4 w-4" style={{ color: INDIGO }} />
-            </div>
-
-            {/* Resolved profile cards */}
-            <div className="space-y-2 mb-5">
-              {[
-                { name: "Household · 941 Maple Ave", tag: "High intent" },
-                { name: "Household · 22 Linden Ct", tag: "Returning visitor" },
-                { name: "Household · 7 Harborview", tag: "New" },
-              ].map((p, i) => (
-                <div
-                  key={p.name}
-                  className="flex items-center justify-between rounded-md px-3 py-2"
-                  style={{
-                    background: "rgba(99,102,241,0.08)",
-                    border: "1px solid rgba(99,102,241,0.25)",
-                    animation: `resolveIn 0.6s ${i * 0.15}s both ease-out`,
-                  }}
-                >
-                  <span className="text-xs font-mono" style={{ color: TEXT }}>{p.name}</span>
-                  <span
-                    className="text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded"
-                    style={{ background: "rgba(99,102,241,0.18)", color: "#c7d2fe", letterSpacing: "0.1em" }}
-                  >
-                    {p.tag}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="space-y-3">
-              <Stat label="Identified Buyers (est.)" value="18 – 42" tone="good" />
-              <Stat label="Engaged Households" value="61%" tone="good" />
-              <Stat label="CRM-Synced Leads" value="Active" tone="good" />
-            </div>
-
-            <p className="mt-5 text-xs" style={{ color: MUTED }}>
-              Routed into your <span style={{ color: TEXT }}>Owned Audience Layer</span>.
-            </p>
-          </div>
+          />
         </div>
 
         {/* Core insight card */}
@@ -702,39 +578,191 @@ function LeakVisualizer() {
 
       {/* Local keyframes — page-scoped */}
       <style>{`
-        @keyframes leakDot {
-          0%   { transform: translate(0, 0) scale(1);   opacity: 0; }
-          10%  { opacity: 1; }
-          55%  { transform: translate(var(--leak-x, 0px), 130px) scale(1); opacity: 1; }
-          75%  { transform: translate(calc(var(--leak-x, 0px) * 3), 180px) scale(0.6); opacity: 0.4; }
-          100% { transform: translate(calc(var(--leak-x, 0px) * 5), 220px) scale(0); opacity: 0; }
-        }
         @keyframes resolveIn {
           from { opacity: 0; transform: translateY(6px); }
           to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes flowDash {
+          to { stroke-dashoffset: -32; }
+        }
+        @keyframes flowPulse {
+          0%, 100% { opacity: 0.55; }
+          50%      { opacity: 1; }
+        }
+        @keyframes nodeGlow {
+          0%, 100% { box-shadow: 0 0 0 1px var(--node-ring), 0 0 28px -6px var(--node-glow); }
+          50%      { box-shadow: 0 0 0 1px var(--node-ring), 0 0 48px -4px var(--node-glow); }
         }
       `}</style>
     </section>
   );
 }
 
-function Stat({
-  label,
-  value,
+type FlowNode = { label: string; sub: string; size: "sm" | "xl" };
+
+function FlowPath({
   tone,
+  badge,
+  icon,
+  nodes,
+  result,
 }: {
-  label: string;
-  value: string;
-  tone: "neutral" | "good" | "bad";
+  tone: "leak" | "own";
+  badge: string;
+  icon: React.ReactNode;
+  nodes: FlowNode[];
+  result: { title: string; sub: string };
 }) {
-  const color = tone === "good" ? "#a5b4fc" : tone === "bad" ? "#ff8a8a" : TEXT;
+  const accent = tone === "leak" ? "#ff6b6b" : INDIGO;
+  const accentSoft = tone === "leak" ? "rgba(255,107,107,0.18)" : "rgba(99,102,241,0.22)";
+  const accentRing = tone === "leak" ? "rgba(255,107,107,0.45)" : "rgba(99,102,241,0.55)";
+  const accentGlow = tone === "leak" ? "rgba(255,107,107,0.55)" : "rgba(99,102,241,0.6)";
+
   return (
-    <div className="flex items-center justify-between text-sm">
-      <span style={{ color: MUTED }}>{label}</span>
-      <span className="font-mono font-semibold" style={{ color }}>{value}</span>
+    <div
+      className="rounded-2xl p-6 lg:p-8 relative overflow-hidden backdrop-blur-xl"
+      style={{
+        background:
+          tone === "leak"
+            ? "radial-gradient(120% 70% at 50% 0%, rgba(255,107,107,0.10), transparent 60%), linear-gradient(180deg, rgba(22,20,23,0.85), rgba(17,15,18,0.9))"
+            : "radial-gradient(120% 70% at 50% 0%, rgba(99,102,241,0.14), transparent 60%), linear-gradient(180deg, rgba(21,21,27,0.85), rgba(17,17,24,0.9))",
+        border: `1px solid ${accentRing}`,
+        boxShadow: `0 0 0 1px ${accentSoft}, 0 30px 80px -30px ${accentGlow}`,
+      }}
+    >
+      <div className="flex items-center justify-between mb-6 relative z-10">
+        <span
+          className="inline-flex items-center gap-2 text-[10px] uppercase font-semibold"
+          style={{ color: accent, letterSpacing: "0.22em" }}
+        >
+          {icon} {badge}
+        </span>
+      </div>
+
+      <div className="space-y-2 relative z-10">
+        {nodes.map((n, i) => (
+          <div key={n.label}>
+            <FlowNodeCard node={n} accent={accent} accentRing={accentRing} accentGlow={accentGlow} delay={i * 0.12} />
+            {i < nodes.length - 1 && <FlowConnector accent={accent} />}
+          </div>
+        ))}
+      </div>
+
+      <div
+        className="mt-6 rounded-xl p-5 relative z-10"
+        style={{
+          background:
+            tone === "leak"
+              ? "linear-gradient(180deg, rgba(255,107,107,0.16), rgba(255,107,107,0.06))"
+              : "linear-gradient(180deg, rgba(34,197,94,0.18), rgba(34,197,94,0.06))",
+          border: `1px solid ${tone === "leak" ? "rgba(255,107,107,0.55)" : "rgba(34,197,94,0.55)"}`,
+        }}
+      >
+        <div className="flex items-start gap-3">
+          {tone === "leak" ? (
+            <AlertTriangle className="h-5 w-5 mt-0.5 shrink-0" style={{ color: "#ff8a8a" }} />
+          ) : (
+            <Check className="h-5 w-5 mt-0.5 shrink-0" style={{ color: "#86efac" }} />
+          )}
+          <div>
+            <p
+              className="font-display"
+              style={{
+                fontSize: "1.15rem",
+                fontWeight: 600,
+                letterSpacing: "-0.01em",
+                color: tone === "leak" ? "#ffb3b3" : "#bbf7d0",
+              }}
+            >
+              {result.title}
+            </p>
+            <p className="mt-1 text-xs font-mono" style={{ color: MUTED }}>{result.sub}</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
+
+function FlowNodeCard({
+  node,
+  accent,
+  accentRing,
+  accentGlow,
+  delay,
+}: {
+  node: FlowNode;
+  accent: string;
+  accentRing: string;
+  accentGlow: string;
+  delay: number;
+}) {
+  const isHero = node.size === "xl";
+  return (
+    <div
+      className="rounded-xl px-4 flex items-center justify-between"
+      style={
+        {
+          padding: isHero ? "1.1rem 1.25rem" : "0.75rem 1rem",
+          background: isHero
+            ? `linear-gradient(180deg, ${accent}22, ${accent}0a)`
+            : "rgba(255,255,255,0.025)",
+          border: `1px solid ${isHero ? accentRing : BORDER}`,
+          animation: isHero ? "nodeGlow 2.6s ease-in-out infinite" : `resolveIn 0.5s ${delay}s both ease-out`,
+          ["--node-ring" as string]: accentRing,
+          ["--node-glow" as string]: accentGlow,
+        } as React.CSSProperties
+      }
+    >
+      <div>
+        <p
+          className={isHero ? "font-display" : "font-mono"}
+          style={{
+            color: isHero ? accent : TEXT,
+            fontSize: isHero ? "1.6rem" : "0.875rem",
+            fontWeight: isHero ? 700 : 500,
+            letterSpacing: isHero ? "0.04em" : "0",
+            textShadow: isHero ? `0 0 24px ${accentGlow}` : "none",
+          }}
+        >
+          {node.label}
+        </p>
+        <p className="text-[11px] mt-0.5" style={{ color: MUTED }}>{node.sub}</p>
+      </div>
+      <span
+        className="h-2 w-2 rounded-full shrink-0"
+        style={{ background: accent, boxShadow: `0 0 10px ${accentGlow}` }}
+      />
+    </div>
+  );
+}
+
+function FlowConnector({ accent }: { accent: string }) {
+  return (
+    <div className="flex justify-center" aria-hidden>
+      <svg width="24" height="34" viewBox="0 0 24 34" className="my-0.5">
+        <defs>
+          <linearGradient id={`g-${accent.replace("#", "")}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={accent} stopOpacity="0.2" />
+            <stop offset="100%" stopColor={accent} stopOpacity="1" />
+          </linearGradient>
+        </defs>
+        <line
+          x1="12" y1="0" x2="12" y2="24"
+          stroke={accent} strokeOpacity="0.25" strokeWidth="2"
+        />
+        <line
+          x1="12" y1="0" x2="12" y2="24"
+          stroke={accent} strokeWidth="2"
+          strokeDasharray="6 10"
+          style={{ animation: "flowDash 1.2s linear infinite, flowPulse 2s ease-in-out infinite", filter: `drop-shadow(0 0 4px ${accent})` }}
+        />
+        <polygon points="6,22 18,22 12,32" fill={accent} style={{ filter: `drop-shadow(0 0 6px ${accent})` }} />
+      </svg>
+    </div>
+  );
+}
+
 
 function DiagStat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (

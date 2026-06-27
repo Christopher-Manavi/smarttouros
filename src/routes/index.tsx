@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, ShieldCheck, Zap, Gift, X, Check } from "lucide-react";
+import { ArrowRight, ShieldCheck, Zap, Gift, X, Check, AlertTriangle, Activity, Database, Radar } from "lucide-react";
+import { useMemo, useState } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -111,6 +112,10 @@ function Landing() {
           </a>
         </div>
       </section>
+
+      {/* Listing Leak Visualizer */}
+      <LeakVisualizer />
+
 
       {/* Value props */}
       <section
@@ -363,6 +368,383 @@ function Landing() {
           <span>Generate MLS-safe virtual tour links. Confirm local MLS rules before publishing.</span>
         </div>
       </footer>
+    </div>
+  );
+}
+
+// ===== Listing Leak Visualizer =====
+function LeakVisualizer() {
+  const [url, setUrl] = useState("");
+  const [diagnosed, setDiagnosed] = useState(false);
+
+  // Pre-compute 60 dot positions for the funnel animation
+  const dots = useMemo(
+    () =>
+      Array.from({ length: 60 }, (_, i) => ({
+        id: i,
+        delay: (i % 20) * 0.18,
+        lane: (i % 5) - 2, // -2..2
+        leaks: i % 4 !== 0, // 75% leak, 25% pass through
+      })),
+    [],
+  );
+
+  const handleDiagnose = (e: React.FormEvent) => {
+    e.preventDefault();
+    setDiagnosed(true);
+  };
+
+  return (
+    <section style={{ background: BG, borderColor: BORDER }} className="border-t border-b relative overflow-hidden">
+      {/* scanline backdrop */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none opacity-[0.06]"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(0deg, #fff 0 1px, transparent 1px 4px)",
+        }}
+      />
+      <div className="container-luxe py-24 relative">
+        <div className="flex items-center gap-2 mb-4">
+          <span
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] uppercase font-semibold"
+            style={{
+              background: "rgba(255,107,107,0.12)",
+              color: "#ff8a8a",
+              border: "1px solid rgba(255,107,107,0.35)",
+              letterSpacing: "0.18em",
+            }}
+          >
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: "#ff6b6b", boxShadow: "0 0 8px #ff6b6b" }} />
+            Live Listing Diagnostic
+          </span>
+        </div>
+        <h2
+          className="font-display max-w-4xl"
+          style={{
+            fontSize: "clamp(2rem, 4.5vw, 3.5rem)",
+            lineHeight: 1.1,
+            letterSpacing: "-0.015em",
+            fontWeight: 600,
+          }}
+        >
+          Where Your Buyers Actually Go.
+        </h2>
+        <p className="mt-5 max-w-2xl" style={{ color: MUTED, fontSize: "1.05rem", lineHeight: 1.6 }}>
+          Paste any active listing. We'll show you, in real time, where the buyer demand leaks
+          out of your funnel — and what an owned audience layer would have captured instead.
+        </p>
+
+        {/* Diagnostic input */}
+        <form
+          onSubmit={handleDiagnose}
+          className="mt-8 flex flex-col sm:flex-row gap-3 max-w-2xl"
+        >
+          <input
+            type="url"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://www.zillow.com/homedetails/..."
+            className="flex-1 px-4 py-3 rounded-md text-sm outline-none transition-colors"
+            style={{
+              background: SURFACE,
+              border: `1px solid ${BORDER}`,
+              color: TEXT,
+            }}
+          />
+          <button
+            type="submit"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold rounded-md transition-colors"
+            style={{ background: INDIGO, color: "#fff" }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = INDIGO_HOVER)}
+            onMouseLeave={(e) => (e.currentTarget.style.background = INDIGO)}
+          >
+            <Radar className="h-4 w-4" /> Run Leak Diagnosis
+          </button>
+        </form>
+
+        {/* 3-part flow */}
+        <div className="mt-12 grid lg:grid-cols-3 gap-5">
+          {/* LEFT — Traffic Source */}
+          <div
+            className="rounded-xl p-6 backdrop-blur-xl"
+            style={{
+              background: "linear-gradient(180deg, rgba(23,23,27,0.85), rgba(18,18,20,0.85))",
+              border: `1px solid ${BORDER}`,
+            }}
+          >
+            <div className="flex items-center justify-between mb-5">
+              <p className="text-[10px] uppercase font-semibold" style={{ color: MUTED, letterSpacing: "0.22em" }}>
+                Source · Zillow
+              </p>
+              <Activity className="h-4 w-4" style={{ color: MUTED }} />
+            </div>
+            <p className="text-xs mb-1" style={{ color: MUTED }}>Listing URL</p>
+            <p className="text-sm font-mono truncate mb-6" style={{ color: TEXT }}>
+              {url || "zillow.com/homedetails/sample"}
+            </p>
+            <div className="space-y-3">
+              <Stat label="Listing Views" value="1,000" tone="neutral" />
+              <Stat label="Virtual Tour Clicks" value="250" tone="neutral" />
+              <Stat label="Avg. Session" value="2m 41s" tone="neutral" />
+            </div>
+            <p className="mt-6 text-xs" style={{ color: MUTED }}>
+              Raw incoming demand. Every one of these is a high-intent buyer signal.
+            </p>
+          </div>
+
+          {/* CENTER — Leak Zone */}
+          <div
+            className="rounded-xl p-6 relative overflow-hidden"
+            style={{
+              background:
+                "radial-gradient(120% 80% at 50% 0%, rgba(255,107,107,0.10), transparent 60%), linear-gradient(180deg, #161417, #121013)",
+              border: "1px solid rgba(255,107,107,0.35)",
+              boxShadow: "0 0 0 1px rgba(255,107,107,0.12), 0 30px 80px -30px rgba(255,80,80,0.35)",
+            }}
+          >
+            <div className="flex items-center justify-between mb-5 relative z-10">
+              <p className="text-[10px] uppercase font-semibold" style={{ color: "#ff8a8a", letterSpacing: "0.22em" }}>
+                The Leak Zone
+              </p>
+              <AlertTriangle className="h-4 w-4" style={{ color: "#ff8a8a" }} />
+            </div>
+
+            {/* Funnel visualization */}
+            <div className="relative h-56 w-full mb-4" aria-hidden>
+              {/* funnel shape */}
+              <div
+                className="absolute inset-x-6 top-0 bottom-0"
+                style={{
+                  background:
+                    "linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,107,107,0.06))",
+                  clipPath: "polygon(0 0, 100% 0, 65% 100%, 35% 100%)",
+                  border: "0",
+                }}
+              />
+              {/* dots */}
+              {dots.map((d) => (
+                <span
+                  key={d.id}
+                  className="absolute top-0 h-1.5 w-1.5 rounded-full"
+                  style={{
+                    left: `calc(50% + ${d.lane * 14}px)`,
+                    background: d.leaks ? "#ff6b6b" : "#a5b4fc",
+                    boxShadow: d.leaks
+                      ? "0 0 8px rgba(255,107,107,0.8)"
+                      : "0 0 8px rgba(165,180,252,0.9)",
+                    animation: `leakDot 3.6s ${d.delay}s linear infinite`,
+                    opacity: 0,
+                  }}
+                />
+              ))}
+              {/* overlay text */}
+              <div className="absolute inset-x-0 bottom-2 text-center">
+                <p
+                  className="font-display text-lg"
+                  style={{ color: "#ff8a8a", letterSpacing: "-0.01em", fontWeight: 600 }}
+                >
+                  This is where your buyers disappear.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3 relative z-10">
+              <Stat label="Uncaptured Anonymous Traffic" value="970" tone="bad" />
+              <Stat label="Lost Buyer Identity" value="100%" tone="bad" />
+              <Stat label="CRM-Routed Leads" value="0" tone="bad" />
+            </div>
+          </div>
+
+          {/* RIGHT — Recovery */}
+          <div
+            className="rounded-xl p-6 relative overflow-hidden"
+            style={{
+              background:
+                "radial-gradient(120% 80% at 50% 0%, rgba(99,102,241,0.14), transparent 60%), linear-gradient(180deg, #15151b, #111118)",
+              border: `1px solid ${INDIGO}`,
+              boxShadow: "0 0 0 1px rgba(99,102,241,0.2), 0 30px 80px -30px rgba(99,102,241,0.45)",
+            }}
+          >
+            <div className="flex items-center justify-between mb-5">
+              <p className="text-[10px] uppercase font-semibold" style={{ color: INDIGO, letterSpacing: "0.22em" }}>
+                SmartTourOS · Recovery Layer
+              </p>
+              <Database className="h-4 w-4" style={{ color: INDIGO }} />
+            </div>
+
+            {/* Resolved profile cards */}
+            <div className="space-y-2 mb-5">
+              {[
+                { name: "Household · 941 Maple Ave", tag: "High intent" },
+                { name: "Household · 22 Linden Ct", tag: "Returning visitor" },
+                { name: "Household · 7 Harborview", tag: "New" },
+              ].map((p, i) => (
+                <div
+                  key={p.name}
+                  className="flex items-center justify-between rounded-md px-3 py-2"
+                  style={{
+                    background: "rgba(99,102,241,0.08)",
+                    border: "1px solid rgba(99,102,241,0.25)",
+                    animation: `resolveIn 0.6s ${i * 0.15}s both ease-out`,
+                  }}
+                >
+                  <span className="text-xs font-mono" style={{ color: TEXT }}>{p.name}</span>
+                  <span
+                    className="text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded"
+                    style={{ background: "rgba(99,102,241,0.18)", color: "#c7d2fe", letterSpacing: "0.1em" }}
+                  >
+                    {p.tag}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-3">
+              <Stat label="Identified Buyers (est.)" value="18 – 42" tone="good" />
+              <Stat label="Engaged Households" value="61%" tone="good" />
+              <Stat label="CRM-Synced Leads" value="Active" tone="good" />
+            </div>
+
+            <p className="mt-5 text-xs" style={{ color: MUTED }}>
+              Routed into your <span style={{ color: TEXT }}>Owned Audience Layer</span>.
+            </p>
+          </div>
+        </div>
+
+        {/* Core insight card */}
+        <div
+          className="mt-10 rounded-xl p-6 lg:p-8 flex flex-col lg:flex-row lg:items-center gap-6"
+          style={{
+            background: SURFACE,
+            border: `1px solid ${BORDER}`,
+          }}
+        >
+          <div
+            className="h-12 w-12 shrink-0 rounded-md flex items-center justify-center"
+            style={{ background: "rgba(255,107,107,0.12)", color: "#ff8a8a" }}
+          >
+            <AlertTriangle className="h-6 w-6" />
+          </div>
+          <div className="flex-1">
+            <p
+              className="font-display"
+              style={{ fontSize: "clamp(1.25rem, 2vw, 1.75rem)", fontWeight: 600, letterSpacing: "-0.01em" }}
+            >
+              99% of virtual tour engagement is never captured in your CRM.
+            </p>
+            <p className="mt-2 text-sm" style={{ color: MUTED }}>
+              You already have the traffic. You are not capturing the identity. SmartTourOS fixes this at the source.
+            </p>
+          </div>
+        </div>
+
+        {/* Diagnosis result (revealed after submit) */}
+        {diagnosed && (
+          <div
+            className="mt-6 rounded-xl p-6 lg:p-8"
+            style={{
+              background: SURFACE_2,
+              border: `1px solid ${BORDER}`,
+              animation: "resolveIn 0.5s ease-out both",
+            }}
+          >
+            <p className="text-[10px] uppercase font-semibold mb-3" style={{ color: INDIGO, letterSpacing: "0.22em" }}>
+              Listing Diagnosis · System Generated
+            </p>
+            <div className="grid sm:grid-cols-3 gap-4">
+              <DiagStat label="Estimated lost buyers" value="180 – 240" />
+              <DiagStat label="Your current capture" value="0 – 3%" sub="untracked" />
+              <DiagStat label="Top-performing benchmark" value="12 – 18%" sub="of tour viewers" />
+            </div>
+            <p className="mt-5 text-xs" style={{ color: MUTED }}>
+              Result based on industry virtual-tour engagement benchmarks. Connect this listing to SmartTourOS to convert estimates into resolved households.
+            </p>
+          </div>
+        )}
+
+        {/* CTA row */}
+        <div className="mt-10 flex flex-wrap gap-3">
+          <Link
+            to="/auth"
+            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-md transition-colors"
+            style={{ background: INDIGO, color: "#fff" }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = INDIGO_HOVER)}
+            onMouseLeave={(e) => (e.currentTarget.style.background = INDIGO)}
+          >
+            Claim Your Listings <ArrowRight className="h-4 w-4" />
+          </Link>
+          <a
+            href="#how"
+            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-md border transition-colors"
+            style={{ borderColor: BORDER, color: TEXT }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = SURFACE)}
+            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+          >
+            See Your Lead Leak
+          </a>
+          <Link
+            to="/auth"
+            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-md border transition-colors"
+            style={{ borderColor: BORDER, color: MUTED }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = TEXT)}
+            onMouseLeave={(e) => (e.currentTarget.style.color = MUTED)}
+          >
+            Start with one listing
+          </Link>
+        </div>
+
+        <p className="mt-6 text-xs italic max-w-2xl" style={{ color: MUTED }}>
+          SmartTourOS is not a virtual tour tool. It is a listing audience ownership system.
+        </p>
+      </div>
+
+      {/* Local keyframes — page-scoped */}
+      <style>{`
+        @keyframes leakDot {
+          0%   { transform: translate(0, 0) scale(1);   opacity: 0; }
+          10%  { opacity: 1; }
+          55%  { transform: translate(var(--leak-x, 0px), 130px) scale(1); opacity: 1; }
+          75%  { transform: translate(calc(var(--leak-x, 0px) * 3), 180px) scale(0.6); opacity: 0.4; }
+          100% { transform: translate(calc(var(--leak-x, 0px) * 5), 220px) scale(0); opacity: 0; }
+        }
+        @keyframes resolveIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+    </section>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone: "neutral" | "good" | "bad";
+}) {
+  const color = tone === "good" ? "#a5b4fc" : tone === "bad" ? "#ff8a8a" : TEXT;
+  return (
+    <div className="flex items-center justify-between text-sm">
+      <span style={{ color: MUTED }}>{label}</span>
+      <span className="font-mono font-semibold" style={{ color }}>{value}</span>
+    </div>
+  );
+}
+
+function DiagStat({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div
+      className="rounded-md p-4"
+      style={{ background: BG, border: `1px solid ${BORDER}` }}
+    >
+      <p className="text-[10px] uppercase mb-2" style={{ color: MUTED, letterSpacing: "0.18em" }}>{label}</p>
+      <p className="font-display text-2xl" style={{ fontWeight: 600, letterSpacing: "-0.01em" }}>{value}</p>
+      {sub && <p className="text-xs mt-1" style={{ color: MUTED }}>{sub}</p>}
     </div>
   );
 }

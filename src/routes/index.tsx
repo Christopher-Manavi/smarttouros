@@ -763,23 +763,6 @@ function FlowConnector({ accent }: { accent: string }) {
   );
 }
 
-function Stat({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string;
-  tone: "neutral" | "good" | "bad";
-}) {
-  const color = tone === "good" ? "#a5b4fc" : tone === "bad" ? "#ff8a8a" : TEXT;
-  return (
-    <div className="flex items-center justify-between text-sm">
-      <span style={{ color: MUTED }}>{label}</span>
-      <span className="font-mono font-semibold" style={{ color }}>{value}</span>
-    </div>
-  );
-}
 
 function DiagStat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (

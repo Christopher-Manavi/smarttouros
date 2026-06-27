@@ -113,6 +113,10 @@ function Landing() {
         </div>
       </section>
 
+      {/* Listing Leak Visualizer */}
+      <LeakVisualizer />
+
+
       {/* Value props */}
       <section
         id="how"

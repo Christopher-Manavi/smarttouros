@@ -439,6 +439,7 @@ export type Database = {
     }
     Functions: {
       get_my_company_id: { Args: never; Returns: string }
+      get_public_tour: { Args: { p_slug: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

@@ -64,9 +64,9 @@ async function readImageDimensions(file: File): Promise<{ width: number; height:
   });
 }
 
-async function uploadFile(file: File, folder: string): Promise<UploadResult> {
+async function uploadFile(file: File, folder: string, companyId: string): Promise<UploadResult> {
   const ext = file.name.split(".").pop();
-  const path = `${folder}/${crypto.randomUUID()}.${ext}`;
+  const path = `${companyId}/${folder}/${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage.from("listing-media").upload(path, file, { upsert: false, contentType: file.type });
   if (error) throw error;
   const { data, error: signErr } = await supabase.storage.from("listing-media").createSignedUrl(path, SIGNED_URL_TTL);

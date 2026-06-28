@@ -161,6 +161,16 @@ function Landing() {
             <p className="mt-5 text-xs" style={{ color: "#737378" }}>
               100% Free · No Credit Card · MLS Compliant Unbranded Links
             </p>
+            <p className="mt-2 text-xs" style={{ color: "#737378" }}>
+              Don't have a video yet?{" "}
+              <button
+                type="button"
+                onClick={() => setConciergeOpen(true)}
+                className="font-medium text-purple-400 hover:text-purple-300 transition-colors cursor-pointer underline decoration-dashed underline-offset-4"
+              >
+                Click here and we'll shoot one for you within 24 hours—absolutely free.
+              </button>
+            </p>
           </div>
         </section>
 

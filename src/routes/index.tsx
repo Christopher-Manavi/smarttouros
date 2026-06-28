@@ -490,7 +490,7 @@ function MagicInput() {
             type="text"
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            placeholder="Enter Your Listing Address or YouTube Walkthrough URL"
+            placeholder="Paste any YouTube link (even a 10-second cell phone video)..."
             className="flex-1 bg-transparent px-4 py-3 sm:py-4 text-sm sm:text-base outline-none placeholder:text-neutral-500"
             style={{ color: TEXT }}
           />

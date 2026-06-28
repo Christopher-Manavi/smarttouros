@@ -447,6 +447,112 @@ function Landing() {
           <span>MLS-safe virtual tour links. Confirm local MLS rules before publishing.</span>
         </div>
       </footer>
+
+      <ConciergeModal open={conciergeOpen} onClose={() => setConciergeOpen(false)} />
+    </div>
+  );
+}
+
+// ===== Concierge Onboarding Modal =====
+function ConciergeModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [address, setAddress] = useState("");
+  const [phone, setPhone] = useState("");
+  const [sent, setSent] = useState(false);
+
+  if (!open) return null;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200"
+      style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)" }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-md rounded-2xl p-8 animate-in fade-in zoom-in-95 duration-200"
+        style={{
+          background: "#0e0e12",
+          border: "1px solid rgba(255,255,255,0.10)",
+          boxShadow: "0 30px 80px -20px rgba(139,92,246,0.35)",
+        }}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute right-4 top-4 h-8 w-8 rounded-md flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/5 transition-colors"
+        >
+          <X className="h-4 w-4" />
+        </button>
+
+        <h3 className="text-2xl font-bold tracking-tight" style={{ color: TEXT, letterSpacing: "-0.02em" }}>
+          Let's get your listing on Zillow.
+        </h3>
+        <p className="mt-2 text-sm" style={{ color: MUTED, lineHeight: 1.55 }}>
+          Give us the address. We'll shoot a quick 10-second walkthrough and generate your compliant MLS link within 24 hours. 100% Free.
+        </p>
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setSent(true);
+          }}
+          className="mt-6 space-y-3"
+        >
+          <input
+            type="text"
+            required
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            placeholder="123 Main St, Austin, TX"
+            disabled={sent}
+            className="w-full rounded-lg px-4 py-3 text-sm outline-none transition-all placeholder:text-neutral-500 focus:ring-2 focus:ring-purple-500/40 disabled:opacity-60"
+            style={{
+              background: "#16161b",
+              border: "1px solid rgba(255,255,255,0.10)",
+              color: TEXT,
+            }}
+          />
+          <input
+            type="tel"
+            required
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="(555) 123-4567"
+            disabled={sent}
+            className="w-full rounded-lg px-4 py-3 text-sm outline-none transition-all placeholder:text-neutral-500 focus:ring-2 focus:ring-purple-500/40 disabled:opacity-60"
+            style={{
+              background: "#16161b",
+              border: "1px solid rgba(255,255,255,0.10)",
+              color: TEXT,
+            }}
+          />
+          <button
+            type="submit"
+            disabled={sent}
+            className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold rounded-lg transition-all duration-200 hover:opacity-90 disabled:opacity-100"
+            style={{
+              background: sent ? "#16a34a" : GRADIENT,
+              color: "#fff",
+              boxShadow: "0 8px 24px -8px rgba(139,92,246,0.5)",
+            }}
+          >
+            {sent ? (
+              <>
+                <Check className="h-4 w-4" />
+                Request Sent!
+              </>
+            ) : (
+              "Send Videographer"
+            )}
+          </button>
+          <p className="text-center text-xs" style={{ color: "#737378" }}>
+            We typically respond within 2 hours during business hours.
+          </p>
+        </form>
+      </div>
     </div>
   );
 }

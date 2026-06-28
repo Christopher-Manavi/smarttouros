@@ -7,8 +7,7 @@ import {
   X,
   Check,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { X as XIcon } from "lucide-react";
+import { useState } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({

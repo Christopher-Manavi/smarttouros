@@ -1,0 +1,15 @@
+# SmartTourOS
+
+> SmartTourOS is a white-label smart virtual tour platform for real estate photographers, media companies, agents, and brokerages. It turns tour traffic into buyer and seller discovery with MLS-safe tour pages, listing analytics, and visitor follow-up.
+
+## Pages
+
+- [Home](/): Product overview, the "lead leak" problem, and how SmartTourOS captures buyer and seller intent.
+- [Sign in](/auth): Sign in or create a SmartTourOS workspace.
+
+## Legal
+
+- [Privacy](/privacy): How SmartTourOS handles visitor data.
+- [Cookies](/cookies): Cookie usage on SmartTourOS tour pages.
+- [Privacy Choices](/privacy-choices): Opt-out controls for visitors.
+- [Terms](/terms): Terms of service for SmartTourOS.

@@ -1,5 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
   ArrowRight,
   PlayCircle,
   Zap,
@@ -67,6 +73,29 @@ const MUTED = "#a3a3a3";
 const PURPLE = "#8B5CF6";
 const BLUE = "#3B82F6";
 const GRADIENT = `linear-gradient(135deg, ${PURPLE} 0%, ${BLUE} 100%)`;
+
+const faqItems = [
+  {
+    question: "How does SmartTourOS identify anonymous visitors?",
+    answer:
+      "Our proprietary Identity Reconciliation Engine operates at the edge, leveraging geospatial telemetry and bid-stream normalization to create a deterministic identity profile. By orchestrating a multi-node handshake between first-party tag signals and Enterprise-Grade Graph-Data APIs, we resolve visitor intent with precision standard analytics cannot match.",
+  },
+  {
+    question: "Is this just a standard virtual tour link?",
+    answer:
+      "No. We position our technology as a Smart Listing Bridge. Unlike passive video links, our architecture utilizes parent-child frame orchestration to operate within the listing's native embed environment, bridging the gap between Zillow session data and our identity graphs.",
+  },
+  {
+    question: "Does this require professional 3D scans?",
+    answer:
+      "No. A simple, 10-second smartphone walkthrough video is all that is needed to unlock your Zillow buyer data; our system handles the formatting automatically.",
+  },
+  {
+    question: "What is the benefit of the Lender and Title sponsorship model?",
+    answer:
+      "This model creates a predictable lead-generation ecosystem where lenders/title companies sponsor your account to gain co-work access to high-intent buyer leads, providing you with professional software at no cost.",
+  },
+];
 
 function Landing() {
   const [conciergeOpen, setConciergeOpen] = useState(false);
@@ -422,6 +451,32 @@ function Landing() {
                   </Link>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ============ FAQ ============ */}
+        <section className="relative">
+          <div className="container-luxe py-20 lg:py-24">
+            <h2
+              className="text-center text-xs font-semibold uppercase tracking-widest mb-12"
+              style={{ color: MUTED, letterSpacing: "0.22em" }}
+            >
+              Frequently Asked Questions
+            </h2>
+            <div className="mx-auto max-w-2xl">
+              <Accordion type="single" collapsible className="w-full">
+                {faqItems.map((item, i) => (
+                  <AccordionItem key={i} value={`item-${i}`} className="border-b border-zinc-800">
+                    <AccordionTrigger className="text-left text-sm font-medium text-zinc-200 hover:no-underline py-5">
+                      {item.question}
+                    </AccordionTrigger>
+                    <AccordionContent className="text-sm text-zinc-400 pb-5 leading-relaxed">
+                      {item.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
             </div>
           </div>
         </section>

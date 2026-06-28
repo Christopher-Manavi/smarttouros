@@ -454,6 +454,32 @@ function Landing() {
             </div>
           </div>
         </section>
+
+        {/* ============ FAQ ============ */}
+        <section className="relative">
+          <div className="container-luxe py-20 lg:py-24">
+            <h2
+              className="text-center text-xs font-semibold uppercase tracking-widest mb-12"
+              style={{ color: MUTED, letterSpacing: "0.22em" }}
+            >
+              Frequently Asked Questions
+            </h2>
+            <div className="mx-auto max-w-2xl">
+              <Accordion type="single" collapsible className="w-full">
+                {faqItems.map((item, i) => (
+                  <AccordionItem key={i} value={`item-${i}`} className="border-b border-zinc-800">
+                    <AccordionTrigger className="text-left text-sm font-medium text-zinc-200 hover:no-underline py-5">
+                      {item.question}
+                    </AccordionTrigger>
+                    <AccordionContent className="text-sm text-zinc-400 pb-5 leading-relaxed">
+                      {item.answer}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </div>
+          </div>
+        </section>
       </main>
 
       {/* Footer */}

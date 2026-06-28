@@ -1,21 +1,28 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, ShieldCheck, Zap, Gift, X, Check, AlertTriangle, Radar } from "lucide-react";
+import {
+  ArrowRight,
+  PlayCircle,
+  Zap,
+  BarChart3,
+  X,
+  Check,
+} from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "SmartTourOS — Virtual Tour Platform for Real Estate" },
+      { title: "SmartTourOS — See Who Is Looking At Your Zillow Listings" },
       {
         name: "description",
         content:
-          "Turn virtual-tour clicks into buyer and seller leads with MLS-safe smart tour pages, listing analytics, and household-level follow-up.",
+          "Create a free account in 30 seconds. Turn anonymous Zillow traffic into compliant, captured buyers with MLS-safe smart tour links.",
       },
-      { property: "og:title", content: "SmartTourOS — Virtual Tour Platform for Real Estate" },
+      { property: "og:title", content: "SmartTourOS — See Who Is Looking At Your Zillow Listings" },
       {
         property: "og:description",
         content:
-          "Turn virtual-tour clicks into buyer and seller leads with MLS-safe smart tour pages, listing analytics, and household-level follow-up.",
+          "Turn anonymous Zillow traffic into compliant, captured buyers with MLS-safe smart tour links.",
       },
       { property: "og:url", content: "https://smarttouros.com/" },
       { property: "og:type", content: "website" },
@@ -50,757 +57,435 @@ export const Route = createFileRoute("/")({
 });
 
 // Page-scoped dark palette — does not touch global theme tokens.
-const BG = "#0b0b0d";
-const SURFACE = "#121214";
-const SURFACE_2 = "#17171b";
-const BORDER = "#26262c";
-const INDIGO = "#6366f1";
-const INDIGO_HOVER = "#4f46e5";
-const TEXT = "#f5f5f7";
-const MUTED = "#9a9aa3";
+const BG = "#0A0A0A";
+const SURFACE = "#111114";
+const SURFACE_2 = "#16161b";
+const BORDER = "rgba(255,255,255,0.08)";
+const BORDER_STRONG = "rgba(255,255,255,0.14)";
+const TEXT = "#fafafa";
+const MUTED = "#a3a3a3";
+const PURPLE = "#8B5CF6";
+const BLUE = "#3B82F6";
+const GRADIENT = `linear-gradient(135deg, ${PURPLE} 0%, ${BLUE} 100%)`;
 
 function Landing() {
   return (
-    <div style={{ background: BG, color: TEXT }} className="min-h-screen font-sans antialiased">
-      {/* Nav */}
-      <header style={{ borderColor: BORDER }} className="border-b">
+    <div
+      style={{ background: BG, color: TEXT, fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
+      className="min-h-screen antialiased relative overflow-x-hidden"
+    >
+      {/* Ambient glow */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 h-[600px] w-[900px] rounded-full"
+        style={{
+          background:
+            "radial-gradient(ellipse at center, rgba(139,92,246,0.18) 0%, rgba(59,130,246,0.10) 35%, transparent 70%)",
+          filter: "blur(40px)",
+        }}
+      />
+
+      {/* Minimal nav */}
+      <header className="relative">
         <div className="container-luxe h-16 flex items-center justify-between">
-          <Link to="/" className="font-display text-2xl tracking-tight" style={{ color: TEXT }}>
+          <Link
+            to="/"
+            className="text-lg font-bold tracking-tight"
+            style={{ color: TEXT, letterSpacing: "-0.02em" }}
+          >
             SmartTour<span style={{ color: MUTED }}>OS</span>
           </Link>
-          <nav className="flex items-center gap-2">
-            <Link
-              to="/auth"
-              className="px-3 py-2 text-sm font-medium rounded-md transition-colors"
-              style={{ color: TEXT }}
-            >
-              Sign in
-            </Link>
-            <Link
-              to="/auth"
-              className="inline-flex items-center gap-1 px-4 py-2 text-sm font-semibold rounded-md transition-colors"
-              style={{ background: INDIGO, color: "#fff" }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = INDIGO_HOVER)}
-              onMouseLeave={(e) => (e.currentTarget.style.background = INDIGO)}
-            >
-              Get started <ArrowRight className="h-4 w-4" />
-            </Link>
-          </nav>
+          <Link
+            to="/auth"
+            className="text-sm font-medium transition-colors duration-200 hover:opacity-80"
+            style={{ color: MUTED }}
+          >
+            Sign in →
+          </Link>
         </div>
       </header>
 
       <main>
-      {/* Hero */}
+        {/* ============ HERO ============ */}
+        <section className="relative">
+          <div className="container-luxe pt-20 pb-28 lg:pt-28 lg:pb-36 text-center">
+            <div
+              className="inline-flex items-center gap-2 px-3 py-1 mb-8 rounded-full text-xs font-medium"
+              style={{
+                background: "rgba(139,92,246,0.10)",
+                border: `1px solid ${BORDER_STRONG}`,
+                color: "#c4b5fd",
+              }}
+            >
+              <span
+                className="h-1.5 w-1.5 rounded-full"
+                style={{ background: PURPLE, boxShadow: `0 0 10px ${PURPLE}` }}
+              />
+              Live for agents nationwide
+            </div>
 
-      <section className="container-luxe py-24 lg:py-32">
-        <p
-          className="text-xs uppercase mb-6"
-          style={{ color: MUTED, letterSpacing: "0.24em" }}
-        >
-          Stop the lead leak
-        </p>
-        <h1
-          className="font-display max-w-5xl"
-          style={{
-            fontSize: "clamp(2.5rem, 6vw, 5.25rem)",
-            lineHeight: 1.05,
-            letterSpacing: "-0.02em",
-            fontWeight: 600,
-          }}
-        >
-          Why are you paying to send your best buyers to someone else's platform?
-        </h1>
-        <p
-          className="mt-8 max-w-3xl"
-          style={{ color: MUTED, fontSize: "1.15rem", lineHeight: 1.6 }}
-        >
-          99% of serious buyers engage with the virtual tour. Stop losing that intent.
-          Resolve your leads instantly, capture their identity, and own your listing data.
-        </p>
-        <div className="mt-10 flex flex-wrap gap-3">
-          <Link
-            to="/auth"
-            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-md transition-colors"
-            style={{ background: INDIGO, color: "#fff", letterSpacing: "0.02em" }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = INDIGO_HOVER)}
-            onMouseLeave={(e) => (e.currentTarget.style.background = INDIGO)}
-          >
-            Claim your listings <ArrowRight className="h-4 w-4" />
-          </Link>
-          <a
-            href="#how"
-            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-md border transition-colors"
-            style={{ borderColor: BORDER, color: TEXT, background: "transparent" }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = SURFACE)}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-          >
-            See how it works
-          </a>
-        </div>
-      </section>
-
-      {/* Listing Leak Visualizer */}
-      <LeakVisualizer />
-
-
-      {/* Value props */}
-      <section
-        id="how"
-        style={{ borderColor: BORDER, background: SURFACE }}
-        className="border-y"
-      >
-        <div className="container-luxe py-24">
-          <p
-            className="text-xs uppercase mb-5"
-            style={{ color: MUTED, letterSpacing: "0.24em" }}
-          >
-            The new standard for listing media
-          </p>
-          <h2
-            className="font-display max-w-4xl"
-            style={{
-              fontSize: "clamp(2rem, 4vw, 3.25rem)",
-              lineHeight: 1.1,
-              letterSpacing: "-0.015em",
-              fontWeight: 600,
-            }}
-          >
-            Your tour traffic is your most valuable audience. Treat it that way.
-          </h2>
-
-          <div className="mt-14 grid md:grid-cols-3 gap-5">
-            {[
-              {
-                icon: ShieldCheck,
-                title: "Zero-Leak Conversion",
-                body:
-                  "Stop traffic from leaking to YouTube, Matterport, or Dropbox. Every click stays on your branded, MLS-safe domain — where you control the experience and the data.",
-              },
-              {
-                icon: Zap,
-                title: "Instant Lead Resolution",
-                body:
-                  "We turn anonymous clicks into identified buyer profiles the moment they interact with your tour. Household-level intent, delivered before your competition even knows the buyer exists.",
-              },
-              {
-                icon: Gift,
-                title: "Premium Media, Zero Cost",
-                body:
-                  "Get your professional media package — photography, video, virtual tour — fully integrated and included. Marketing assets plus lead capture, for the price you already pay for a tour.",
-              },
-            ].map((f) => (
-              <div
-                key={f.title}
-                className="rounded-xl p-8 flex flex-col"
-                style={{ background: SURFACE_2, border: `1px solid ${BORDER}` }}
+            <h1
+              className="mx-auto max-w-4xl font-bold tracking-tight"
+              style={{
+                fontSize: "clamp(2.5rem, 6.5vw, 5rem)",
+                lineHeight: 1.02,
+                letterSpacing: "-0.035em",
+                color: TEXT,
+              }}
+            >
+              See Who Is Looking At Your{" "}
+              <span
+                style={{
+                  background: GRADIENT,
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}
               >
+                Zillow Listings.
+              </span>
+            </h1>
+
+            <p
+              className="mx-auto mt-7 max-w-2xl"
+              style={{ color: MUTED, fontSize: "1.125rem", lineHeight: 1.55 }}
+            >
+              Create a free account in 30 seconds. Turn your anonymous Zillow traffic into
+              compliant, captured buyers.
+            </p>
+
+            {/* Magic input */}
+            <MagicInput />
+
+            <p className="mt-5 text-xs" style={{ color: "#737378" }}>
+              100% Free · No Credit Card · MLS Compliant Unbranded Links
+            </p>
+          </div>
+        </section>
+
+        {/* ============ ONBOARDING 1-2-3 ============ */}
+        <section className="relative">
+          <div className="container-luxe py-20 lg:py-24">
+            <div className="text-center mb-14">
+              <p
+                className="text-xs uppercase font-semibold mb-3"
+                style={{ color: "#a78bfa", letterSpacing: "0.22em" }}
+              >
+                Bam. 1-2-3.
+              </p>
+              <h2
+                className="font-bold mx-auto max-w-2xl"
+                style={{
+                  fontSize: "clamp(1.875rem, 3.5vw, 2.75rem)",
+                  lineHeight: 1.1,
+                  letterSpacing: "-0.025em",
+                }}
+              >
+                From media link to captured lead in under a minute.
+              </h2>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-5">
+              {[
+                {
+                  step: "01",
+                  icon: PlayCircle,
+                  title: "Drop Your Media Link",
+                  body:
+                    "Paste a YouTube walkthrough, video file, or existing tour link. We handle every format.",
+                },
+                {
+                  step: "02",
+                  icon: Zap,
+                  title: "Generate Compliant Link",
+                  body:
+                    "One click converts it into an unbranded, MLS-compliant gateway you can paste anywhere.",
+                },
+                {
+                  step: "03",
+                  icon: BarChart3,
+                  title: "Capture Zillow Traffic",
+                  body:
+                    "Paste in your MLS. Watch anonymous Zillow views turn into real, identified leads.",
+                },
+              ].map((s) => (
                 <div
-                  className="h-10 w-10 rounded-md flex items-center justify-center mb-6"
-                  style={{ background: "rgba(99,102,241,0.12)", color: INDIGO }}
+                  key={s.step}
+                  className="group relative rounded-2xl p-7 transition-all duration-200 hover:-translate-y-1"
+                  style={{
+                    background: SURFACE,
+                    border: `1px solid ${BORDER}`,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(139,92,246,0.4)";
+                    e.currentTarget.style.boxShadow =
+                      "0 20px 50px -20px rgba(139,92,246,0.35)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = BORDER;
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
                 >
-                  <f.icon className="h-5 w-5" />
+                  <div className="flex items-center justify-between mb-6">
+                    <div
+                      className="h-11 w-11 rounded-xl flex items-center justify-center"
+                      style={{
+                        background: "rgba(139,92,246,0.12)",
+                        border: `1px solid rgba(139,92,246,0.25)`,
+                        color: "#c4b5fd",
+                      }}
+                    >
+                      <s.icon className="h-5 w-5" />
+                    </div>
+                    <span
+                      className="text-xs font-mono font-semibold"
+                      style={{ color: "#52525a", letterSpacing: "0.1em" }}
+                    >
+                      {s.step}
+                    </span>
+                  </div>
+                  <h3
+                    className="text-xl font-semibold mb-2"
+                    style={{ letterSpacing: "-0.015em" }}
+                  >
+                    {s.title}
+                  </h3>
+                  <p style={{ color: MUTED, fontSize: "0.95rem", lineHeight: 1.55 }}>
+                    {s.body}
+                  </p>
                 </div>
-                <h3
-                  className="font-display text-2xl mb-3"
-                  style={{ letterSpacing: "-0.01em", fontWeight: 600 }}
-                >
-                  {f.title}
-                </h3>
-                <p style={{ color: MUTED, lineHeight: 1.6, fontSize: "0.95rem" }}>{f.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* The Math of Your Listing */}
-      <section className="container-luxe py-24 lg:py-32">
-        <p
-          className="text-xs uppercase mb-5"
-          style={{ color: MUTED, letterSpacing: "0.24em" }}
-        >
-          Conversion math
-        </p>
-        <h2
-          className="font-display max-w-4xl"
-          style={{
-            fontSize: "clamp(2rem, 4.5vw, 3.5rem)",
-            lineHeight: 1.1,
-            letterSpacing: "-0.015em",
-            fontWeight: 600,
-          }}
-        >
-          The Math of Your Listing.
-        </h2>
-        <p className="mt-5 max-w-2xl" style={{ color: MUTED, fontSize: "1.05rem", lineHeight: 1.6 }}>
-          Same listing. Same tour. Two completely different outcomes.
-        </p>
-
-        <div className="mt-12 grid md:grid-cols-2 gap-5">
-          {/* Old way */}
-          <div
-            className="rounded-xl p-8"
-            style={{ background: SURFACE, border: `1px solid ${BORDER}` }}
-          >
-            <p
-              className="text-xs uppercase mb-4"
-              style={{ color: MUTED, letterSpacing: "0.2em" }}
-            >
-              The Old Way
-            </p>
-            <h3
-              className="font-display text-3xl mb-6"
-              style={{ letterSpacing: "-0.01em", fontWeight: 600 }}
-            >
-              Pay to send leads to someone else.
-            </h3>
-            <ul className="space-y-4">
-              {[
-                "Tour link points to YouTube, Matterport, or a hosted PDF.",
-                "Buyer leaves your branded experience within seconds.",
-                "Third-party platform captures the session — you don't.",
-                "Anonymous click. No name, no household, no follow-up.",
-                "You pay for the media. Someone else owns the audience.",
-              ].map((line) => (
-                <li key={line} className="flex gap-3 items-start">
-                  <span
-                    className="h-5 w-5 rounded-full flex items-center justify-center mt-0.5 shrink-0"
-                    style={{ background: "rgba(255,80,80,0.12)", color: "#ff6b6b" }}
-                  >
-                    <X className="h-3 w-3" />
-                  </span>
-                  <span style={{ color: MUTED, lineHeight: 1.55 }}>{line}</span>
-                </li>
               ))}
-            </ul>
-          </div>
-
-          {/* SmartTourOS way */}
-          <div
-            className="rounded-xl p-8 relative overflow-hidden"
-            style={{
-              background: SURFACE_2,
-              border: `1px solid ${INDIGO}`,
-              boxShadow: "0 0 0 1px rgba(99,102,241,0.25), 0 24px 60px -20px rgba(99,102,241,0.35)",
-            }}
-          >
-            <p
-              className="text-xs uppercase mb-4"
-              style={{ color: INDIGO, letterSpacing: "0.2em", fontWeight: 600 }}
-            >
-              The SmartTourOS Way
-            </p>
-            <h3
-              className="font-display text-3xl mb-6"
-              style={{ letterSpacing: "-0.01em", fontWeight: 600 }}
-            >
-              Capture, resolve, and own every lead.
-            </h3>
-            <ul className="space-y-4">
-              {[
-                "Every tour link routes through your branded, MLS-safe domain.",
-                "Buyer stays in your experience from first click to last frame.",
-                "Session, referrer, and engagement captured in your dashboard.",
-                "Anonymous clicks resolve to household-level buyer profiles.",
-                "You own the media, the audience, and the next conversation.",
-              ].map((line) => (
-                <li key={line} className="flex gap-3 items-start">
-                  <span
-                    className="h-5 w-5 rounded-full flex items-center justify-center mt-0.5 shrink-0"
-                    style={{ background: "rgba(99,102,241,0.18)", color: INDIGO }}
-                  >
-                    <Check className="h-3 w-3" />
-                  </span>
-                  <span style={{ color: TEXT, lineHeight: 1.55 }}>{line}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-8">
-              <Link
-                to="/auth"
-                className="inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold rounded-md transition-colors"
-                style={{ background: INDIGO, color: "#fff" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = INDIGO_HOVER)}
-                onMouseLeave={(e) => (e.currentTarget.style.background = INDIGO)}
-              >
-                Switch the math <ArrowRight className="h-4 w-4" />
-              </Link>
             </div>
           </div>
-        </div>
+        </section>
 
-        <p
-          className="mt-10 text-xs italic max-w-2xl"
-          style={{ color: MUTED }}
-        >
-          Engagement figures shown are placeholder market-research positioning and will be updated with verified source data.
-        </p>
-      </section>
+        {/* ============ COMPARISON ============ */}
+        <section className="relative">
+          <div className="container-luxe py-20 lg:py-28">
+            <div className="text-center mb-14">
+              <p
+                className="text-xs uppercase font-semibold mb-3"
+                style={{ color: "#60a5fa", letterSpacing: "0.22em" }}
+              >
+                The visual payoff
+              </p>
+              <h2
+                className="font-bold mx-auto max-w-3xl"
+                style={{
+                  fontSize: "clamp(1.875rem, 3.8vw, 2.875rem)",
+                  lineHeight: 1.1,
+                  letterSpacing: "-0.025em",
+                }}
+              >
+                Same 223 views. Two completely different outcomes.
+              </h2>
+            </div>
 
-      {/* Closing CTA */}
-      <section style={{ borderColor: BORDER, background: SURFACE }} className="border-t">
-        <div className="container-luxe py-20 text-center">
-          <h2
-            className="font-display max-w-3xl mx-auto"
-            style={{
-              fontSize: "clamp(1.75rem, 3.5vw, 2.75rem)",
-              lineHeight: 1.15,
-              letterSpacing: "-0.015em",
-              fontWeight: 600,
-            }}
-          >
-            Your next listing is your next lead engine. Stop giving it away.
-          </h2>
-          <div className="mt-8 flex justify-center gap-3">
-            <Link
-              to="/auth"
-              className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-md transition-colors"
-              style={{ background: INDIGO, color: "#fff" }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = INDIGO_HOVER)}
-              onMouseLeave={(e) => (e.currentTarget.style.background = INDIGO)}
-            >
-              Start with one listing <ArrowRight className="h-4 w-4" />
-            </Link>
-            <a
-              href="mailto:hello@smarttouros.com?subject=Free%20Tour%20Audit"
-              className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-md border transition-colors"
-              style={{ borderColor: BORDER, color: TEXT }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = SURFACE_2)}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-            >
-              Request free tour audit
-            </a>
+            <div className="grid md:grid-cols-2 gap-5">
+              {/* The Old Way */}
+              <div
+                className="relative rounded-2xl p-8"
+                style={{
+                  background: SURFACE,
+                  border: "1px solid rgba(239,68,68,0.25)",
+                  boxShadow:
+                    "0 0 0 1px rgba(239,68,68,0.08), 0 20px 60px -30px rgba(239,68,68,0.35)",
+                }}
+              >
+                <div
+                  aria-hidden
+                  className="absolute inset-x-0 top-0 h-px"
+                  style={{
+                    background:
+                      "linear-gradient(90deg, transparent, rgba(239,68,68,0.6), transparent)",
+                  }}
+                />
+                <p
+                  className="text-xs uppercase font-bold mb-4"
+                  style={{ color: "#fca5a5", letterSpacing: "0.2em" }}
+                >
+                  The Old Way
+                </p>
+                <h3
+                  className="text-2xl font-bold mb-7"
+                  style={{ letterSpacing: "-0.02em" }}
+                >
+                  Zillow keeps your buyers. You pay anyway.
+                </h3>
+                <ul className="space-y-4">
+                  {[
+                    "Zillow shows 223 anonymous views — you see a counter.",
+                    "Zillow sells those leads to Premier Agents in your zip.",
+                    "You never see a name, email, or phone number.",
+                    "Cost: lost commissions, every single month.",
+                  ].map((line) => (
+                    <li key={line} className="flex gap-3 items-start">
+                      <span
+                        className="h-5 w-5 rounded-full flex items-center justify-center mt-0.5 shrink-0"
+                        style={{
+                          background: "rgba(239,68,68,0.15)",
+                          color: "#f87171",
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </span>
+                      <span style={{ color: MUTED, lineHeight: 1.55 }}>{line}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* The SmartTour Way */}
+              <div
+                className="relative rounded-2xl p-8"
+                style={{
+                  background: SURFACE_2,
+                  border: "1px solid rgba(139,92,246,0.4)",
+                  boxShadow:
+                    "0 0 0 1px rgba(139,92,246,0.15), 0 20px 60px -25px rgba(139,92,246,0.5)",
+                }}
+              >
+                <div
+                  aria-hidden
+                  className="absolute inset-x-0 top-0 h-px"
+                  style={{ background: GRADIENT }}
+                />
+                <p
+                  className="text-xs uppercase font-bold mb-4"
+                  style={{
+                    background: GRADIENT,
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                    letterSpacing: "0.2em",
+                  }}
+                >
+                  The SmartTour Way
+                </p>
+                <h3
+                  className="text-2xl font-bold mb-7"
+                  style={{ letterSpacing: "-0.02em" }}
+                >
+                  Same views. Routed through you. Captured forever.
+                </h3>
+                <ul className="space-y-4">
+                  {[
+                    "Those same 223 views route through your branded link first.",
+                    "Buyer data lands compliantly in your SmartTour dashboard.",
+                    "Household-level identity resolution — name, address, intent.",
+                    "Cost: $0. Completely free to start.",
+                  ].map((line) => (
+                    <li key={line} className="flex gap-3 items-start">
+                      <span
+                        className="h-5 w-5 rounded-full flex items-center justify-center mt-0.5 shrink-0"
+                        style={{
+                          background: "rgba(139,92,246,0.18)",
+                          color: "#c4b5fd",
+                        }}
+                      >
+                        <Check className="h-3 w-3" />
+                      </span>
+                      <span style={{ color: TEXT, lineHeight: 1.55 }}>{line}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-8">
+                  <Link
+                    to="/auth"
+                    className="inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold rounded-lg transition-all duration-200 hover:opacity-90"
+                    style={{ background: GRADIENT, color: "#fff" }}
+                  >
+                    Start free — claim your traffic
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
       {/* Footer */}
-      </main>
-      <footer style={{ borderColor: BORDER }} className="border-t py-10">
-
+      <footer style={{ borderColor: BORDER }} className="border-t py-10 relative">
         <div
           className="container-luxe flex flex-col gap-3 text-xs md:flex-row md:items-center md:justify-between"
-          style={{ color: MUTED }}
+          style={{ color: "#737378" }}
         >
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span>© SmartTourOS</span>
             <span aria-hidden="true">·</span>
-            <a href="/privacy" className="hover:text-white">Privacy</a>
+            <a href="/privacy" className="transition-colors duration-200 hover:text-white">Privacy</a>
             <span aria-hidden="true">•</span>
-            <a href="/cookies" className="hover:text-white">Cookies</a>
+            <a href="/cookies" className="transition-colors duration-200 hover:text-white">Cookies</a>
             <span aria-hidden="true">•</span>
-            <a href="/privacy-choices" className="hover:text-white">Privacy Choices</a>
+            <a href="/privacy-choices" className="transition-colors duration-200 hover:text-white">Privacy Choices</a>
             <span aria-hidden="true">•</span>
-            <a href="/terms" className="hover:text-white">Terms</a>
+            <a href="/terms" className="transition-colors duration-200 hover:text-white">Terms</a>
           </div>
-          <span>Generate MLS-safe virtual tour links. Confirm local MLS rules before publishing.</span>
+          <span>MLS-safe virtual tour links. Confirm local MLS rules before publishing.</span>
         </div>
       </footer>
     </div>
   );
 }
 
-// ===== Listing Leak Visualizer =====
-function LeakVisualizer() {
-  const [url, setUrl] = useState("");
-  const [diagnosed, setDiagnosed] = useState(false);
-
-
-
-
-  const handleDiagnose = (e: React.FormEvent) => {
-    e.preventDefault();
-    setDiagnosed(true);
-  };
+// ===== Magic Input (visual placeholder — wires to /auth) =====
+function MagicInput() {
+  const [value, setValue] = useState("");
 
   return (
-    <section style={{ background: BG, borderColor: BORDER }} className="border-t border-b relative overflow-hidden">
-      {/* scanline backdrop */}
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        // Visual shell — hand off to auth/signup flow.
+        window.location.href = "/auth";
+      }}
+      className="mx-auto mt-10 max-w-2xl"
+    >
       <div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none opacity-[0.06]"
+        className="relative rounded-2xl p-1.5 transition-all duration-200"
         style={{
-          backgroundImage:
-            "repeating-linear-gradient(0deg, #fff 0 1px, transparent 1px 4px)",
+          background: SURFACE,
+          border: `1px solid ${BORDER_STRONG}`,
+          boxShadow: value
+            ? "0 0 0 3px rgba(139,92,246,0.18), 0 20px 60px -20px rgba(59,130,246,0.4)"
+            : "0 10px 40px -20px rgba(0,0,0,0.6)",
         }}
-      />
-      <div className="container-luxe py-24 relative">
-        <div className="flex items-center gap-2 mb-4">
-          <span
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] uppercase font-semibold"
-            style={{
-              background: "rgba(255,107,107,0.12)",
-              color: "#ff8a8a",
-              border: "1px solid rgba(255,107,107,0.35)",
-              letterSpacing: "0.18em",
-            }}
-          >
-            <span className="h-1.5 w-1.5 rounded-full" style={{ background: "#ff6b6b", boxShadow: "0 0 8px #ff6b6b" }} />
-            Live Listing Diagnostic
-          </span>
-        </div>
-        <h2
-          className="font-display max-w-4xl"
+      >
+        {/* Subtle gradient halo on focus */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -inset-px rounded-2xl opacity-0 transition-opacity duration-300"
           style={{
-            fontSize: "clamp(2rem, 4.5vw, 3.5rem)",
-            lineHeight: 1.1,
-            letterSpacing: "-0.015em",
-            fontWeight: 600,
+            background: GRADIENT,
+            opacity: value ? 0.15 : 0,
+            filter: "blur(20px)",
+            zIndex: -1,
           }}
-        >
-          Where Your Buyers Actually Go.
-        </h2>
-        <p className="mt-5 max-w-2xl" style={{ color: MUTED, fontSize: "1.05rem", lineHeight: 1.6 }}>
-          Paste any active listing. We'll show you, in real time, where the buyer demand leaks
-          out of your funnel — and what an owned audience layer would have captured instead.
-        </p>
-
-        {/* Diagnostic input */}
-        <form
-          onSubmit={handleDiagnose}
-          className="mt-8 flex flex-col sm:flex-row gap-3 max-w-2xl"
-        >
+        />
+        <div className="flex flex-col sm:flex-row items-stretch gap-2">
           <input
-            type="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://www.zillow.com/homedetails/..."
-            className="flex-1 px-4 py-3 rounded-md text-sm outline-none transition-colors"
-            style={{
-              background: SURFACE,
-              border: `1px solid ${BORDER}`,
-              color: TEXT,
-            }}
+            type="text"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="Enter Your Listing Address or YouTube Walkthrough URL"
+            className="flex-1 bg-transparent px-4 py-3 sm:py-4 text-sm sm:text-base outline-none placeholder:text-neutral-500"
+            style={{ color: TEXT }}
           />
           <button
             type="submit"
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold rounded-md transition-colors"
-            style={{ background: INDIGO, color: "#fff" }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = INDIGO_HOVER)}
-            onMouseLeave={(e) => (e.currentTarget.style.background = INDIGO)}
-          >
-            <Radar className="h-4 w-4" /> Run Leak Diagnosis
-          </button>
-        </form>
-
-        {/* Lead Routing Flowchart — two paths */}
-        <div className="mt-14 grid lg:grid-cols-2 gap-5">
-          <FlowPath
-            tone="leak"
-            badge="Path 1 · The Zillow Leak"
-            icon={<AlertTriangle className="h-4 w-4" />}
-            nodes={[
-              { label: "The Buyer", sub: "High-intent search", size: "sm" },
-              { label: "ZILLOW", sub: "Third-party portal", size: "xl" },
-              { label: "Your Listing", sub: "Rendered on zillow.com", size: "sm" },
-              { label: "Zillow's CRM", sub: "Buyer identity captured — by them", size: "sm" },
-            ]}
-            result={{
-              title: "Zillow sells YOUR buyer back to YOU.",
-              sub: "Premier Agent · $$$ per lead · recurring",
-            }}
-          />
-          <FlowPath
-            tone="own"
-            badge="Path 2 · The SmartTourOS Way"
-            icon={<ShieldCheck className="h-4 w-4" />}
-            nodes={[
-              { label: "The Buyer", sub: "High-intent search", size: "sm" },
-              { label: "SmartTourOS", sub: "Your branded tour layer", size: "xl" },
-              { label: "Your Listing", sub: "On your owned domain", size: "sm" },
-              { label: "Your CRM", sub: "Identity resolved & synced", size: "sm" },
-            ]}
-            result={{
-              title: "You capture and own the buyer for FREE.",
-              sub: "$0 lead cost · 100% audience ownership",
-            }}
-          />
-        </div>
-
-        {/* Core insight card */}
-        <div
-          className="mt-10 rounded-xl p-6 lg:p-8 flex flex-col lg:flex-row lg:items-center gap-6"
-          style={{
-            background: SURFACE,
-            border: `1px solid ${BORDER}`,
-          }}
-        >
-          <div
-            className="h-12 w-12 shrink-0 rounded-md flex items-center justify-center"
-            style={{ background: "rgba(255,107,107,0.12)", color: "#ff8a8a" }}
-          >
-            <AlertTriangle className="h-6 w-6" />
-          </div>
-          <div className="flex-1">
-            <p
-              className="font-display"
-              style={{ fontSize: "clamp(1.25rem, 2vw, 1.75rem)", fontWeight: 600, letterSpacing: "-0.01em" }}
-            >
-              99% of virtual tour engagement is never captured in your CRM.
-            </p>
-            <p className="mt-2 text-sm" style={{ color: MUTED }}>
-              You already have the traffic. You are not capturing the identity. SmartTourOS fixes this at the source.
-            </p>
-          </div>
-        </div>
-
-        {/* Diagnosis result (revealed after submit) */}
-        {diagnosed && (
-          <div
-            className="mt-6 rounded-xl p-6 lg:p-8"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:py-3.5 text-sm font-semibold rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-lg"
             style={{
-              background: SURFACE_2,
-              border: `1px solid ${BORDER}`,
-              animation: "resolveIn 0.5s ease-out both",
+              background: GRADIENT,
+              color: "#fff",
+              boxShadow: "0 8px 24px -8px rgba(139,92,246,0.5)",
             }}
           >
-            <p className="text-[10px] uppercase font-semibold mb-3" style={{ color: INDIGO, letterSpacing: "0.22em" }}>
-              Listing Diagnosis · System Generated
-            </p>
-            <div className="grid sm:grid-cols-3 gap-4">
-              <DiagStat label="Estimated lost buyers" value="180 – 240" />
-              <DiagStat label="Your current capture" value="0 – 3%" sub="untracked" />
-              <DiagStat label="Top-performing benchmark" value="12 – 18%" sub="of tour viewers" />
-            </div>
-            <p className="mt-5 text-xs" style={{ color: MUTED }}>
-              Result based on industry virtual-tour engagement benchmarks. Connect this listing to SmartTourOS to convert estimates into resolved households.
-            </p>
-          </div>
-        )}
-
-        {/* CTA row */}
-        <div className="mt-10 flex flex-wrap gap-3">
-          <Link
-            to="/auth"
-            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-md transition-colors"
-            style={{ background: INDIGO, color: "#fff" }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = INDIGO_HOVER)}
-            onMouseLeave={(e) => (e.currentTarget.style.background = INDIGO)}
-          >
-            Claim Your Listings <ArrowRight className="h-4 w-4" />
-          </Link>
-          <a
-            href="#how"
-            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-md border transition-colors"
-            style={{ borderColor: BORDER, color: TEXT }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = SURFACE)}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-          >
-            See Your Lead Leak
-          </a>
-          <Link
-            to="/auth"
-            className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold rounded-md border transition-colors"
-            style={{ borderColor: BORDER, color: MUTED }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = TEXT)}
-            onMouseLeave={(e) => (e.currentTarget.style.color = MUTED)}
-          >
-            Start with one listing
-          </Link>
-        </div>
-
-        <p className="mt-6 text-xs italic max-w-2xl" style={{ color: MUTED }}>
-          SmartTourOS is not a virtual tour tool. It is a listing audience ownership system.
-        </p>
-      </div>
-
-      {/* Local keyframes — page-scoped */}
-      <style>{`
-        @keyframes resolveIn {
-          from { opacity: 0; transform: translateY(6px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes flowDash {
-          to { stroke-dashoffset: -32; }
-        }
-        @keyframes flowPulse {
-          0%, 100% { opacity: 0.55; }
-          50%      { opacity: 1; }
-        }
-        @keyframes nodeGlow {
-          0%, 100% { box-shadow: 0 0 0 1px var(--node-ring), 0 0 28px -6px var(--node-glow); }
-          50%      { box-shadow: 0 0 0 1px var(--node-ring), 0 0 48px -4px var(--node-glow); }
-        }
-      `}</style>
-    </section>
-  );
-}
-
-type FlowNode = { label: string; sub: string; size: "sm" | "xl" };
-
-function FlowPath({
-  tone,
-  badge,
-  icon,
-  nodes,
-  result,
-}: {
-  tone: "leak" | "own";
-  badge: string;
-  icon: React.ReactNode;
-  nodes: FlowNode[];
-  result: { title: string; sub: string };
-}) {
-  const accent = tone === "leak" ? "#ff6b6b" : INDIGO;
-  const accentSoft = tone === "leak" ? "rgba(255,107,107,0.18)" : "rgba(99,102,241,0.22)";
-  const accentRing = tone === "leak" ? "rgba(255,107,107,0.45)" : "rgba(99,102,241,0.55)";
-  const accentGlow = tone === "leak" ? "rgba(255,107,107,0.55)" : "rgba(99,102,241,0.6)";
-
-  return (
-    <div
-      className="rounded-2xl p-6 lg:p-8 relative overflow-hidden backdrop-blur-xl"
-      style={{
-        background:
-          tone === "leak"
-            ? "radial-gradient(120% 70% at 50% 0%, rgba(255,107,107,0.10), transparent 60%), linear-gradient(180deg, rgba(22,20,23,0.85), rgba(17,15,18,0.9))"
-            : "radial-gradient(120% 70% at 50% 0%, rgba(99,102,241,0.14), transparent 60%), linear-gradient(180deg, rgba(21,21,27,0.85), rgba(17,17,24,0.9))",
-        border: `1px solid ${accentRing}`,
-        boxShadow: `0 0 0 1px ${accentSoft}, 0 30px 80px -30px ${accentGlow}`,
-      }}
-    >
-      <div className="flex items-center justify-between mb-6 relative z-10">
-        <span
-          className="inline-flex items-center gap-2 text-[10px] uppercase font-semibold"
-          style={{ color: accent, letterSpacing: "0.22em" }}
-        >
-          {icon} {badge}
-        </span>
-      </div>
-
-      <div className="space-y-2 relative z-10">
-        {nodes.map((n, i) => (
-          <div key={n.label}>
-            <FlowNodeCard node={n} accent={accent} accentRing={accentRing} accentGlow={accentGlow} delay={i * 0.12} />
-            {i < nodes.length - 1 && <FlowConnector accent={accent} />}
-          </div>
-        ))}
-      </div>
-
-      <div
-        className="mt-6 rounded-xl p-5 relative z-10"
-        style={{
-          background:
-            tone === "leak"
-              ? "linear-gradient(180deg, rgba(255,107,107,0.16), rgba(255,107,107,0.06))"
-              : "linear-gradient(180deg, rgba(34,197,94,0.18), rgba(34,197,94,0.06))",
-          border: `1px solid ${tone === "leak" ? "rgba(255,107,107,0.55)" : "rgba(34,197,94,0.55)"}`,
-        }}
-      >
-        <div className="flex items-start gap-3">
-          {tone === "leak" ? (
-            <AlertTriangle className="h-5 w-5 mt-0.5 shrink-0" style={{ color: "#ff8a8a" }} />
-          ) : (
-            <Check className="h-5 w-5 mt-0.5 shrink-0" style={{ color: "#86efac" }} />
-          )}
-          <div>
-            <p
-              className="font-display"
-              style={{
-                fontSize: "1.15rem",
-                fontWeight: 600,
-                letterSpacing: "-0.01em",
-                color: tone === "leak" ? "#ffb3b3" : "#bbf7d0",
-              }}
-            >
-              {result.title}
-            </p>
-            <p className="mt-1 text-xs font-mono" style={{ color: MUTED }}>{result.sub}</p>
-          </div>
+            Generate Free MLS Link
+            <ArrowRight className="h-4 w-4" />
+          </button>
         </div>
       </div>
-    </div>
-  );
-}
-
-function FlowNodeCard({
-  node,
-  accent,
-  accentRing,
-  accentGlow,
-  delay,
-}: {
-  node: FlowNode;
-  accent: string;
-  accentRing: string;
-  accentGlow: string;
-  delay: number;
-}) {
-  const isHero = node.size === "xl";
-  return (
-    <div
-      className="rounded-xl px-4 flex items-center justify-between"
-      style={
-        {
-          padding: isHero ? "1.1rem 1.25rem" : "0.75rem 1rem",
-          background: isHero
-            ? `linear-gradient(180deg, ${accent}22, ${accent}0a)`
-            : "rgba(255,255,255,0.025)",
-          border: `1px solid ${isHero ? accentRing : BORDER}`,
-          animation: isHero ? "nodeGlow 2.6s ease-in-out infinite" : `resolveIn 0.5s ${delay}s both ease-out`,
-          ["--node-ring" as string]: accentRing,
-          ["--node-glow" as string]: accentGlow,
-        } as React.CSSProperties
-      }
-    >
-      <div>
-        <p
-          className={isHero ? "font-display" : "font-mono"}
-          style={{
-            color: isHero ? accent : TEXT,
-            fontSize: isHero ? "1.6rem" : "0.875rem",
-            fontWeight: isHero ? 700 : 500,
-            letterSpacing: isHero ? "0.04em" : "0",
-            textShadow: isHero ? `0 0 24px ${accentGlow}` : "none",
-          }}
-        >
-          {node.label}
-        </p>
-        <p className="text-[11px] mt-0.5" style={{ color: MUTED }}>{node.sub}</p>
-      </div>
-      <span
-        className="h-2 w-2 rounded-full shrink-0"
-        style={{ background: accent, boxShadow: `0 0 10px ${accentGlow}` }}
-      />
-    </div>
-  );
-}
-
-function FlowConnector({ accent }: { accent: string }) {
-  return (
-    <div className="flex justify-center" aria-hidden>
-      <svg width="24" height="34" viewBox="0 0 24 34" className="my-0.5">
-        <defs>
-          <linearGradient id={`g-${accent.replace("#", "")}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={accent} stopOpacity="0.2" />
-            <stop offset="100%" stopColor={accent} stopOpacity="1" />
-          </linearGradient>
-        </defs>
-        <line
-          x1="12" y1="0" x2="12" y2="24"
-          stroke={accent} strokeOpacity="0.25" strokeWidth="2"
-        />
-        <line
-          x1="12" y1="0" x2="12" y2="24"
-          stroke={accent} strokeWidth="2"
-          strokeDasharray="6 10"
-          style={{ animation: "flowDash 1.2s linear infinite, flowPulse 2s ease-in-out infinite", filter: `drop-shadow(0 0 4px ${accent})` }}
-        />
-        <polygon points="6,22 18,22 12,32" fill={accent} style={{ filter: `drop-shadow(0 0 6px ${accent})` }} />
-      </svg>
-    </div>
-  );
-}
-
-
-function DiagStat({ label, value, sub }: { label: string; value: string; sub?: string }) {
-  return (
-    <div
-      className="rounded-md p-4"
-      style={{ background: BG, border: `1px solid ${BORDER}` }}
-    >
-      <p className="text-[10px] uppercase mb-2" style={{ color: MUTED, letterSpacing: "0.18em" }}>{label}</p>
-      <p className="font-display text-2xl" style={{ fontWeight: 600, letterSpacing: "-0.01em" }}>{value}</p>
-      {sub && <p className="text-xs mt-1" style={{ color: MUTED }}>{sub}</p>}
-    </div>
+    </form>
   );
 }

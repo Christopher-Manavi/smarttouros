@@ -74,6 +74,29 @@ const PURPLE = "#8B5CF6";
 const BLUE = "#3B82F6";
 const GRADIENT = `linear-gradient(135deg, ${PURPLE} 0%, ${BLUE} 100%)`;
 
+const faqItems = [
+  {
+    question: "How does SmartTourOS identify anonymous visitors?",
+    answer:
+      "Our proprietary Identity Reconciliation Engine operates at the edge, leveraging geospatial telemetry and bid-stream normalization to create a deterministic identity profile. By orchestrating a multi-node handshake between first-party tag signals and Enterprise-Grade Graph-Data APIs, we resolve visitor intent with precision standard analytics cannot match.",
+  },
+  {
+    question: "Is this just a standard virtual tour link?",
+    answer:
+      "No. We position our technology as a Smart Listing Bridge. Unlike passive video links, our architecture utilizes parent-child frame orchestration to operate within the listing's native embed environment, bridging the gap between Zillow session data and our identity graphs.",
+  },
+  {
+    question: "Does this require professional 3D scans?",
+    answer:
+      "No. A simple, 10-second smartphone walkthrough video is all that is needed to unlock your Zillow buyer data; our system handles the formatting automatically.",
+  },
+  {
+    question: "What is the benefit of the Lender and Title sponsorship model?",
+    answer:
+      "This model creates a predictable lead-generation ecosystem where lenders/title companies sponsor your account to gain co-work access to high-intent buyer leads, providing you with professional software at no cost.",
+  },
+];
+
 function Landing() {
   const [conciergeOpen, setConciergeOpen] = useState(false);
   return (

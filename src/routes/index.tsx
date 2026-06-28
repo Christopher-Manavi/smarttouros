@@ -5,23 +5,47 @@ import { useState } from "react";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "SmartTourOS — Smart Virtual Tour Platform for Real Estate" },
+      { title: "SmartTourOS — Virtual Tour Platform for Real Estate" },
       {
         name: "description",
         content:
-          "SmartTourOS turns virtual-tour clicks into buyer and seller discovery with MLS-safe smart tour pages, listing analytics, and household-level follow-up opportunities.",
+          "Turn virtual-tour clicks into buyer and seller leads with MLS-safe smart tour pages, listing analytics, and household-level follow-up.",
       },
-      { property: "og:title", content: "SmartTourOS — Smart Virtual Tour Platform for Real Estate" },
+      { property: "og:title", content: "SmartTourOS — Virtual Tour Platform for Real Estate" },
       {
         property: "og:description",
         content:
-          "SmartTourOS turns virtual-tour clicks into buyer and seller discovery with MLS-safe smart tour pages, listing analytics, and household-level follow-up opportunities.",
+          "Turn virtual-tour clicks into buyer and seller leads with MLS-safe smart tour pages, listing analytics, and household-level follow-up.",
       },
       { property: "og:url", content: "https://smarttouros.com/" },
       { property: "og:type", content: "website" },
     ],
     links: [{ rel: "canonical", href: "https://smarttouros.com/" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              "@id": "https://smarttouros.com/#org",
+              name: "SmartTourOS",
+              url: "https://smarttouros.com/",
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://smarttouros.com/#website",
+              url: "https://smarttouros.com/",
+              name: "SmartTourOS",
+              publisher: { "@id": "https://smarttouros.com/#org" },
+            },
+          ],
+        }),
+      },
+    ],
   }),
+
   component: Landing,
 });
 
@@ -65,7 +89,9 @@ function Landing() {
         </div>
       </header>
 
+      <main>
       {/* Hero */}
+
       <section className="container-luxe py-24 lg:py-32">
         <p
           className="text-xs uppercase mb-6"
@@ -349,7 +375,9 @@ function Landing() {
       </section>
 
       {/* Footer */}
+      </main>
       <footer style={{ borderColor: BORDER }} className="border-t py-10">
+
         <div
           className="container-luxe flex flex-col gap-3 text-xs md:flex-row md:items-center md:justify-between"
           style={{ color: MUTED }}

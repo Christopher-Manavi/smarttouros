@@ -202,8 +202,19 @@ function Landing() {
                   step: "01",
                   icon: PlayCircle,
                   title: "Drop Your Media Link",
-                  body:
-                    "Paste a YouTube walkthrough, video file, or existing tour link. We handle every format.",
+                  body: (
+                    <>
+                      Paste a YouTube walkthrough, video file, or existing tour link. No video?{" "}
+                      <button
+                        type="button"
+                        onClick={() => setConciergeOpen(true)}
+                        className="font-medium text-purple-400 hover:text-purple-300 transition-colors cursor-pointer underline decoration-dashed underline-offset-4"
+                      >
+                        Request a Free Walkthrough
+                      </button>
+                      {" "}— we'll come shoot a 10-second video for you within 24 hours, completely free.
+                    </>
+                  ),
                 },
                 {
                   step: "02",

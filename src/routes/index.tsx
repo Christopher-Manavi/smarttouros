@@ -69,6 +69,7 @@ const BLUE = "#3B82F6";
 const GRADIENT = `linear-gradient(135deg, ${PURPLE} 0%, ${BLUE} 100%)`;
 
 function Landing() {
+  const [conciergeOpen, setConciergeOpen] = useState(false);
   return (
     <div
       style={{ background: BG, color: TEXT, fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}

@@ -86,7 +86,7 @@ The platform is built as a multi-tenant SaaS with role-based access (`super_admi
 - **Separate `user_roles` table:** Roles are never stored on `profiles`. Access is checked via a `has_role(user_id, role)` `SECURITY DEFINER` function to avoid RLS recursion.
 - **Storage isolation:** `listing-media` and `company-logos` are **private** buckets. Authenticated access is gated by RLS policies that pin `bucket_id` and require the path's first segment to match the caller's `company_id`; `listing-media` additionally validates the `{company_id}/{listing_id}/...` prefix.
 - **Server-side signing + rate limiting:** All public media URLs are generated server-side, only for `status = 'active'` listings, and the signing endpoint is rate-limited (60 requests/minute per caller).
-- **No service-role credential in the browser bundle:** The client bundle ships only `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`. `SUPABASE_SERVICE_ROLE_KEY` is server-only and is verified absent from `dist/client/` on every build.
+- **No service-role credential in the browser bundle:** The client bundle ships only `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`. `SUPABASE_SERVICE_ROLE_KEY` is server-only. A `bun run verify:bundle` script scans `dist/client/` for private-secret patterns (service-role JWT claims, `sb_secret_*` keys, Postgres URIs, AWS keys, PEM blocks) and fails on match; `bun run verify:release` chains `build` and `verify:bundle` as a single gate.
 
 ---
 

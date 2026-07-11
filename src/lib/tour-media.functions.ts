@@ -105,38 +105,9 @@ export const signPublicTourMedia = createServerFn({ method: "POST" })
     // Best-effort suppress unused-var warning on request header helper
     void getRequestHeader;
 
-    // -------- Path validators --------
-    const isSafeSegment = (s: string) =>
-      s.length > 0 && s !== "." && s !== ".." && !s.includes("\\") && !s.includes("/");
+    // Path validators live in @/lib/tour-media-paths so they can be
+    // unit-tested without a server-function runtime.
 
-    // Listing media MUST be `${company_id}/${listing_id}/<filename or subpath>`
-    const isListingMediaPath = (
-      p: string | null | undefined,
-      companyId: string,
-      listingId: string,
-    ): p is string => {
-      if (typeof p !== "string" || p.length === 0) return false;
-      if (p.startsWith("/") || p.endsWith("/")) return false;
-      if (p.includes("..") || p.includes("\\")) return false;
-      const parts = p.split("/");
-      if (parts.length < 3) return false;
-      if (!parts.every(isSafeSegment)) return false;
-      return parts[0] === companyId && parts[1] === listingId;
-    };
-
-    // Company logo MUST be `${company_id}/<filename>` (2+ segments)
-    const isCompanyLogoPath = (
-      p: string | null | undefined,
-      companyId: string,
-    ): p is string => {
-      if (typeof p !== "string" || p.length === 0) return false;
-      if (p.startsWith("/") || p.endsWith("/")) return false;
-      if (p.includes("..") || p.includes("\\")) return false;
-      const parts = p.split("/");
-      if (parts.length < 2) return false;
-      if (!parts.every(isSafeSegment)) return false;
-      return parts[0] === companyId;
-    };
 
     // -------- Fetch listing --------
     const { data: listing, error } = await supabaseAdmin

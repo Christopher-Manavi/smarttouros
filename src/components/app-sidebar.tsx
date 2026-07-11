@@ -44,6 +44,9 @@ const superAdminItems = [
 export function AppSidebar() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { roles } = useAuth();
+  const isSuperAdmin = roles.includes("super_admin");
+  const items = isSuperAdmin ? [...baseItems, ...superAdminItems] : baseItems;
   const isActive = (url: string) =>
     url === "/dashboard" ? pathname === url : pathname === url || pathname.startsWith(url + "/");
 

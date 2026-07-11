@@ -11,8 +11,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 
 const IS_DEV = import.meta.env.DEV;
-const DEMO_EMAIL = "demo@smarttouros.app";
-const DEMO_PASSWORD = "DemoTour!2026#Smart";
 
 function formatAuthError(err: unknown): string {
   if (!err) return "An unexpected authentication error occurred.";

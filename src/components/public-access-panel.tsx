@@ -49,65 +49,77 @@ function Row({ label, probe }: { label: string; probe: Probe }) {
 export function PublicAccessPanel({ slug }: { slug: string }) {
   const [listing, setListing] = useState<Probe>({ ok: null, detail: "checking…" });
   const [insert, setInsert] = useState<Probe>({ ok: null, detail: "checking…" });
-  const [active, setActive] = useState<Probe>({ ok: null, detail: "checking…" });
+  const [rpc, setRpc] = useState<Probe>({ ok: null, detail: "checking…" });
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      // Anonymous SELECT of the listing by slug (active only).
       const url = import.meta.env.VITE_SUPABASE_URL as string;
       const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+
+      // 1. Anon SELECT on listings MUST be denied post-hardening.
       try {
         const res = await fetch(
-          `${url}/rest/v1/listings?slug=eq.${encodeURIComponent(slug)}&select=id,status,company_id`,
+          `${url}/rest/v1/listings?slug=eq.${encodeURIComponent(slug)}&select=id`,
           { headers: { apikey: key } },
         );
-        const rows = (await res.json()) as Array<{
-          id: string;
-          status: string;
-          company_id: string;
-        }>;
-        if (cancelled) return;
-        const row = rows?.[0];
-        if (!res.ok || !row) {
-          setListing({ ok: false, detail: `HTTP ${res.status} — listing not visible to anon` });
-          setActive({ ok: false, detail: "Cannot verify — listing not readable" });
-          setInsert({ ok: false, detail: "Skipped — no listing context" });
-          return;
+        const rows = res.ok ? ((await res.json()) as unknown[]) : [];
+        if (!cancelled) {
+          const denied = !res.ok || rows.length === 0;
+          setListing({
+            ok: denied,
+            detail: denied
+              ? `Denied (HTTP ${res.status}) — anon cannot read listings directly ✓`
+              : `HTTP ${res.status} — anon still reads listings (fail)`,
+          });
         }
-        setListing({ ok: true, detail: `HTTP ${res.status} — listing readable as anon` });
-        setActive({
-          ok: row.status === "active",
-          detail: `status = ${row.status}`,
-        });
-        // Try an anonymous insert with the publishable key only.
-        const ins = await anonFetch("events", {
-          method: "POST",
-          body: JSON.stringify({
-            listing_id: row.id,
-            company_id: row.company_id,
-            page_type: "unbranded",
-            event_type: "page_view",
-            user_agent: "public-access-panel",
-            device_type: "desktop",
-            visitor_hash: "anon-probe-" + crypto.randomUUID(),
-          }),
-        });
-        if (!cancelled) setInsert(ins);
       } catch (e) {
-        if (cancelled) return;
-        const detail = e instanceof Error ? e.message : "network error";
-        setListing({ ok: false, detail });
-        setActive({ ok: false, detail });
-        setInsert({ ok: false, detail });
+        if (!cancelled)
+          setListing({ ok: true, detail: e instanceof Error ? e.message : "network denied" });
       }
+
+      // 2. Direct anon INSERT into events MUST be denied.
+      const ins = await anonFetch("events", {
+        method: "POST",
+        body: JSON.stringify({
+          page_type: "unbranded",
+          event_type: "page_view",
+          user_agent: "public-access-panel",
+          device_type: "desktop",
+          visitor_hash: "anon-probe-" + crypto.randomUUID(),
+        }),
+      });
+      if (!cancelled)
+        setInsert({
+          ok: !ins.ok,
+          detail: !ins.ok
+            ? `Denied — direct anon INSERT blocked ✓ (${ins.detail})`
+            : `Unexpected success (${ins.detail}) — should be blocked`,
+        });
+
+      // 3. Sanctioned RPC MUST succeed for anon.
+      const rpcRes = await anonFetch("rpc/record_public_event", {
+        method: "POST",
+        body: JSON.stringify({
+          p_slug: slug,
+          p_page_type: "unbranded",
+          p_event_type: "page_view",
+          p_referrer: "",
+          p_utm_source: "",
+          p_utm_campaign: "",
+          p_user_agent: "public-access-panel",
+          p_device_type: "desktop",
+          p_visitor_hash: "anon-probe-" + crypto.randomUUID(),
+        }),
+      });
+      if (!cancelled) setRpc(rpcRes);
     })();
     return () => {
       cancelled = true;
     };
   }, [slug]);
 
-  const anyFail = [listing, insert, active].some((p) => p.ok === false);
+  const anyFail = [listing, insert, rpc].some((p) => p.ok === false);
 
   return (
     <Card className="p-5 mt-6">
@@ -120,13 +132,13 @@ export function PublicAccessPanel({ slug }: { slug: string }) {
         </div>
       </div>
       <ul className="text-sm">
-        <Row label="Active status" probe={active} />
-        <Row label="Anonymous SELECT on listing (RLS + grants)" probe={listing} />
-        <Row label="Anonymous INSERT into events (RLS + grants)" probe={insert} />
+        <Row label="Anon SELECT on listings is denied" probe={listing} />
+        <Row label="Anon direct INSERT into events is denied" probe={insert} />
+        <Row label="Anon can call record_public_event RPC" probe={rpc} />
       </ul>
       {anyFail && (
         <p className="text-xs text-red-700 dark:text-red-400 mt-3">
-          Public route is protected. This must be fixed before MLS/Zillow usage.
+          Public access contract violated. Investigate before MLS/Zillow usage.
         </p>
       )}
       <p className="text-xs text-muted-foreground mt-3">

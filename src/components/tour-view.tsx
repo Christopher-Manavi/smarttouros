@@ -118,12 +118,14 @@ export function TourView({
   company,
   tracking,
   privacy,
+  media,
   mode,
 }: {
   listing: Listing;
   company: Company | null;
   tracking: Tracking | null;
   privacy: Privacy | null;
+  media: PublicTourMedia | null;
   mode: "branded" | "unbranded";
 }) {
   const fired = useRef(false);
@@ -151,6 +153,14 @@ export function TourView({
   const unbranded = mode === "unbranded";
   const showAddress = !unbranded || listing.show_address_on_unbranded;
 
+  // External URLs (YouTube, Vimeo, etc.) come from the RPC. Storage-hosted
+  // media only arrives via short-lived signed URLs in `media`.
+  const primaryUrl = listing.primary_media_url || media?.primary_media || null;
+  const secondaryUrl = listing.secondary_media_url || media?.secondary_media || null;
+  const heroUrl = media?.hero || null;
+  const galleryUrls = media?.gallery ?? [];
+  const brokerageLogo = !unbranded ? (media?.brokerage_logo ?? null) : null;
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* HERO MEDIA */}
@@ -164,12 +174,12 @@ export function TourView({
             })
           }
         >
-          {listing.primary_media_url ? (
-            <MediaEmbed type={listing.primary_media_type} url={listing.primary_media_url} />
-          ) : listing.hero_image_url ? (
+          {primaryUrl ? (
+            <MediaEmbed type={listing.primary_media_type} url={primaryUrl} />
+          ) : heroUrl ? (
             <div className="aspect-video w-full overflow-hidden">
               <SmartImage
-                src={listing.hero_image_url}
+                src={heroUrl}
                 alt=""
                 className="w-full h-full object-cover"
                 loading="eager"
@@ -179,6 +189,7 @@ export function TourView({
           ) : null}
         </div>
       </section>
+
 
       <section className="container-luxe py-12 md:py-16">
         {showAddress ? (

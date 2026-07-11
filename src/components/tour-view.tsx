@@ -130,8 +130,7 @@ export function TourView({
     if (!listing?.id || fired.current) return;
     fired.current = true;
     recordEvent({
-      listingId: listing.id,
-      companyId: listing.company_id,
+      slug: listing.slug,
       pageType: mode,
       eventType: "page_view",
     });
@@ -157,8 +156,7 @@ export function TourView({
         <div
           onClick={() =>
             recordEvent({
-              listingId: listing.id,
-              companyId: listing.company_id,
+              slug: listing.slug,
               pageType: mode,
               eventType: "media_click",
             })
@@ -255,8 +253,7 @@ export function TourView({
           <div
             onClick={() =>
               recordEvent({
-                listingId: listing.id,
-                companyId: listing.company_id,
+                slug: listing.slug,
                 pageType: mode,
                 eventType: "media_click",
               })
@@ -299,8 +296,7 @@ export function TourView({
                   href={`mailto:${listing.agent_email}`}
                   onClick={() =>
                     recordEvent({
-                      listingId: listing.id,
-                      companyId: listing.company_id,
+                      slug: listing.slug,
                       pageType: mode,
                       eventType: "cta_click",
                     })
@@ -315,8 +311,7 @@ export function TourView({
                   href={`tel:${listing.agent_phone}`}
                   onClick={() =>
                     recordEvent({
-                      listingId: listing.id,
-                      companyId: listing.company_id,
+                      slug: listing.slug,
                       pageType: mode,
                       eventType: "cta_click",
                     })

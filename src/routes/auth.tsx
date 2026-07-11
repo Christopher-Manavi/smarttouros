@@ -14,6 +14,24 @@ const IS_DEV = import.meta.env.DEV;
 const DEMO_EMAIL = "demo@smarttouros.app";
 const DEMO_PASSWORD = "DemoTour!2026#Smart";
 
+function formatAuthError(err: unknown): string {
+  if (!err) return "An unexpected authentication error occurred.";
+  if (err instanceof Error && err.message) return err.message;
+  if (typeof err === "string" && err) return err;
+  if (typeof err === "object") {
+    const e = err as { message?: unknown; error_description?: unknown; code?: unknown };
+    const msg =
+      (typeof e.message === "string" && e.message) ||
+      (typeof e.error_description === "string" && e.error_description) ||
+      "";
+    const code = typeof e.code === "string" ? e.code : "";
+    if (msg && code) return `${msg} (${code})`;
+    if (msg) return msg;
+    if (code) return `Authentication error (${code})`;
+  }
+  return "An unexpected authentication error occurred. Please try again.";
+}
+
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
@@ -95,9 +113,8 @@ function AuthPage() {
         if (res.data.session) navigate({ to: "/dashboard", replace: true });
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
       logDev("error", err);
-      setErrorMsg(msg);
+      setErrorMsg(formatAuthError(err));
     } finally {
       setBusy(false);
     }
@@ -126,8 +143,7 @@ function AuthPage() {
       if (res.data.session) navigate({ to: "/dashboard", replace: true });
       else setInfoMsg("Demo account created. Check the demo inbox to confirm if required.");
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setErrorMsg(`Demo login failed: ${msg}`);
+      setErrorMsg(`Demo login failed: ${formatAuthError(err)}`);
     } finally {
       setBusy(false);
     }

@@ -439,13 +439,28 @@ export type Database = {
     }
     Functions: {
       get_my_company_id: { Args: never; Returns: string }
-      get_public_tour: { Args: { p_slug: string }; Returns: Json }
+      get_public_branded_tour: { Args: { p_slug: string }; Returns: Json }
+      get_public_unbranded_tour: { Args: { p_slug: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      record_public_event: {
+        Args: {
+          p_device_type: string
+          p_event_type: string
+          p_page_type: string
+          p_referrer: string
+          p_slug: string
+          p_user_agent: string
+          p_utm_campaign: string
+          p_utm_source: string
+          p_visitor_hash: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

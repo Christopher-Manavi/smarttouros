@@ -23,6 +23,7 @@ import { Route as AuthenticatedTrackingRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedTestCenterRouteImport } from './routes/_authenticated/test-center'
 import { Route as AuthenticatedResolvedVisitorsRouteImport } from './routes/_authenticated/resolved-visitors'
 import { Route as AuthenticatedPrivacySettingsRouteImport } from './routes/_authenticated/privacy-settings'
+import { Route as AuthenticatedIdentityRouteImport } from './routes/_authenticated/identity'
 import { Route as AuthenticatedDemoRouteImport } from './routes/_authenticated/demo'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCreateListingRouteImport } from './routes/_authenticated/create-listing'
@@ -105,6 +106,11 @@ const AuthenticatedPrivacySettingsRoute =
     path: '/privacy-settings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedIdentityRoute = AuthenticatedIdentityRouteImport.update({
+  id: '/identity',
+  path: '/identity',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDemoRoute = AuthenticatedDemoRouteImport.update({
   id: '/demo',
   path: '/demo',
@@ -168,6 +174,7 @@ export interface FileRoutesByFullPath {
   '/create-listing': typeof AuthenticatedCreateListingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/demo': typeof AuthenticatedDemoRoute
+  '/identity': typeof AuthenticatedIdentityRoute
   '/privacy-settings': typeof AuthenticatedPrivacySettingsRoute
   '/resolved-visitors': typeof AuthenticatedResolvedVisitorsRoute
   '/test-center': typeof AuthenticatedTestCenterRoute
@@ -192,6 +199,7 @@ export interface FileRoutesByTo {
   '/create-listing': typeof AuthenticatedCreateListingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/demo': typeof AuthenticatedDemoRoute
+  '/identity': typeof AuthenticatedIdentityRoute
   '/privacy-settings': typeof AuthenticatedPrivacySettingsRoute
   '/resolved-visitors': typeof AuthenticatedResolvedVisitorsRoute
   '/test-center': typeof AuthenticatedTestCenterRoute
@@ -219,6 +227,7 @@ export interface FileRoutesById {
   '/_authenticated/create-listing': typeof AuthenticatedCreateListingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/demo': typeof AuthenticatedDemoRoute
+  '/_authenticated/identity': typeof AuthenticatedIdentityRoute
   '/_authenticated/privacy-settings': typeof AuthenticatedPrivacySettingsRoute
   '/_authenticated/resolved-visitors': typeof AuthenticatedResolvedVisitorsRoute
   '/_authenticated/test-center': typeof AuthenticatedTestCenterRoute
@@ -245,6 +254,7 @@ export interface FileRouteTypes {
     | '/create-listing'
     | '/dashboard'
     | '/demo'
+    | '/identity'
     | '/privacy-settings'
     | '/resolved-visitors'
     | '/test-center'
@@ -269,6 +279,7 @@ export interface FileRouteTypes {
     | '/create-listing'
     | '/dashboard'
     | '/demo'
+    | '/identity'
     | '/privacy-settings'
     | '/resolved-visitors'
     | '/test-center'
@@ -295,6 +306,7 @@ export interface FileRouteTypes {
     | '/_authenticated/create-listing'
     | '/_authenticated/dashboard'
     | '/_authenticated/demo'
+    | '/_authenticated/identity'
     | '/_authenticated/privacy-settings'
     | '/_authenticated/resolved-visitors'
     | '/_authenticated/test-center'
@@ -420,6 +432,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPrivacySettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/identity': {
+      id: '/_authenticated/identity'
+      path: '/identity'
+      fullPath: '/identity'
+      preLoaderRoute: typeof AuthenticatedIdentityRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/demo': {
       id: '/_authenticated/demo'
       path: '/demo'
@@ -515,6 +534,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCreateListingRoute: typeof AuthenticatedCreateListingRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDemoRoute: typeof AuthenticatedDemoRoute
+  AuthenticatedIdentityRoute: typeof AuthenticatedIdentityRoute
   AuthenticatedPrivacySettingsRoute: typeof AuthenticatedPrivacySettingsRoute
   AuthenticatedResolvedVisitorsRoute: typeof AuthenticatedResolvedVisitorsRoute
   AuthenticatedTestCenterRoute: typeof AuthenticatedTestCenterRoute
@@ -529,6 +549,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCreateListingRoute: AuthenticatedCreateListingRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDemoRoute: AuthenticatedDemoRoute,
+  AuthenticatedIdentityRoute: AuthenticatedIdentityRoute,
   AuthenticatedPrivacySettingsRoute: AuthenticatedPrivacySettingsRoute,
   AuthenticatedResolvedVisitorsRoute: AuthenticatedResolvedVisitorsRoute,
   AuthenticatedTestCenterRoute: AuthenticatedTestCenterRoute,

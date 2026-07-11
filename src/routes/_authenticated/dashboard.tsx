@@ -5,10 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Building2, Eye, Users, Activity, Sparkles, ClipboardCheck, Youtube } from "lucide-react";
+import { Building2, Eye, Users, Activity, Youtube } from "lucide-react";
 import { isYouTubeUrl } from "@/components/media-embed";
-import { useAuth } from "@/lib/use-auth";
-import { createDemoListing } from "@/lib/demo-listing";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({

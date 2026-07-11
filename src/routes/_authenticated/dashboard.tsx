@@ -50,7 +50,7 @@ function Dashboard() {
     navigate({ to: "/create-listing", search: { yt: raw } });
   }
 
-  const { data, refetch } = useQuery({
+  const { data } = useQuery({
     queryKey: ["dashboard"],
     queryFn: async () => {
       const [listings, events] = await Promise.all([

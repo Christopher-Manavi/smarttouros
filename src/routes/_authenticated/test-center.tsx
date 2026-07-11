@@ -167,8 +167,9 @@ function TestCenter() {
         label: "Unbranded page_view recorded after opening",
         status: "pending",
       },
-      { id: "anon_select", label: "Anonymous can SELECT active listing (RLS)", status: "pending" },
-      { id: "anon_insert", label: "Anonymous can INSERT page_view event (RLS)", status: "pending" },
+      { id: "anon_select", label: "Anon SELECT on listings is denied", status: "pending" },
+      { id: "anon_insert", label: "Anon direct INSERT into events is denied", status: "pending" },
+      { id: "anon_rpc", label: "Anon can call record_public_event RPC", status: "pending" },
       {
         id: "strip_pii",
         label: "Unbranded page strips agent name / phone / email / brokerage name / logo",
@@ -227,19 +228,21 @@ function TestCenter() {
       detail: `Baseline ${uCount}. Open unbranded URL then Recheck.`,
     });
 
-    // Anon RLS SELECT
+    // Anon SELECT on listings must be denied
     const sel = await checkAnonSupabase(`listings?slug=eq.${demo.slug}&select=id,status`);
+    const selRows = sel.ok ? 1 : 0; // treat any 2xx as unexpected access
+    const selDenied = !sel.ok || selRows === 0;
     setTest("anon_select", {
-      status: sel.ok ? "pass" : "fail",
-      detail: sel.ok ? `HTTP ${sel.status}` : `HTTP ${sel.status} ${sel.body.slice(0, 140)}`,
+      status: selDenied ? "pass" : "fail",
+      detail: selDenied
+        ? `Denied (HTTP ${sel.status}) ✓`
+        : `Unexpected read allowed (HTTP ${sel.status})`,
     });
 
-    // Anon RLS INSERT
+    // Direct anon INSERT into events must be denied
     const ins = await checkAnonSupabase(`events`, {
       method: "POST",
       body: JSON.stringify({
-        listing_id: demo.id,
-        company_id: demo.company_id,
         page_type: "unbranded",
         event_type: "page_view",
         user_agent: "test-center-anon-probe",
@@ -248,8 +251,32 @@ function TestCenter() {
       }),
     });
     setTest("anon_insert", {
-      status: ins.ok ? "pass" : "fail",
-      detail: ins.ok ? `HTTP ${ins.status}` : `HTTP ${ins.status} ${ins.body.slice(0, 140)}`,
+      status: !ins.ok ? "pass" : "fail",
+      detail: !ins.ok
+        ? `Denied (HTTP ${ins.status}) ✓`
+        : `Unexpected write allowed (HTTP ${ins.status})`,
+    });
+
+    // Sanctioned RPC must succeed for anon
+    const rpcRes = await checkAnonSupabase(`rpc/record_public_event`, {
+      method: "POST",
+      body: JSON.stringify({
+        p_slug: demo.slug,
+        p_page_type: "unbranded",
+        p_event_type: "page_view",
+        p_referrer: "",
+        p_utm_source: "",
+        p_utm_campaign: "",
+        p_user_agent: "test-center-anon-probe",
+        p_device_type: "desktop",
+        p_visitor_hash: "anon-probe-" + crypto.randomUUID(),
+      }),
+    });
+    setTest("anon_rpc", {
+      status: rpcRes.ok ? "pass" : "fail",
+      detail: rpcRes.ok
+        ? `HTTP ${rpcRes.status} ✓`
+        : `HTTP ${rpcRes.status} ${rpcRes.body.slice(0, 140)}`,
     });
 
     // PII stripping (mirrors src/routes/_public/u.$slug.tsx)

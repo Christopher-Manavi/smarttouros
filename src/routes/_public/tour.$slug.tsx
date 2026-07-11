@@ -40,7 +40,7 @@ function BrandedTour() {
   const { slug } = Route.useParams();
   const { data, isLoading } = useQuery({
     queryKey: ["tour", slug],
-    queryFn: () => loadTourBundle(slug),
+    queryFn: () => loadTourBundle(slug, "branded"),
   });
   if (isLoading)
     return (

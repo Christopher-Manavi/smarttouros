@@ -39,7 +39,7 @@ function UnbrandedTour() {
   const { slug } = Route.useParams();
   const { data, isLoading } = useQuery({
     queryKey: ["utour", slug],
-    queryFn: () => loadTourBundle(slug),
+    queryFn: () => loadTourBundle(slug, "unbranded"),
   });
   if (isLoading)
     return (
@@ -47,20 +47,12 @@ function UnbrandedTour() {
         Loading…
       </div>
     );
-  // Hard-strip every branding signal before TourView ever sees the listing.
-  const sanitized = data?.listing
-    ? {
-        ...data.listing,
-        agent_name: null,
-        agent_phone: null,
-        agent_email: null,
-        brokerage_name: null,
-        brokerage_logo_url: null,
-      }
-    : null;
+  // Server-side sanitization: get_public_unbranded_tour already omits agent,
+  // brokerage, and company-branding fields, and hides the address when
+  // show_address_on_unbranded is false. No client-side stripping needed.
   return (
     <TourView
-      listing={sanitized}
+      listing={data?.listing}
       company={null}
       tracking={data?.tracking}
       privacy={data?.privacy}

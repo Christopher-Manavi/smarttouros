@@ -48,8 +48,7 @@ function GallerySection({ urls }: { urls: string[] }) {
 }
 
 async function recordEvent(args: {
-  listingId: string;
-  companyId: string;
+  slug: string;
   pageType: "branded" | "unbranded";
   eventType: "page_view" | "media_click" | "video_play" | "cta_click" | "outbound_click";
 }) {
@@ -62,20 +61,18 @@ async function recordEvent(args: {
         localStorage.setItem("stos_vh", v);
         return v;
       })();
-    await supabase.from("events").insert({
-      listing_id: args.listingId,
-      company_id: args.companyId,
-      page_type: args.pageType,
-      event_type: args.eventType,
-      referrer: document.referrer || null,
-      utm_source: params.get("utm_source"),
-      utm_campaign: params.get("utm_campaign"),
-      user_agent: navigator.userAgent,
-      device_type: detectDevice(navigator.userAgent),
-      visitor_hash: visitorHash,
+    await supabase.rpc("record_public_event", {
+      p_slug: args.slug,
+      p_page_type: args.pageType,
+      p_event_type: args.eventType,
+      p_referrer: document.referrer || "",
+      p_utm_source: params.get("utm_source") ?? "",
+      p_utm_campaign: params.get("utm_campaign") ?? "",
+      p_user_agent: navigator.userAgent,
+      p_device_type: detectDevice(navigator.userAgent),
+      p_visitor_hash: visitorHash,
     });
   } catch (e) {
-    // Analytics must never break the public page.
     console.warn("[tour] recordEvent failed", e);
   }
 }
@@ -133,8 +130,7 @@ export function TourView({
     if (!listing?.id || fired.current) return;
     fired.current = true;
     recordEvent({
-      listingId: listing.id,
-      companyId: listing.company_id,
+      slug: listing.slug,
       pageType: mode,
       eventType: "page_view",
     });
@@ -160,8 +156,7 @@ export function TourView({
         <div
           onClick={() =>
             recordEvent({
-              listingId: listing.id,
-              companyId: listing.company_id,
+              slug: listing.slug,
               pageType: mode,
               eventType: "media_click",
             })
@@ -258,8 +253,7 @@ export function TourView({
           <div
             onClick={() =>
               recordEvent({
-                listingId: listing.id,
-                companyId: listing.company_id,
+                slug: listing.slug,
                 pageType: mode,
                 eventType: "media_click",
               })
@@ -302,8 +296,7 @@ export function TourView({
                   href={`mailto:${listing.agent_email}`}
                   onClick={() =>
                     recordEvent({
-                      listingId: listing.id,
-                      companyId: listing.company_id,
+                      slug: listing.slug,
                       pageType: mode,
                       eventType: "cta_click",
                     })
@@ -318,8 +311,7 @@ export function TourView({
                   href={`tel:${listing.agent_phone}`}
                   onClick={() =>
                     recordEvent({
-                      listingId: listing.id,
-                      companyId: listing.company_id,
+                      slug: listing.slug,
                       pageType: mode,
                       eventType: "cta_click",
                     })
@@ -381,12 +373,19 @@ function TourFooter({
   );
 }
 
-export async function loadTourBundle(slug: string) {
+export async function loadTourBundle(slug: string, mode: "branded" | "unbranded") {
   // Use a SECURITY DEFINER RPC so anonymous visitors only receive public-safe
-  // fields (no owner emails, phone, or unrelated tenant data).
-  const { data, error } = await supabase.rpc("get_public_tour", { p_slug: slug });
+  // fields. The unbranded RPC additionally strips agent/brokerage/company data
+  // and hides the address unless show_address_on_unbranded is true.
+  const fn = mode === "branded" ? "get_public_branded_tour" : "get_public_unbranded_tour";
+  const { data, error } = await supabase.rpc(fn, { p_slug: slug });
   if (error || !data) return { listing: null, company: null, tracking: null, privacy: null };
-  const bundle = data as { listing: any; company: any; tracking: any; privacy: any };
+  const bundle = data as unknown as {
+    listing: any;
+    company: any;
+    tracking: any;
+    privacy: any;
+  };
   return {
     listing: bundle.listing ?? null,
     company: bundle.company ?? null,

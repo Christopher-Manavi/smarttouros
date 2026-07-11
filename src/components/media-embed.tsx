@@ -24,7 +24,9 @@ export function extractYouTubeId(url: string): string | null {
   } catch {
     // fall through to regex
   }
-  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/);
+  const m = url.match(
+    /(?:youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/,
+  );
   return m ? m[1] : null;
 }
 
@@ -65,7 +67,11 @@ export function MediaEmbed({ type, url, onClick }: Props) {
 
   // Treat any YouTube URL as YouTube, regardless of selected type — protects
   // against users pasting a Shorts link into "Custom iframe".
-  const ytId = isYouTubeUrl(url) ? extractYouTubeId(url) : type === "youtube" ? extractYouTubeId(url) : null;
+  const ytId = isYouTubeUrl(url)
+    ? extractYouTubeId(url)
+    : type === "youtube"
+      ? extractYouTubeId(url)
+      : null;
 
   if (ytId) {
     const vertical = isYouTubeShorts(url);
@@ -116,7 +122,14 @@ export function MediaEmbed({ type, url, onClick }: Props) {
       );
   }
   if (type === "matterport" || type === "cloudpano" || type === "iframe" || type === "mux") {
-    return wrap(<iframe className="w-full h-full" src={url} allow="xr-spatial-tracking; fullscreen" allowFullScreen />);
+    return wrap(
+      <iframe
+        className="w-full h-full"
+        src={url}
+        allow="xr-spatial-tracking; fullscreen"
+        allowFullScreen
+      />,
+    );
   }
   if (type === "video_url") {
     return wrap(<video className="w-full h-full" src={url} controls playsInline />);

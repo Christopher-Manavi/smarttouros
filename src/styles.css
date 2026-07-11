@@ -94,8 +94,8 @@
   --sidebar-border: oklch(0.92 0.004 260);
   --sidebar-ring: oklch(0.55 0.01 260);
 
-  --shadow-elegant: 0 1px 2px 0 oklch(0.16 0.005 260 / 0.04),
-    0 8px 24px -8px oklch(0.16 0.005 260 / 0.08);
+  --shadow-elegant:
+    0 1px 2px 0 oklch(0.16 0.005 260 / 0.04), 0 8px 24px -8px oklch(0.16 0.005 260 / 0.08);
 }
 
 .dark {
@@ -129,7 +129,9 @@
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
+  * {
+    border-color: var(--color-border);
+  }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -137,7 +139,10 @@
     font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3, .font-display {
+  h1,
+  h2,
+  h3,
+  .font-display {
     font-family: var(--font-display);
     font-weight: 500;
     letter-spacing: -0.01em;

@@ -42,7 +42,12 @@ function BrandedTour() {
     queryKey: ["tour", slug],
     queryFn: () => loadTourBundle(slug),
   });
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading…</div>;
+  if (isLoading)
+    return (
+      <div className="min-h-screen flex items-center justify-center text-muted-foreground">
+        Loading…
+      </div>
+    );
   return (
     <TourView
       listing={data?.listing}

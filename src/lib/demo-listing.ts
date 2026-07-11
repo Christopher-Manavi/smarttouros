@@ -8,7 +8,7 @@ export type DemoCreateResult = { id: string; slug: string };
 
 export async function createDemoListing(
   companyId: string,
-  opts?: { primaryMediaUrl?: string }
+  opts?: { primaryMediaUrl?: string },
 ): Promise<DemoCreateResult> {
   const slug = `${slugify("12349 longmire trace conroe tx")}-${uniqueSuffix()}`;
   const payload = {

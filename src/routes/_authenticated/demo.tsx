@@ -48,27 +48,44 @@ function DemoSuccess() {
 
   return (
     <div className="container-luxe py-10 max-w-3xl">
-      <Link to="/dashboard" className="text-xs uppercase tracking-widest text-muted-foreground hover:underline inline-flex items-center gap-1">
+      <Link
+        to="/dashboard"
+        className="text-xs uppercase tracking-widest text-muted-foreground hover:underline inline-flex items-center gap-1"
+      >
         <ArrowLeft className="h-3 w-3" /> Back to dashboard
       </Link>
       <div className="mt-6 mb-6">
-        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Demo listing created</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+          Demo listing created
+        </p>
         <h1 className="font-display text-4xl mt-2">12349 Longmire Trace</h1>
         <p className="text-muted-foreground mt-1">Conroe, TX 77304 · Status: Active</p>
-        <p className="text-xs text-muted-foreground mt-2">Public base: <code className="font-mono">{getPublicBaseUrl()}</code> · <Link to="/company" className="underline">change</Link></p>
+        <p className="text-xs text-muted-foreground mt-2">
+          Public base: <code className="font-mono">{getPublicBaseUrl()}</code> ·{" "}
+          <Link to="/company" className="underline">
+            change
+          </Link>
+        </p>
       </div>
 
       {showPreviewWarning && (
         <Card className="p-4 mb-6 border-destructive/50 bg-destructive/5 flex gap-3 items-start">
           <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-          <p className="text-sm">Warning: this is a preview URL and should not be used in MLS. Set a published domain in <Link to="/company" className="underline">Company Settings</Link>.</p>
+          <p className="text-sm">
+            Warning: this is a preview URL and should not be used in MLS. Set a published domain in{" "}
+            <Link to="/company" className="underline">
+              Company Settings
+            </Link>
+            .
+          </p>
         </Card>
       )}
 
-
       <Card className="p-6 space-y-4">
         <div>
-          <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Branded tour URL</p>
+          <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
+            Branded tour URL
+          </p>
           <Input readOnly value={branded} className="font-mono text-xs" />
         </div>
         <div className="grid sm:grid-cols-2 gap-3">
@@ -83,7 +100,9 @@ function DemoSuccess() {
 
       <Card className="p-6 space-y-4 mt-6">
         <div>
-          <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Unbranded MLS URL</p>
+          <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
+            Unbranded MLS URL
+          </p>
           <Input readOnly value={unbranded} className="font-mono text-xs" />
           <p className="text-xs text-muted-foreground mt-2">
             MLS-safe: no agent name, phone, email, brokerage name, brokerage logo, or contact CTAs.

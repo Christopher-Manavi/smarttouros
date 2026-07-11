@@ -15,7 +15,13 @@ type Props = {
  * - Missing/empty src → hide or placeholder
  * - Network/load error → hide or placeholder
  */
-export function SmartImage({ src, alt = "", className, hideOnError = false, loading = "lazy" }: Props) {
+export function SmartImage({
+  src,
+  alt = "",
+  className,
+  hideOnError = false,
+  loading = "lazy",
+}: Props) {
   const [errored, setErrored] = useState(false);
   const missing = !src || !src.trim();
 

@@ -30,15 +30,22 @@ function Tracking() {
 
   useEffect(() => {
     if (!companyId) return;
-    supabase.from("tracking_settings").select("*").eq("company_id", companyId).maybeSingle()
+    supabase
+      .from("tracking_settings")
+      .select("*")
+      .eq("company_id", companyId)
+      .maybeSingle()
       .then(({ data }) => setS(data ?? { company_id: companyId }));
   }, [companyId]);
 
   async function save() {
     setBusy(true);
-    const { error } = await supabase.from("tracking_settings").upsert(s, { onConflict: "company_id" });
+    const { error } = await supabase
+      .from("tracking_settings")
+      .upsert(s, { onConflict: "company_id" });
     setBusy(false);
-    if (error) toast.error(error.message); else toast.success("Tracking settings saved");
+    if (error) toast.error(error.message);
+    else toast.success("Tracking settings saved");
   }
 
   if (!s) return <div className="container-luxe py-10 text-muted-foreground">Loading…</div>;
@@ -65,13 +72,22 @@ function Tracking() {
 
       <Card className="p-5 mb-6 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="font-medium text-sm flex items-center gap-2"><FlaskConical className="h-4 w-4" />Tracking verification</p>
+          <p className="font-medium text-sm flex items-center gap-2">
+            <FlaskConical className="h-4 w-4" />
+            Tracking verification
+          </p>
           <p className="text-xs text-muted-foreground mt-1">
             Insert a safe test snippet, then verify it fires on public tour pages.
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => { set("custom_header_script", TEST_TRACKING_SCRIPT); toast.success("Test script inserted into Custom header script. Click Save."); }}>
+          <Button
+            variant="outline"
+            onClick={() => {
+              set("custom_header_script", TEST_TRACKING_SCRIPT);
+              toast.success("Test script inserted into Custom header script. Click Save.");
+            }}
+          >
             Insert Test Tracking Script
           </Button>
           <Button variant="ghost" asChild>
@@ -90,7 +106,12 @@ function Tracking() {
         ].map(([k, label]) => (
           <div key={k}>
             <Label>{label}</Label>
-            <Textarea rows={3} className="font-mono text-xs" value={s[k] ?? ""} onChange={(e) => set(k, e.target.value)} />
+            <Textarea
+              rows={3}
+              className="font-mono text-xs"
+              value={s[k] ?? ""}
+              onChange={(e) => set(k, e.target.value)}
+            />
           </div>
         ))}
       </Card>
@@ -111,7 +132,9 @@ function Tracking() {
       </Card>
 
       <div className="mt-6 flex justify-end">
-        <Button onClick={save} disabled={busy}>{busy ? "Saving…" : "Save settings"}</Button>
+        <Button onClick={save} disabled={busy}>
+          {busy ? "Saving…" : "Save settings"}
+        </Button>
       </div>
     </div>
   );

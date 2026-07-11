@@ -40,6 +40,10 @@ function UnbrandedTour() {
   const { data, isLoading } = useQuery({
     queryKey: ["utour", slug],
     queryFn: () => loadTourBundle(slug, "unbranded"),
+    // Signed URLs expire in 3600s. Refresh before expiry.
+    refetchInterval: 50 * 60 * 1000,
+    refetchIntervalInBackground: false,
+    staleTime: 45 * 60 * 1000,
   });
   if (isLoading)
     return (

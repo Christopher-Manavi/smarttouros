@@ -24,8 +24,9 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/use-auth";
 
-const items = [
+const baseItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
   { title: "Listings", url: "/listings", icon: Building2 },
   { title: "Create Listing", url: "/create-listing", icon: Plus },
@@ -34,12 +35,18 @@ const items = [
   { title: "Tracking Verify", url: "/tracking-verify", icon: FlaskConical },
   { title: "Company", url: "/company", icon: Settings2 },
   { title: "Privacy", url: "/privacy-settings", icon: ShieldCheck },
+];
+
+const superAdminItems = [
   { title: "MVP Test Center", url: "/test-center", icon: ClipboardCheck },
 ];
 
 export function AppSidebar() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { roles } = useAuth();
+  const isSuperAdmin = roles.includes("super_admin");
+  const items = isSuperAdmin ? [...baseItems, ...superAdminItems] : baseItems;
   const isActive = (url: string) =>
     url === "/dashboard" ? pathname === url : pathname === url || pathname.startsWith(url + "/");
 

@@ -10,6 +10,14 @@ export async function createDemoListing(
   companyId: string,
   opts?: { primaryMediaUrl?: string },
 ): Promise<DemoCreateResult> {
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) throw new Error("Not authenticated");
+  const { data: roleRows } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userData.user.id);
+  const isSuper = (roleRows ?? []).some((r) => r.role === "super_admin");
+  if (!isSuper) throw new Error("Not authorized");
   const slug = `${slugify("12349 longmire trace conroe tx")}-${uniqueSuffix()}`;
   const payload = {
     company_id: companyId,

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -19,6 +19,16 @@ import { getPublicBaseUrl, isPreviewUrl } from "@/lib/public-url";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/test-center")({
+  beforeLoad: async () => {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) throw redirect({ to: "/auth" });
+    const { data: roleRows } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userData.user.id);
+    const isSuper = (roleRows ?? []).some((r) => r.role === "super_admin");
+    if (!isSuper) throw redirect({ to: "/dashboard" });
+  },
   component: TestCenter,
 });
 

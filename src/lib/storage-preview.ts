@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 export function useStorageSignedUrl(
   bucket: "listing-media" | "company-logos",
   path: string | null | undefined,
-  ttlSeconds = 60 * 30,
+  ttlSeconds = 60 * 15,
 ) {
   const [url, setUrl] = useState<string | null>(null);
   useEffect(() => {

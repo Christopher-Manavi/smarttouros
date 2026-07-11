@@ -54,11 +54,23 @@ export const signPublicTourMedia = createServerFn({ method: "POST" })
     } catch {
       // request context unavailable; keep default
     }
-    const bucketKey = `sign:${ip}:${data.slug}`;
+    // Hash the (ip + slug) tuple so raw IP addresses are never stored in
+    // the rate-limit table. A per-server pepper would strengthen this, but
+    // even without one the hash prevents casual disclosure of visitor IPs.
+    const bucketKey = createHash("sha256").update(`sign:${ip}:${data.slug}`).digest("hex");
     const nowMs = Date.now();
     const windowMs = 60_000;
     const windowStart = new Date(Math.floor(nowMs / windowMs) * windowMs).toISOString();
     const LIMIT = 60;
+
+    // Opportunistic cleanup: drop windows older than 1 hour on ~1% of calls.
+    if (Math.random() < 0.01) {
+      const cutoff = new Date(nowMs - 60 * 60 * 1000).toISOString();
+      await supabaseAdmin
+        .from("media_sign_rate_limit")
+        .delete()
+        .lt("window_started_at", cutoff);
+    }
 
     try {
       // Upsert-then-increment pattern

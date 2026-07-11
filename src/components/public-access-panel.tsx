@@ -19,7 +19,9 @@ async function anonFetch(path: string, init?: RequestInit) {
     });
     return {
       ok: res.ok,
-      detail: res.ok ? `HTTP ${res.status}` : `HTTP ${res.status} ${(await res.text()).slice(0, 120)}`,
+      detail: res.ok
+        ? `HTTP ${res.status}`
+        : `HTTP ${res.status} ${(await res.text()).slice(0, 120)}`,
     };
   } catch (e) {
     return { ok: false, detail: e instanceof Error ? e.message : "network" };
@@ -60,7 +62,11 @@ export function PublicAccessPanel({ slug }: { slug: string }) {
           `${url}/rest/v1/listings?slug=eq.${encodeURIComponent(slug)}&select=id,status,company_id`,
           { headers: { apikey: key } },
         );
-        const rows = (await res.json()) as Array<{ id: string; status: string; company_id: string }>;
+        const rows = (await res.json()) as Array<{
+          id: string;
+          status: string;
+          company_id: string;
+        }>;
         if (cancelled) return;
         const row = rows?.[0];
         if (!res.ok || !row) {
@@ -107,7 +113,9 @@ export function PublicAccessPanel({ slug }: { slug: string }) {
     <Card className="p-5 mt-6">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <p className="text-xs uppercase tracking-widest text-muted-foreground">Public access status</p>
+          <p className="text-xs uppercase tracking-widest text-muted-foreground">
+            Public access status
+          </p>
           <h3 className="font-display text-xl mt-1">Anonymous probe</h3>
         </div>
       </div>
@@ -122,7 +130,8 @@ export function PublicAccessPanel({ slug }: { slug: string }) {
         </p>
       )}
       <p className="text-xs text-muted-foreground mt-3">
-        Final acceptance test: open the Unbranded MLS URL in Chrome Guest or Incognito — the tour must render without any sign-in prompt.
+        Final acceptance test: open the Unbranded MLS URL in Chrome Guest or Incognito — the tour
+        must render without any sign-in prompt.
       </p>
     </Card>
   );

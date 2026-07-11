@@ -7,6 +7,7 @@ A white-label smart real estate tour platform. Luxury aesthetic (white/black/sla
 Enable Lovable Cloud, then create schema via migration:
 
 **Tables**
+
 - `companies` — name, logo_url, brand_color, phone, email, custom_domain_placeholder
 - `profiles` — user_id, full_name, company_id (role lives in `user_roles`)
 - `user_roles` — enum `app_role` = `super_admin | company_admin | agent`, with `has_role()` security-definer
@@ -17,6 +18,7 @@ Enable Lovable Cloud, then create schema via migration:
 - `resolved_visitors` — placeholder contact rows
 
 **RLS**
+
 - Super admin: full access via `has_role(uid,'super_admin')`
 - Company admin: scoped to their `company_id`
 - Agent: read listings assigned to them + events for those listings
@@ -47,6 +49,7 @@ Enable Lovable Cloud, then create schema via migration:
 ## Phase 4 — Public Tour Pages
 
 Public routes (no auth), SSR-friendly:
+
 - `/tour/$slug` — branded
 - `/u/$slug` — unbranded MLS-safe (strips agent/brokerage/CTAs)
 

@@ -32,7 +32,10 @@ function ListingsIndex() {
   const { data: viewMap = {} } = useQuery({
     queryKey: ["listings-views"],
     queryFn: async () => {
-      const { data } = await supabase.from("events").select("listing_id").eq("event_type", "page_view");
+      const { data } = await supabase
+        .from("events")
+        .select("listing_id")
+        .eq("event_type", "page_view");
       const map: Record<string, number> = {};
       (data ?? []).forEach((e) => (map[e.listing_id] = (map[e.listing_id] ?? 0) + 1));
       return map;
@@ -48,7 +51,11 @@ function ListingsIndex() {
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Properties</p>
           <h1 className="font-display text-4xl mt-2">Listings</h1>
         </div>
-        <Link to="/create-listing"><Button><Plus className="h-4 w-4 mr-1" /> New listing</Button></Link>
+        <Link to="/create-listing">
+          <Button>
+            <Plus className="h-4 w-4 mr-1" /> New listing
+          </Button>
+        </Link>
       </div>
 
       <Card className="overflow-hidden">
@@ -68,13 +75,21 @@ function ListingsIndex() {
             </thead>
             <tbody className="divide-y">
               {isLoading && (
-                <tr><td colSpan={8} className="text-center py-10 text-muted-foreground">Loading…</td></tr>
+                <tr>
+                  <td colSpan={8} className="text-center py-10 text-muted-foreground">
+                    Loading…
+                  </td>
+                </tr>
               )}
               {!isLoading && listings.length === 0 && (
-                <tr><td colSpan={8} className="text-center py-16">
-                  <p className="text-muted-foreground mb-4">No listings yet.</p>
-                  <Link to="/create-listing"><Button size="sm">Create your first listing</Button></Link>
-                </td></tr>
+                <tr>
+                  <td colSpan={8} className="text-center py-16">
+                    <p className="text-muted-foreground mb-4">No listings yet.</p>
+                    <Link to="/create-listing">
+                      <Button size="sm">Create your first listing</Button>
+                    </Link>
+                  </td>
+                </tr>
               )}
               {listings.map((l) => {
                 const branded = brandedTourUrl(l.slug);
@@ -82,36 +97,63 @@ function ListingsIndex() {
                 return (
                   <tr key={l.id} className="hover:bg-muted/20">
                     <td className="py-3 px-4 font-medium">{l.address}</td>
-                    <td className="py-3 px-4 text-muted-foreground">{l.city}, {l.state}</td>
-                    <td className="py-3 px-4 font-mono">{l.price ? `$${Number(l.price).toLocaleString()}` : "—"}</td>
+                    <td className="py-3 px-4 text-muted-foreground">
+                      {l.city}, {l.state}
+                    </td>
+                    <td className="py-3 px-4 font-mono">
+                      {l.price ? `$${Number(l.price).toLocaleString()}` : "—"}
+                    </td>
                     <td className="py-3 px-4">
-                      <Badge variant={l.status === "active" ? "default" : "secondary"} className="capitalize">{l.status}</Badge>
+                      <Badge
+                        variant={l.status === "active" ? "default" : "secondary"}
+                        className="capitalize"
+                      >
+                        {l.status}
+                      </Badge>
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex gap-1.5">
-                        <Button size="sm" variant="outline" onClick={() => copy(branded, "Branded URL")}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => copy(branded, "Branded URL")}
+                        >
                           <Copy className="h-3 w-3 mr-1" /> Branded
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => copy(unbranded, "Unbranded URL")}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => copy(unbranded, "Unbranded URL")}
+                        >
                           <Copy className="h-3 w-3 mr-1" /> MLS
                         </Button>
                       </div>
                     </td>
                     <td className="py-3 px-4 text-right font-mono">{viewMap[l.id] ?? 0}</td>
-                    <td className="py-3 px-4 text-right text-muted-foreground text-xs">{new Date(l.created_at).toLocaleDateString()}</td>
+                    <td className="py-3 px-4 text-right text-muted-foreground text-xs">
+                      {new Date(l.created_at).toLocaleDateString()}
+                    </td>
                     <td className="py-3 px-2">
                       <div className="flex gap-1 justify-end">
                         <Link to="/listings/$id/report" params={{ id: l.id }}>
-                          <Button size="sm" variant="outline"><FileText className="h-3 w-3 mr-1" /> View Report</Button>
+                          <Button size="sm" variant="outline">
+                            <FileText className="h-3 w-3 mr-1" /> View Report
+                          </Button>
                         </Link>
                         <a href={branded} target="_blank" rel="noreferrer">
-                          <Button size="icon" variant="ghost"><ExternalLink className="h-4 w-4" /></Button>
+                          <Button size="icon" variant="ghost">
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
                         </a>
                         <Link to="/listings/$id/analytics" params={{ id: l.id }}>
-                          <Button size="icon" variant="ghost"><BarChart3 className="h-4 w-4" /></Button>
+                          <Button size="icon" variant="ghost">
+                            <BarChart3 className="h-4 w-4" />
+                          </Button>
                         </Link>
                         <Link to="/listings/$id" params={{ id: l.id }}>
-                          <Button size="icon" variant="ghost"><Pencil className="h-4 w-4" /></Button>
+                          <Button size="icon" variant="ghost">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
                         </Link>
                       </div>
                     </td>

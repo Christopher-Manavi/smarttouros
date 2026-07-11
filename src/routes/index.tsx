@@ -5,14 +5,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  ArrowRight,
-  PlayCircle,
-  Zap,
-  BarChart3,
-  X,
-  Check,
-} from "lucide-react";
+import { ArrowRight, PlayCircle, Zap, BarChart3, X, Check } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/")({
@@ -101,7 +94,11 @@ function Landing() {
   const [conciergeOpen, setConciergeOpen] = useState(false);
   return (
     <div
-      style={{ background: BG, color: TEXT, fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif" }}
+      style={{
+        background: BG,
+        color: TEXT,
+        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+      }}
       className="min-h-screen antialiased relative overflow-x-hidden"
     >
       {/* Ambient glow */}
@@ -240,8 +237,8 @@ function Landing() {
                         className="font-medium text-purple-400 hover:text-purple-300 transition-colors cursor-pointer underline decoration-dashed underline-offset-4"
                       >
                         Request a Free Walkthrough
-                      </button>
-                      {" "}— we'll come shoot a 10-second video for you within 24 hours, completely free.
+                      </button>{" "}
+                      — we'll come shoot a 10-second video for you within 24 hours, completely free.
                     </>
                   ),
                 },
@@ -249,15 +246,13 @@ function Landing() {
                   step: "02",
                   icon: Zap,
                   title: "Generate Compliant Link",
-                  body:
-                    "One click converts it into an unbranded, MLS-compliant gateway you can paste anywhere.",
+                  body: "One click converts it into an unbranded, MLS-compliant gateway you can paste anywhere.",
                 },
                 {
                   step: "03",
                   icon: BarChart3,
                   title: "Capture Zillow Traffic",
-                  body:
-                    "Paste in your MLS. Watch anonymous Zillow views turn into real, identified leads.",
+                  body: "Paste in your MLS. Watch anonymous Zillow views turn into real, identified leads.",
                 },
               ].map((s) => (
                 <div
@@ -269,8 +264,7 @@ function Landing() {
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.borderColor = "rgba(139,92,246,0.4)";
-                    e.currentTarget.style.boxShadow =
-                      "0 20px 50px -20px rgba(139,92,246,0.35)";
+                    e.currentTarget.style.boxShadow = "0 20px 50px -20px rgba(139,92,246,0.35)";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.borderColor = BORDER;
@@ -295,15 +289,10 @@ function Landing() {
                       {s.step}
                     </span>
                   </div>
-                  <h3
-                    className="text-xl font-semibold mb-2"
-                    style={{ letterSpacing: "-0.015em" }}
-                  >
+                  <h3 className="text-xl font-semibold mb-2" style={{ letterSpacing: "-0.015em" }}>
                     {s.title}
                   </h3>
-                  <p style={{ color: MUTED, fontSize: "0.95rem", lineHeight: 1.55 }}>
-                    {s.body}
-                  </p>
+                  <p style={{ color: MUTED, fontSize: "0.95rem", lineHeight: 1.55 }}>{s.body}</p>
                 </div>
               ))}
             </div>
@@ -357,10 +346,7 @@ function Landing() {
                 >
                   The Old Way
                 </p>
-                <h3
-                  className="text-2xl font-bold mb-7"
-                  style={{ letterSpacing: "-0.02em" }}
-                >
+                <h3 className="text-2xl font-bold mb-7" style={{ letterSpacing: "-0.02em" }}>
                   Zillow keeps your buyers. You pay anyway.
                 </h3>
                 <ul className="space-y-4">
@@ -413,10 +399,7 @@ function Landing() {
                 >
                   The SmartTour Way
                 </p>
-                <h3
-                  className="text-2xl font-bold mb-7"
-                  style={{ letterSpacing: "-0.02em" }}
-                >
+                <h3 className="text-2xl font-bold mb-7" style={{ letterSpacing: "-0.02em" }}>
                   Same views. Routed through you. Captured forever.
                 </h3>
                 <ul className="space-y-4">
@@ -491,13 +474,21 @@ function Landing() {
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span>© SmartTourOS</span>
             <span aria-hidden="true">·</span>
-            <a href="/privacy" className="transition-colors duration-200 hover:text-white">Privacy</a>
+            <a href="/privacy" className="transition-colors duration-200 hover:text-white">
+              Privacy
+            </a>
             <span aria-hidden="true">•</span>
-            <a href="/cookies" className="transition-colors duration-200 hover:text-white">Cookies</a>
+            <a href="/cookies" className="transition-colors duration-200 hover:text-white">
+              Cookies
+            </a>
             <span aria-hidden="true">•</span>
-            <a href="/privacy-choices" className="transition-colors duration-200 hover:text-white">Privacy Choices</a>
+            <a href="/privacy-choices" className="transition-colors duration-200 hover:text-white">
+              Privacy Choices
+            </a>
             <span aria-hidden="true">•</span>
-            <a href="/terms" className="transition-colors duration-200 hover:text-white">Terms</a>
+            <a href="/terms" className="transition-colors duration-200 hover:text-white">
+              Terms
+            </a>
           </div>
           <span>MLS-safe virtual tour links. Confirm local MLS rules before publishing.</span>
         </div>
@@ -542,11 +533,15 @@ function ConciergeModal({ open, onClose }: { open: boolean; onClose: () => void 
           <X className="h-4 w-4" />
         </button>
 
-        <h3 className="text-2xl font-bold tracking-tight" style={{ color: TEXT, letterSpacing: "-0.02em" }}>
+        <h3
+          className="text-2xl font-bold tracking-tight"
+          style={{ color: TEXT, letterSpacing: "-0.02em" }}
+        >
           Let's get your listing on Zillow.
         </h3>
         <p className="mt-2 text-sm" style={{ color: MUTED, lineHeight: 1.55 }}>
-          Give us the address. We'll shoot a quick 10-second walkthrough and generate your compliant MLS link within 24 hours. 100% Free.
+          Give us the address. We'll shoot a quick 10-second walkthrough and generate your compliant
+          MLS link within 24 hours. 100% Free.
         </p>
 
         <form

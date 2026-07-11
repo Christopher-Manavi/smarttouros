@@ -8,7 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { getPublicBaseUrl, setPublicBaseUrl, DEFAULT_PUBLIC_BASE_URL, isPreviewUrl } from "@/lib/public-url";
+import {
+  getPublicBaseUrl,
+  setPublicBaseUrl,
+  DEFAULT_PUBLIC_BASE_URL,
+  isPreviewUrl,
+} from "@/lib/public-url";
 
 export const Route = createFileRoute("/_authenticated/company")({
   component: Company,
@@ -22,29 +27,45 @@ function Company() {
 
   useEffect(() => {
     if (!companyId) return;
-    supabase.from("companies").select("*").eq("id", companyId).maybeSingle()
+    supabase
+      .from("companies")
+      .select("*")
+      .eq("id", companyId)
+      .maybeSingle()
       .then(({ data }) => setC(data));
   }, [companyId]);
 
   async function save() {
     setBusy(true);
-    const { error } = await supabase.from("companies").update({
-      name: c.name, brand_color: c.brand_color, phone: c.phone, email: c.email, logo_url: c.logo_url,
-    }).eq("id", c.id);
+    const { error } = await supabase
+      .from("companies")
+      .update({
+        name: c.name,
+        brand_color: c.brand_color,
+        phone: c.phone,
+        email: c.email,
+        logo_url: c.logo_url,
+      })
+      .eq("id", c.id);
     setBusy(false);
-    if (error) toast.error(error.message); else toast.success("Company saved");
+    if (error) toast.error(error.message);
+    else toast.success("Company saved");
   }
 
   async function uploadLogo(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0]; if (!f || !c) return;
+    const f = e.target.files?.[0];
+    if (!f || !c) return;
     const path = `${c.id}/${crypto.randomUUID()}.${f.name.split(".").pop()}`;
-    const { error } = await supabase.storage.from("company-logos").upload(path, f, { contentType: f.type });
+    const { error } = await supabase.storage
+      .from("company-logos")
+      .upload(path, f, { contentType: f.type });
     if (error) return toast.error(error.message);
-    const { data, error: signErr } = await supabase.storage.from("company-logos").createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
+    const { data, error: signErr } = await supabase.storage
+      .from("company-logos")
+      .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
     if (signErr || !data?.signedUrl) return toast.error(signErr?.message ?? "Could not sign URL");
     setC({ ...c, logo_url: data.signedUrl });
   }
-
 
   if (!c) return <div className="container-luxe py-10 text-muted-foreground">Loading…</div>;
   const set = (k: string, v: any) => setC({ ...c, [k]: v });
@@ -57,16 +78,33 @@ function Company() {
       </div>
 
       <Card className="p-6 space-y-4">
-        <div><Label>Company name</Label><Input value={c.name ?? ""} onChange={(e) => set("name", e.target.value)} /></div>
+        <div>
+          <Label>Company name</Label>
+          <Input value={c.name ?? ""} onChange={(e) => set("name", e.target.value)} />
+        </div>
         <div className="grid md:grid-cols-2 gap-4">
-          <div><Label>Contact email</Label><Input value={c.email ?? ""} onChange={(e) => set("email", e.target.value)} /></div>
-          <div><Label>Contact phone</Label><Input value={c.phone ?? ""} onChange={(e) => set("phone", e.target.value)} /></div>
+          <div>
+            <Label>Contact email</Label>
+            <Input value={c.email ?? ""} onChange={(e) => set("email", e.target.value)} />
+          </div>
+          <div>
+            <Label>Contact phone</Label>
+            <Input value={c.phone ?? ""} onChange={(e) => set("phone", e.target.value)} />
+          </div>
         </div>
         <div>
           <Label>Brand color</Label>
           <div className="flex gap-2 items-center">
-            <Input type="color" value={c.brand_color ?? "#0a0a0a"} onChange={(e) => set("brand_color", e.target.value)} className="w-20 h-10 p-1" />
-            <Input value={c.brand_color ?? ""} onChange={(e) => set("brand_color", e.target.value)} />
+            <Input
+              type="color"
+              value={c.brand_color ?? "#0a0a0a"}
+              onChange={(e) => set("brand_color", e.target.value)}
+              className="w-20 h-10 p-1"
+            />
+            <Input
+              value={c.brand_color ?? ""}
+              onChange={(e) => set("brand_color", e.target.value)}
+            />
           </div>
         </div>
         <div>
@@ -87,7 +125,8 @@ function Company() {
         <div>
           <h2 className="font-display text-2xl">Public Domain Settings</h2>
           <p className="text-xs text-muted-foreground mt-1">
-            This is the domain used when generating MLS-safe tour links. Use your published domain or custom domain.
+            This is the domain used when generating MLS-safe tour links. Use your published domain
+            or custom domain.
           </p>
         </div>
         <div>
@@ -105,19 +144,32 @@ function Company() {
           )}
         </div>
         <div className="flex gap-2 justify-end">
-          <Button variant="outline" onClick={() => { setPublicBase(DEFAULT_PUBLIC_BASE_URL); setPublicBaseUrl(DEFAULT_PUBLIC_BASE_URL); toast.success("Reset to default"); }}>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setPublicBase(DEFAULT_PUBLIC_BASE_URL);
+              setPublicBaseUrl(DEFAULT_PUBLIC_BASE_URL);
+              toast.success("Reset to default");
+            }}
+          >
             Reset to default
           </Button>
-          <Button onClick={() => { setPublicBaseUrl(publicBase); toast.success("Public base URL saved"); }}>
+          <Button
+            onClick={() => {
+              setPublicBaseUrl(publicBase);
+              toast.success("Public base URL saved");
+            }}
+          >
             Save public domain
           </Button>
         </div>
       </Card>
 
       <div className="mt-6 flex justify-end">
-        <Button onClick={save} disabled={busy}>{busy ? "Saving…" : "Save"}</Button>
+        <Button onClick={save} disabled={busy}>
+          {busy ? "Saving…" : "Save"}
+        </Button>
       </div>
-
     </div>
   );
 }

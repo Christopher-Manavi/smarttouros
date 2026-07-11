@@ -6,12 +6,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { slugify, uniqueSuffix } from "@/lib/slug";
 import { Upload, X, Youtube } from "lucide-react";
-import { extractYouTubeId, isYouTubeUrl, isYouTubeShorts, youTubeEmbedUrl, normalizeYouTubeUrl, MediaEmbed } from "@/components/media-embed";
+import {
+  extractYouTubeId,
+  isYouTubeUrl,
+  isYouTubeShorts,
+  youTubeEmbedUrl,
+  normalizeYouTubeUrl,
+  MediaEmbed,
+} from "@/components/media-embed";
 
 type ListingValues = {
   id?: string;
@@ -41,25 +54,53 @@ type ListingValues = {
 };
 
 export const EMPTY_LISTING: ListingValues = {
-  address: "", city: "", state: "", zip: "", price: "", beds: "", baths: "", sqft: "",
-  description: "", hero_image_url: "", gallery_urls: [],
-  primary_media_type: "youtube", primary_media_url: "", secondary_media_url: "",
-  agent_name: "", agent_phone: "", agent_email: "",
-  brokerage_name: "", brokerage_logo_url: "", mls_number: "",
-  status: "active", show_address_on_unbranded: true,
+  address: "",
+  city: "",
+  state: "",
+  zip: "",
+  price: "",
+  beds: "",
+  baths: "",
+  sqft: "",
+  description: "",
+  hero_image_url: "",
+  gallery_urls: [],
+  primary_media_type: "youtube",
+  primary_media_url: "",
+  secondary_media_url: "",
+  agent_name: "",
+  agent_phone: "",
+  agent_email: "",
+  brokerage_name: "",
+  brokerage_logo_url: "",
+  mls_number: "",
+  status: "active",
+  show_address_on_unbranded: true,
 };
 
 const SIGNED_URL_TTL = 60 * 60 * 24 * 365 * 10; // ~10 years
 
-type UploadResult = { url: string; width?: number; height?: number; filename: string; size: number };
+type UploadResult = {
+  url: string;
+  width?: number;
+  height?: number;
+  filename: string;
+  size: number;
+};
 
 async function readImageDimensions(file: File): Promise<{ width: number; height: number } | null> {
   if (!file.type.startsWith("image/")) return null;
   return new Promise((resolve) => {
     const url = URL.createObjectURL(file);
     const img = new Image();
-    img.onload = () => { resolve({ width: img.naturalWidth, height: img.naturalHeight }); URL.revokeObjectURL(url); };
-    img.onerror = () => { resolve(null); URL.revokeObjectURL(url); };
+    img.onload = () => {
+      resolve({ width: img.naturalWidth, height: img.naturalHeight });
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = () => {
+      resolve(null);
+      URL.revokeObjectURL(url);
+    };
     img.src = url;
   });
 }
@@ -67,26 +108,40 @@ async function readImageDimensions(file: File): Promise<{ width: number; height:
 async function uploadFile(file: File, folder: string, companyId: string): Promise<UploadResult> {
   const ext = file.name.split(".").pop();
   const path = `${companyId}/${folder}/${crypto.randomUUID()}.${ext}`;
-  const { error } = await supabase.storage.from("listing-media").upload(path, file, { upsert: false, contentType: file.type });
+  const { error } = await supabase.storage
+    .from("listing-media")
+    .upload(path, file, { upsert: false, contentType: file.type });
   if (error) throw error;
-  const { data, error: signErr } = await supabase.storage.from("listing-media").createSignedUrl(path, SIGNED_URL_TTL);
+  const { data, error: signErr } = await supabase.storage
+    .from("listing-media")
+    .createSignedUrl(path, SIGNED_URL_TTL);
   if (signErr || !data?.signedUrl) throw signErr ?? new Error("Could not create signed URL");
   const dims = await readImageDimensions(file);
-  return { url: data.signedUrl, filename: file.name, size: file.size, width: dims?.width, height: dims?.height };
+  return {
+    url: data.signedUrl,
+    filename: file.name,
+    size: file.size,
+    width: dims?.width,
+    height: dims?.height,
+  };
 }
-
 
 export function ListingForm({
   initial,
   companyId,
   highlightMedia,
-}: { initial: ListingValues; companyId: string; highlightMedia?: boolean }) {
+}: {
+  initial: ListingValues;
+  companyId: string;
+  highlightMedia?: boolean;
+}) {
   const navigate = useNavigate();
   const [v, setV] = useState<ListingValues>(initial);
   const [busy, setBusy] = useState(false);
   const [ytQuick, setYtQuick] = useState("");
   const mediaSectionRef = useRef<HTMLDivElement>(null);
-  const update = <K extends keyof ListingValues>(k: K, val: ListingValues[K]) => setV((p) => ({ ...p, [k]: val }));
+  const update = <K extends keyof ListingValues>(k: K, val: ListingValues[K]) =>
+    setV((p) => ({ ...p, [k]: val }));
 
   useEffect(() => {
     if (highlightMedia && mediaSectionRef.current) {
@@ -96,10 +151,19 @@ export function ListingForm({
 
   function applyYouTubeQuick() {
     const raw = ytQuick.trim();
-    if (!raw) { toast.error("Paste a YouTube or Shorts URL"); return; }
-    if (!isYouTubeUrl(raw)) { toast.error("That doesn't look like a YouTube URL"); return; }
+    if (!raw) {
+      toast.error("Paste a YouTube or Shorts URL");
+      return;
+    }
+    if (!isYouTubeUrl(raw)) {
+      toast.error("That doesn't look like a YouTube URL");
+      return;
+    }
     const normalized = normalizeYouTubeUrl(raw);
-    if (!normalized) { toast.error("Could not extract video ID"); return; }
+    if (!normalized) {
+      toast.error("Could not extract video ID");
+      return;
+    }
     update("primary_media_type", "youtube");
     update("primary_media_url", normalized);
     toast.success(isYouTubeShorts(raw) ? "Vertical Shorts video added" : "YouTube video added");
@@ -110,33 +174,46 @@ export function ListingForm({
   const [galleryMeta, setGalleryMeta] = useState<UploadResult[]>([]);
 
   async function onHero(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0]; if (!f) return;
+    const f = e.target.files?.[0];
+    if (!f) return;
     try {
       const res = await uploadFile(f, "hero", companyId);
       update("hero_image_url", res.url);
       setHeroMeta(res);
-      toast.success(`Upload successful · ${res.filename}${res.width ? ` · ${res.width}×${res.height}` : ""}`);
-    } catch (err) { toast.error(err instanceof Error ? err.message : "Upload failed"); }
+      toast.success(
+        `Upload successful · ${res.filename}${res.width ? ` · ${res.width}×${res.height}` : ""}`,
+      );
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    }
   }
   async function onGallery(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []); if (!files.length) return;
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
     try {
       const results = await Promise.all(files.map((f) => uploadFile(f, "gallery", companyId)));
       update("gallery_urls", [...v.gallery_urls, ...results.map((r) => r.url)]);
       setGalleryMeta((prev) => [...prev, ...results]);
       toast.success(`${results.length} image(s) added`);
-    } catch (err) { toast.error(err instanceof Error ? err.message : "Upload failed"); }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    }
   }
 
-
   async function save() {
-    if (!v.address.trim()) { toast.error("Address is required"); return; }
+    if (!v.address.trim()) {
+      toast.error("Address is required");
+      return;
+    }
     setBusy(true);
     try {
       const slug = v.slug ?? `${slugify(`${v.address} ${v.city} ${v.state}`)}-${uniqueSuffix()}`;
       const payload = {
         company_id: companyId,
-        address: v.address, city: v.city, state: v.state, zip: v.zip,
+        address: v.address,
+        city: v.city,
+        state: v.state,
+        zip: v.zip,
         price: v.price ? Number(v.price) : null,
         beds: v.beds ? Number(v.beds) : null,
         baths: v.baths ? Number(v.baths) : null,
@@ -147,8 +224,11 @@ export function ListingForm({
         primary_media_type: v.primary_media_type as any,
         primary_media_url: v.primary_media_url || null,
         secondary_media_url: v.secondary_media_url || null,
-        agent_name: v.agent_name || null, agent_phone: v.agent_phone || null, agent_email: v.agent_email || null,
-        brokerage_name: v.brokerage_name || null, brokerage_logo_url: v.brokerage_logo_url || null,
+        agent_name: v.agent_name || null,
+        agent_phone: v.agent_phone || null,
+        agent_email: v.agent_email || null,
+        brokerage_name: v.brokerage_name || null,
+        brokerage_logo_url: v.brokerage_logo_url || null,
         mls_number: v.mls_number || null,
         status: v.status,
         slug,
@@ -166,7 +246,9 @@ export function ListingForm({
       navigate({ to: "/listings" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Save failed");
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -177,7 +259,8 @@ export function ListingForm({
           <div>
             <h2 className="font-display text-xl">Have a YouTube or Shorts video?</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Paste it below and we'll embed it automatically. Then finish the listing details and generate your branded and MLS-safe URLs.
+              Paste it below and we'll embed it automatically. Then finish the listing details and
+              generate your branded and MLS-safe URLs.
             </p>
           </div>
         </div>
@@ -186,9 +269,16 @@ export function ListingForm({
             value={ytQuick}
             onChange={(e) => setYtQuick(e.target.value)}
             placeholder="https://youtube.com/shorts/… or https://youtu.be/…"
-            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyYouTubeQuick(); } }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                applyYouTubeQuick();
+              }
+            }}
           />
-          <Button type="button" onClick={applyYouTubeQuick}>Use this video</Button>
+          <Button type="button" onClick={applyYouTubeQuick}>
+            Use this video
+          </Button>
         </div>
         {v.primary_media_url && isYouTubeUrl(v.primary_media_url) && (
           <p className="text-xs text-muted-foreground mt-2">
@@ -201,32 +291,85 @@ export function ListingForm({
       <Card className="p-6">
         <h2 className="font-display text-2xl mb-4">Property</h2>
         <div className="grid md:grid-cols-2 gap-4">
-          <div className="md:col-span-2"><Label>Address *</Label><Input value={v.address} onChange={(e) => update("address", e.target.value)} /></div>
-          <div><Label>City</Label><Input value={v.city} onChange={(e) => update("city", e.target.value)} /></div>
-          <div className="grid grid-cols-2 gap-3">
-            <div><Label>State</Label><Input value={v.state} onChange={(e) => update("state", e.target.value)} /></div>
-            <div><Label>ZIP</Label><Input value={v.zip} onChange={(e) => update("zip", e.target.value)} /></div>
+          <div className="md:col-span-2">
+            <Label>Address *</Label>
+            <Input value={v.address} onChange={(e) => update("address", e.target.value)} />
           </div>
-          <div><Label>Price (USD)</Label><Input type="number" value={v.price} onChange={(e) => update("price", e.target.value)} /></div>
+          <div>
+            <Label>City</Label>
+            <Input value={v.city} onChange={(e) => update("city", e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>State</Label>
+              <Input value={v.state} onChange={(e) => update("state", e.target.value)} />
+            </div>
+            <div>
+              <Label>ZIP</Label>
+              <Input value={v.zip} onChange={(e) => update("zip", e.target.value)} />
+            </div>
+          </div>
+          <div>
+            <Label>Price (USD)</Label>
+            <Input
+              type="number"
+              value={v.price}
+              onChange={(e) => update("price", e.target.value)}
+            />
+          </div>
           <div className="grid grid-cols-3 gap-3">
-            <div><Label>Beds</Label><Input type="number" value={v.beds} onChange={(e) => update("beds", e.target.value)} /></div>
-            <div><Label>Baths</Label><Input type="number" step="0.5" value={v.baths} onChange={(e) => update("baths", e.target.value)} /></div>
-            <div><Label>Sqft</Label><Input type="number" value={v.sqft} onChange={(e) => update("sqft", e.target.value)} /></div>
+            <div>
+              <Label>Beds</Label>
+              <Input
+                type="number"
+                value={v.beds}
+                onChange={(e) => update("beds", e.target.value)}
+              />
+            </div>
+            <div>
+              <Label>Baths</Label>
+              <Input
+                type="number"
+                step="0.5"
+                value={v.baths}
+                onChange={(e) => update("baths", e.target.value)}
+              />
+            </div>
+            <div>
+              <Label>Sqft</Label>
+              <Input
+                type="number"
+                value={v.sqft}
+                onChange={(e) => update("sqft", e.target.value)}
+              />
+            </div>
           </div>
           <div className="md:col-span-2">
             <Label>Description</Label>
-            <Textarea rows={5} value={v.description} onChange={(e) => update("description", e.target.value)} />
+            <Textarea
+              rows={5}
+              value={v.description}
+              onChange={(e) => update("description", e.target.value)}
+            />
           </div>
         </div>
       </Card>
 
-      <Card ref={mediaSectionRef} className={`p-6 scroll-mt-6 ${highlightMedia ? "ring-2 ring-foreground/40" : ""}`}>
-
+      <Card
+        ref={mediaSectionRef}
+        className={`p-6 scroll-mt-6 ${highlightMedia ? "ring-2 ring-foreground/40" : ""}`}
+      >
         <h2 className="font-display text-2xl mb-4">Media</h2>
 
         <div className="rounded-md border bg-muted/30 p-3 text-xs text-muted-foreground mb-4 space-y-1">
-          <p><strong className="text-foreground">Hero image:</strong> 1600×900 minimum · 16:9 landscape preferred · JPG, PNG, or WebP.</p>
-          <p><strong className="text-foreground">Gallery photos:</strong> 1200px wide minimum · JPG, PNG, or WebP · landscape preferred (portrait works too).</p>
+          <p>
+            <strong className="text-foreground">Hero image:</strong> 1600×900 minimum · 16:9
+            landscape preferred · JPG, PNG, or WebP.
+          </p>
+          <p>
+            <strong className="text-foreground">Gallery photos:</strong> 1200px wide minimum · JPG,
+            PNG, or WebP · landscape preferred (portrait works too).
+          </p>
           <p>Screenshots and imperfectly sized images are fine — we'll center-crop them cleanly.</p>
         </div>
 
@@ -237,18 +380,28 @@ export function ListingForm({
               {v.hero_image_url && (
                 <div className="mb-2">
                   <div className="aspect-video w-full overflow-hidden rounded bg-muted">
-                    <img src={v.hero_image_url} className="w-full h-full object-cover" alt="Hero preview" />
+                    <img
+                      src={v.hero_image_url}
+                      className="w-full h-full object-cover"
+                      alt="Hero preview"
+                    />
                   </div>
                   {heroMeta && (
                     <p className="text-xs text-muted-foreground mt-1 truncate">
-                      ✓ {heroMeta.filename}{heroMeta.width ? ` · ${heroMeta.width}×${heroMeta.height}` : ""}
+                      ✓ {heroMeta.filename}
+                      {heroMeta.width ? ` · ${heroMeta.width}×${heroMeta.height}` : ""}
                     </p>
                   )}
                 </div>
               )}
               <label className="flex items-center gap-2 border border-dashed rounded p-3 text-sm cursor-pointer hover:bg-muted/30">
                 <Upload className="h-4 w-4" /> Upload hero
-                <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={onHero} />
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={onHero}
+                />
               </label>
             </div>
           </div>
@@ -261,18 +414,30 @@ export function ListingForm({
                   return (
                     <div key={u} className="relative group">
                       <div className="aspect-square w-full overflow-hidden rounded bg-muted">
-                        <img src={u} className="w-full h-full object-cover" alt={meta?.filename ?? ""} />
+                        <img
+                          src={u}
+                          className="w-full h-full object-cover"
+                          alt={meta?.filename ?? ""}
+                        />
                       </div>
                       {meta && (
-                        <p className="text-[10px] text-muted-foreground mt-0.5 truncate" title={`${meta.filename}${meta.width ? ` · ${meta.width}×${meta.height}` : ""}`}>
+                        <p
+                          className="text-[10px] text-muted-foreground mt-0.5 truncate"
+                          title={`${meta.filename}${meta.width ? ` · ${meta.width}×${meta.height}` : ""}`}
+                        >
                           {meta.filename}
                         </p>
                       )}
-                      <button onClick={() => {
-                        update("gallery_urls", v.gallery_urls.filter((_, j) => j !== i));
-                        setGalleryMeta((prev) => prev.filter((m) => m.url !== u));
-                      }}
-                        className="absolute top-1 right-1 bg-black/70 text-white rounded p-0.5 opacity-0 group-hover:opacity-100">
+                      <button
+                        onClick={() => {
+                          update(
+                            "gallery_urls",
+                            v.gallery_urls.filter((_, j) => j !== i),
+                          );
+                          setGalleryMeta((prev) => prev.filter((m) => m.url !== u));
+                        }}
+                        className="absolute top-1 right-1 bg-black/70 text-white rounded p-0.5 opacity-0 group-hover:opacity-100"
+                      >
                         <X className="h-3 w-3" />
                       </button>
                     </div>
@@ -281,16 +446,26 @@ export function ListingForm({
               </div>
               <label className="flex items-center gap-2 border border-dashed rounded p-3 text-sm cursor-pointer hover:bg-muted/30">
                 <Upload className="h-4 w-4" /> Add photos
-                <input type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={onGallery} />
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  className="hidden"
+                  onChange={onGallery}
+                />
               </label>
             </div>
           </div>
 
-
           <div>
             <Label>Primary media type</Label>
-            <Select value={v.primary_media_type} onValueChange={(val) => update("primary_media_type", val)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+            <Select
+              value={v.primary_media_type}
+              onValueChange={(val) => update("primary_media_type", val)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="youtube">YouTube</SelectItem>
                 <SelectItem value="vimeo">Vimeo</SelectItem>
@@ -302,25 +477,53 @@ export function ListingForm({
               </SelectContent>
             </Select>
           </div>
-          <div><Label>Primary media URL</Label><Input value={v.primary_media_url} onChange={(e) => update("primary_media_url", e.target.value)} placeholder="https://..." /></div>
-          <div className="md:col-span-2"><Label>Secondary media URL (optional)</Label><Input value={v.secondary_media_url} onChange={(e) => update("secondary_media_url", e.target.value)} /></div>
+          <div>
+            <Label>Primary media URL</Label>
+            <Input
+              value={v.primary_media_url}
+              onChange={(e) => update("primary_media_url", e.target.value)}
+              placeholder="https://..."
+            />
+          </div>
+          <div className="md:col-span-2">
+            <Label>Secondary media URL (optional)</Label>
+            <Input
+              value={v.secondary_media_url}
+              onChange={(e) => update("secondary_media_url", e.target.value)}
+            />
+          </div>
 
           {v.primary_media_url && (
             <div className="md:col-span-2 rounded-md border bg-muted/30 p-4">
-              <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Media preview</div>
+              <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">
+                Media preview
+              </div>
               {isYouTubeUrl(v.primary_media_url) ? (
                 (() => {
                   const id = extractYouTubeId(v.primary_media_url);
                   if (!id) {
-                    return <p className="text-sm text-destructive">YouTube URL detected but no video ID could be extracted.</p>;
+                    return (
+                      <p className="text-sm text-destructive">
+                        YouTube URL detected but no video ID could be extracted.
+                      </p>
+                    );
                   }
                   const embed = youTubeEmbedUrl(id);
                   return (
                     <div className="space-y-3">
                       <dl className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
-                        <div><dt className="text-muted-foreground">Platform</dt><dd>YouTube{isYouTubeShorts(v.primary_media_url) ? " (Shorts)" : ""}</dd></div>
-                        <div><dt className="text-muted-foreground">Video ID</dt><dd className="font-mono">{id}</dd></div>
-                        <div className="sm:col-span-3"><dt className="text-muted-foreground">Embed URL</dt><dd className="font-mono break-all">{embed}</dd></div>
+                        <div>
+                          <dt className="text-muted-foreground">Platform</dt>
+                          <dd>YouTube{isYouTubeShorts(v.primary_media_url) ? " (Shorts)" : ""}</dd>
+                        </div>
+                        <div>
+                          <dt className="text-muted-foreground">Video ID</dt>
+                          <dd className="font-mono">{id}</dd>
+                        </div>
+                        <div className="sm:col-span-3">
+                          <dt className="text-muted-foreground">Embed URL</dt>
+                          <dd className="font-mono break-all">{embed}</dd>
+                        </div>
                       </dl>
                       <MediaEmbed type="youtube" url={v.primary_media_url} />
                     </div>
@@ -337,12 +540,40 @@ export function ListingForm({
       <Card className="p-6">
         <h2 className="font-display text-2xl mb-4">Agent & brokerage</h2>
         <div className="grid md:grid-cols-2 gap-4">
-          <div><Label>Agent name</Label><Input value={v.agent_name} onChange={(e) => update("agent_name", e.target.value)} /></div>
-          <div><Label>Agent phone</Label><Input value={v.agent_phone} onChange={(e) => update("agent_phone", e.target.value)} /></div>
-          <div><Label>Agent email</Label><Input type="email" value={v.agent_email} onChange={(e) => update("agent_email", e.target.value)} /></div>
-          <div><Label>Brokerage name</Label><Input value={v.brokerage_name} onChange={(e) => update("brokerage_name", e.target.value)} /></div>
-          <div><Label>Brokerage logo URL</Label><Input value={v.brokerage_logo_url} onChange={(e) => update("brokerage_logo_url", e.target.value)} /></div>
-          <div><Label>MLS number</Label><Input value={v.mls_number} onChange={(e) => update("mls_number", e.target.value)} /></div>
+          <div>
+            <Label>Agent name</Label>
+            <Input value={v.agent_name} onChange={(e) => update("agent_name", e.target.value)} />
+          </div>
+          <div>
+            <Label>Agent phone</Label>
+            <Input value={v.agent_phone} onChange={(e) => update("agent_phone", e.target.value)} />
+          </div>
+          <div>
+            <Label>Agent email</Label>
+            <Input
+              type="email"
+              value={v.agent_email}
+              onChange={(e) => update("agent_email", e.target.value)}
+            />
+          </div>
+          <div>
+            <Label>Brokerage name</Label>
+            <Input
+              value={v.brokerage_name}
+              onChange={(e) => update("brokerage_name", e.target.value)}
+            />
+          </div>
+          <div>
+            <Label>Brokerage logo URL</Label>
+            <Input
+              value={v.brokerage_logo_url}
+              onChange={(e) => update("brokerage_logo_url", e.target.value)}
+            />
+          </div>
+          <div>
+            <Label>MLS number</Label>
+            <Input value={v.mls_number} onChange={(e) => update("mls_number", e.target.value)} />
+          </div>
         </div>
       </Card>
 
@@ -352,7 +583,9 @@ export function ListingForm({
           <div>
             <Label>Status</Label>
             <Select value={v.status} onValueChange={(val) => update("status", val as any)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="draft">Draft</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
@@ -365,18 +598,25 @@ export function ListingForm({
               <Label className="block">Show address on unbranded page</Label>
               <p className="text-xs text-muted-foreground">Disable if your MLS forbids it.</p>
             </div>
-            <Switch checked={v.show_address_on_unbranded} onCheckedChange={(c) => update("show_address_on_unbranded", c)} />
+            <Switch
+              checked={v.show_address_on_unbranded}
+              onCheckedChange={(c) => update("show_address_on_unbranded", c)}
+            />
           </div>
         </div>
         <div className="mt-6 p-4 bg-muted/40 border-l-2 border-foreground text-sm">
-          <strong>Note:</strong> Use the unbranded URL (<code>/u/[slug]</code>) for MLS virtual tour fields.
-          Confirm local MLS rules before publishing.
+          <strong>Note:</strong> Use the unbranded URL (<code>/u/[slug]</code>) for MLS virtual tour
+          fields. Confirm local MLS rules before publishing.
         </div>
       </Card>
 
       <div className="flex justify-end gap-3">
-        <Button variant="outline" onClick={() => navigate({ to: "/listings" })}>Cancel</Button>
-        <Button onClick={save} disabled={busy}>{busy ? "Saving…" : v.id ? "Save changes" : "Create listing"}</Button>
+        <Button variant="outline" onClick={() => navigate({ to: "/listings" })}>
+          Cancel
+        </Button>
+        <Button onClick={save} disabled={busy}>
+          {busy ? "Saving…" : v.id ? "Save changes" : "Create listing"}
+        </Button>
       </div>
     </div>
   );

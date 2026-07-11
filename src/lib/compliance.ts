@@ -9,7 +9,13 @@ export const DEFAULT_TERMS_URL = "https://smarttouros.com/terms";
 export const DEFAULT_PRIVACY_NOTICE_TEXT =
   "This page may use cookies and similar technologies for analytics, marketing attribution, and listing performance measurement.";
 
-export function resolveCompliance(privacy: { privacy_policy_url?: string | null; terms_url?: string | null; privacy_notice_text?: string | null } | null) {
+export function resolveCompliance(
+  privacy: {
+    privacy_policy_url?: string | null;
+    terms_url?: string | null;
+    privacy_notice_text?: string | null;
+  } | null,
+) {
   const trim = (v: string | null | undefined) => (v && v.trim() ? v.trim() : null);
   return {
     privacyUrl: trim(privacy?.privacy_policy_url) ?? DEFAULT_PRIVACY_URL,

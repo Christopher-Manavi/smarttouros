@@ -15,7 +15,7 @@ function NewListing() {
   const { companyId } = useAuth();
   const { yt } = Route.useSearch();
 
-  const prefillUrl = yt && isYouTubeUrl(yt) ? normalizeYouTubeUrl(yt) ?? yt : "";
+  const prefillUrl = yt && isYouTubeUrl(yt) ? (normalizeYouTubeUrl(yt) ?? yt) : "";
   const initial = prefillUrl
     ? { ...EMPTY_LISTING, primary_media_type: "youtube", primary_media_url: prefillUrl }
     : EMPTY_LISTING;

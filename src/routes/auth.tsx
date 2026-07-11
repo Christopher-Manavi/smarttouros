@@ -18,7 +18,11 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Sign in — SmartTourOS" },
-      { name: "description", content: "Sign in to your SmartTourOS workspace to manage listings, smart tour pages, tracking, and analytics." },
+      {
+        name: "description",
+        content:
+          "Sign in to your SmartTourOS workspace to manage listings, smart tour pages, tracking, and analytics.",
+      },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -148,9 +152,13 @@ function AuthPage() {
       <div className="flex-1 flex items-center justify-center p-6">
         <Card className="w-full max-w-md p-8">
           <div className="mb-6">
-            <h1 className="font-display text-3xl">{mode === "signin" ? "Welcome back" : "Create your workspace"}</h1>
+            <h1 className="font-display text-3xl">
+              {mode === "signin" ? "Welcome back" : "Create your workspace"}
+            </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {mode === "signin" ? "Sign in to manage your tours." : "Start hosting listing tours in minutes."}
+              {mode === "signin"
+                ? "Sign in to manage your tours."
+                : "Start hosting listing tours in minutes."}
             </p>
           </div>
 
@@ -174,21 +182,44 @@ function AuthPage() {
               <>
                 <div>
                   <Label htmlFor="fn">Full name</Label>
-                  <Input id="fn" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+                  <Input
+                    id="fn"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                  />
                 </div>
                 <div>
                   <Label htmlFor="co">Company name</Label>
-                  <Input id="co" value={companyName} onChange={(e) => setCompanyName(e.target.value)} required />
+                  <Input
+                    id="co"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    required
+                  />
                 </div>
               </>
             )}
             <div>
               <Label htmlFor="em">Email</Label>
-              <Input id="em" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <Input
+                id="em"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
             <div>
               <Label htmlFor="pw">Password</Label>
-              <Input id="pw" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} />
+              <Input
+                id="pw"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={8}
+              />
               {mode === "signup" && (
                 <p className="text-xs text-muted-foreground mt-1">
                   Min 8 characters. Common/breached passwords are rejected — use something unique.
@@ -197,8 +228,12 @@ function AuthPage() {
             </div>
             <Button type="submit" className="w-full" disabled={busy}>
               {busy
-                ? mode === "signin" ? "Signing in..." : "Creating account..."
-                : mode === "signin" ? "Sign in" : "Create account"}
+                ? mode === "signin"
+                  ? "Signing in..."
+                  : "Creating account..."
+                : mode === "signin"
+                  ? "Sign in"
+                  : "Create account"}
             </Button>
           </form>
 
@@ -207,7 +242,13 @@ function AuthPage() {
             <span className="text-xs uppercase tracking-widest text-muted-foreground">or</span>
             <div className="h-px flex-1 bg-border" />
           </div>
-          <Button type="button" variant="outline" className="w-full" disabled={busy} onClick={handleDemo}>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            disabled={busy}
+            onClick={handleDemo}
+          >
             Continue as Demo User
           </Button>
 
@@ -230,7 +271,10 @@ function AuthPage() {
             <div className="mt-6 p-3 rounded border bg-muted/40 text-xs font-mono space-y-1">
               <div className="font-semibold font-sans text-sm">Auth Debug (dev only)</div>
               <div>Supabase URL: {import.meta.env.VITE_SUPABASE_URL ? "✓ set" : "✗ missing"}</div>
-              <div>Publishable key: {import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ? "✓ set" : "✗ missing"}</div>
+              <div>
+                Publishable key:{" "}
+                {import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ? "✓ set" : "✗ missing"}
+              </div>
               <div>Session: {sessionEmail ? `✓ ${sessionEmail}` : "none"}</div>
               <div className="break-words">Last error: {errorMsg ?? "—"}</div>
             </div>

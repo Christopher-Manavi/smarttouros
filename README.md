@@ -84,22 +84,22 @@ The platform is built as a multi-tenant SaaS with role-based access (`super_admi
 
 ## 3. Tech Stack
 
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **Framework** | [TanStack Start v1](https://tanstack.com/start) | Full-stack React 19 framework with file-based routing, SSR, and `createServerFn` RPC |
-| **Build Tool** | [Vite 8](https://vitejs.dev/) | Fast dev server and optimized production builds |
-| **Language** | [TypeScript 5.8](https://www.typescriptlang.org/) | Strict mode, path aliases via `@/*` |
-| **UI Library** | [React 19](https://react.dev/) | Component model with server/client boundaries |
-| **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) | Native CSS theme variables, custom color tokens, dark-mode SaaS aesthetic |
-| **Components** | [Radix UI](https://www.radix-ui.com/) primitives + [shadcn/ui](https://ui.shadcn.com/) patterns | Accessible dialogs, accordions, forms, tables, tooltips |
-| **Icons** | [Lucide React](https://lucide.dev/) | Consistent iconography |
-| **Charts** | [Recharts](https://recharts.org/) | Listing analytics time-series and KPI visualizations |
-| **Forms** | [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/) | Type-safe validation |
-| **Data Fetching** | [TanStack Query v5](https://tanstack.com/query) | Caching, invalidation, suspense integration |
-| **Backend / Auth** | [Lovable Cloud / Supabase](https://lovable.dev/) | PostgreSQL, Auth, Storage, Row Level Security |
-| **Auth Client** | `@lovable.dev/cloud-auth-js` | Lovable-managed auth session bridge |
-| **Server Runtime** | Cloudflare Workers (via TanStack Start / Nitro) | Edge server functions and SSR |
-| **Package Manager** | [Bun](https://bun.sh/) (configured via `bunfig.toml`) | Fast installs and script execution |
+| Layer               | Technology                                                                                      | Purpose                                                                              |
+| ------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| **Framework**       | [TanStack Start v1](https://tanstack.com/start)                                                 | Full-stack React 19 framework with file-based routing, SSR, and `createServerFn` RPC |
+| **Build Tool**      | [Vite 8](https://vitejs.dev/)                                                                   | Fast dev server and optimized production builds                                      |
+| **Language**        | [TypeScript 5.8](https://www.typescriptlang.org/)                                               | Strict mode, path aliases via `@/*`                                                  |
+| **UI Library**      | [React 19](https://react.dev/)                                                                  | Component model with server/client boundaries                                        |
+| **Styling**         | [Tailwind CSS v4](https://tailwindcss.com/)                                                     | Native CSS theme variables, custom color tokens, dark-mode SaaS aesthetic            |
+| **Components**      | [Radix UI](https://www.radix-ui.com/) primitives + [shadcn/ui](https://ui.shadcn.com/) patterns | Accessible dialogs, accordions, forms, tables, tooltips                              |
+| **Icons**           | [Lucide React](https://lucide.dev/)                                                             | Consistent iconography                                                               |
+| **Charts**          | [Recharts](https://recharts.org/)                                                               | Listing analytics time-series and KPI visualizations                                 |
+| **Forms**           | [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/)                       | Type-safe validation                                                                 |
+| **Data Fetching**   | [TanStack Query v5](https://tanstack.com/query)                                                 | Caching, invalidation, suspense integration                                          |
+| **Backend / Auth**  | [Lovable Cloud / Supabase](https://lovable.dev/)                                                | PostgreSQL, Auth, Storage, Row Level Security                                        |
+| **Auth Client**     | `@lovable.dev/cloud-auth-js`                                                                    | Lovable-managed auth session bridge                                                  |
+| **Server Runtime**  | Cloudflare Workers (via TanStack Start / Nitro)                                                 | Edge server functions and SSR                                                        |
+| **Package Manager** | [Bun](https://bun.sh/) (configured via `bunfig.toml`)                                           | Fast installs and script execution                                                   |
 
 ---
 

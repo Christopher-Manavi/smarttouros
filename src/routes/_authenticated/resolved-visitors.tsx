@@ -61,9 +61,7 @@ const MOCK_VISITORS = [
 function toCsv(rows: typeof MOCK_VISITORS): string {
   const keys = ["date", "property", "buyerName", "phone", "email"] as const;
   const head = keys.map((k) => k.charAt(0).toUpperCase() + k.slice(1)).join(",");
-  const body = rows
-    .map((r) => keys.map((k) => JSON.stringify(r[k])).join(","))
-    .join("\n");
+  const body = rows.map((r) => keys.map((k) => JSON.stringify(r[k])).join(",")).join("\n");
   return head + "\n" + body;
 }
 
@@ -110,12 +108,8 @@ function Visitors() {
       <div className="container-luxe py-10">
         <div className="flex items-end justify-between mb-2">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-neutral-400">
-              Identity
-            </p>
-            <h1 className="font-display text-4xl mt-2 text-white">
-              Resolved visitors
-            </h1>
+            <p className="text-xs uppercase tracking-[0.2em] text-neutral-400">Identity</p>
+            <h1 className="font-display text-4xl mt-2 text-white">Resolved visitors</h1>
           </div>
           <Button
             variant="outline"
@@ -126,8 +120,8 @@ function Visitors() {
           </Button>
         </div>
         <p className="text-sm text-neutral-400 mb-8 max-w-2xl">
-          Connect your identity-resolution or analytics provider using tracking
-          settings. Resolved records will appear here for export and CRM hand-off.
+          Connect your identity-resolution or analytics provider using tracking settings. Resolved
+          records will appear here for export and CRM hand-off.
         </p>
 
         <Card className="overflow-hidden relative bg-[#111114] border-white/10">
@@ -136,9 +130,7 @@ function Visitors() {
               <thead className="bg-white/5 text-xs uppercase tracking-wider text-neutral-400">
                 <tr>
                   <th className="text-left py-3 px-4 font-medium">Date</th>
-                  <th className="text-left py-3 px-4 font-medium">
-                    Property Looked At
-                  </th>
+                  <th className="text-left py-3 px-4 font-medium">Property Looked At</th>
                   <th className="text-left py-3 px-4 font-medium">Buyer Name</th>
                   <th className="text-left py-3 px-4 font-medium">Phone</th>
                   <th className="text-left py-3 px-4 font-medium">Email</th>
@@ -146,10 +138,7 @@ function Visitors() {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {MOCK_VISITORS.map((v, i) => (
-                  <tr
-                    key={i}
-                    className="hover:bg-white/5 transition-colors duration-200"
-                  >
+                  <tr key={i} className="hover:bg-white/5 transition-colors duration-200">
                     <td className="py-3 px-4 text-neutral-300">{v.date}</td>
                     <td className="py-3 px-4 text-neutral-300">{v.property}</td>
                     <td className="py-3 px-4 blur-md select-none opacity-50 text-neutral-300">
@@ -174,8 +163,7 @@ function Visitors() {
                 You have 14 unresolved buyer leads.
               </h2>
               <p className="text-sm text-neutral-400 mb-8 leading-relaxed">
-                Upgrade your account to instantly reveal buyer names, phone
-                numbers, and emails.
+                Upgrade your account to instantly reveal buyer names, phone numbers, and emails.
               </p>
               <div className="flex flex-col gap-3">
                 <Button
@@ -206,19 +194,15 @@ function Visitors() {
                 Invite Your Lender to Sponsor You
               </DialogTitle>
               <DialogDescription className="text-sm text-neutral-400 leading-relaxed">
-                Enter your preferred mortgage broker's details. We will send them a
-                request to sponsor your $49/mo account in exchange for
-                co-working these buyer leads.
+                Enter your preferred mortgage broker's details. We will send them a request to
+                sponsor your $49/mo account in exchange for co-working these buyer leads.
               </DialogDescription>
             </DialogHeader>
 
             {!sponsorSuccess ? (
               <form onSubmit={handleSponsorSubmit} className="space-y-4 mt-6">
                 <div className="space-y-2">
-                  <Label
-                    htmlFor="lender-name"
-                    className="text-sm text-neutral-300"
-                  >
+                  <Label htmlFor="lender-name" className="text-sm text-neutral-300">
                     Lender Name
                   </Label>
                   <Input
@@ -231,10 +215,7 @@ function Visitors() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label
-                    htmlFor="lender-email"
-                    className="text-sm text-neutral-300"
-                  >
+                  <Label htmlFor="lender-email" className="text-sm text-neutral-300">
                     Lender Email
                   </Label>
                   <Input
@@ -259,9 +240,7 @@ function Visitors() {
                 <div className="h-16 w-16 rounded-full bg-green-500/10 flex items-center justify-center mb-2">
                   <CheckCircle2 className="h-8 w-8 text-green-500" />
                 </div>
-                <h3 className="text-lg font-semibold text-white">
-                  Request Sent!
-                </h3>
+                <h3 className="text-lg font-semibold text-white">Request Sent!</h3>
                 <p className="text-sm text-neutral-400 max-w-xs leading-relaxed">
                   We will notify you as soon as your lender unlocks your account.
                 </p>

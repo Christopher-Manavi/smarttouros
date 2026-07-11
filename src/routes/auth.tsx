@@ -95,9 +95,8 @@ function AuthPage() {
         if (res.data.session) navigate({ to: "/dashboard", replace: true });
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
       logDev("error", err);
-      setErrorMsg(msg);
+      setErrorMsg(formatAuthError(err));
     } finally {
       setBusy(false);
     }

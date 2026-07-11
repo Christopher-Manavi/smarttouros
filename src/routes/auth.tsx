@@ -118,34 +118,6 @@ function AuthPage() {
     }
   }
 
-  async function handleDemo() {
-    setBusy(true);
-    setErrorMsg(null);
-    setInfoMsg(null);
-    try {
-      // Try sign-in first; if user doesn't exist, sign up.
-      let res = await supabase.auth.signInWithPassword({
-        email: DEMO_EMAIL,
-        password: DEMO_PASSWORD,
-      });
-      logDev("demo signIn", { error: res.error });
-      if (res.error) {
-        await doSignup(DEMO_EMAIL, DEMO_PASSWORD, "Demo User", "Demo Brokerage");
-        res = await supabase.auth.signInWithPassword({
-          email: DEMO_EMAIL,
-          password: DEMO_PASSWORD,
-        });
-        logDev("demo signIn after signup", { error: res.error });
-        if (res.error) throw res.error;
-      }
-      if (res.data.session) navigate({ to: "/dashboard", replace: true });
-      else setInfoMsg("Demo account created. Check the demo inbox to confirm if required.");
-    } catch (err) {
-      setErrorMsg(`Demo login failed: ${formatAuthError(err)}`);
-    } finally {
-      setBusy(false);
-    }
-  }
 
   return (
     <div className="min-h-screen flex">

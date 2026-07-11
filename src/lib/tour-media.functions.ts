@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestIP, getRequestHeader } from "@tanstack/react-start/server";
 import { createHash } from "node:crypto";
+import { isListingMediaPath, isCompanyLogoPath } from "@/lib/tour-media-paths";
 
 /**
  * Sign fresh short-lived download URLs for the storage-hosted media that

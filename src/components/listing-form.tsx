@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -25,8 +25,9 @@ import {
   normalizeYouTubeUrl,
   MediaEmbed,
 } from "@/components/media-embed";
+import { useStorageSignedUrl, useStorageSignedUrls } from "@/lib/storage-preview";
 
-type ListingValues = {
+export type ListingValues = {
   id?: string;
   address: string;
   city: string;
@@ -37,8 +38,8 @@ type ListingValues = {
   baths: string;
   sqft: string;
   description: string;
-  hero_image_url: string;
-  gallery_urls: string[];
+  hero_image_storage_path: string | null;
+  gallery_storage_paths: string[];
   primary_media_type: string;
   primary_media_url: string;
   secondary_media_url: string;
@@ -63,8 +64,8 @@ export const EMPTY_LISTING: ListingValues = {
   baths: "",
   sqft: "",
   description: "",
-  hero_image_url: "",
-  gallery_urls: [],
+  hero_image_storage_path: null,
+  gallery_storage_paths: [],
   primary_media_type: "youtube",
   primary_media_url: "",
   secondary_media_url: "",
@@ -78,10 +79,8 @@ export const EMPTY_LISTING: ListingValues = {
   show_address_on_unbranded: true,
 };
 
-const SIGNED_URL_TTL = 60 * 60 * 24 * 365 * 10; // ~10 years
-
 type UploadResult = {
-  url: string;
+  path: string;
   width?: number;
   height?: number;
   filename: string;
@@ -105,20 +104,23 @@ async function readImageDimensions(file: File): Promise<{ width: number; height:
   });
 }
 
-async function uploadFile(file: File, folder: string, companyId: string): Promise<UploadResult> {
-  const ext = file.name.split(".").pop();
-  const path = `${companyId}/${folder}/${crypto.randomUUID()}.${ext}`;
+async function uploadFile(
+  file: File,
+  companyId: string,
+  listingId: string,
+): Promise<UploadResult> {
+  const ext = (file.name.split(".").pop() ?? "bin").toLowerCase();
+  // Storage lives at {company_id}/{listing_id}/{uuid}.ext — matches the
+  // storage RLS policy which requires the first folder segment to equal the
+  // caller's own company_id.
+  const path = `${companyId}/${listingId}/${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage
     .from("listing-media")
     .upload(path, file, { upsert: false, contentType: file.type });
   if (error) throw error;
-  const { data, error: signErr } = await supabase.storage
-    .from("listing-media")
-    .createSignedUrl(path, SIGNED_URL_TTL);
-  if (signErr || !data?.signedUrl) throw signErr ?? new Error("Could not create signed URL");
   const dims = await readImageDimensions(file);
   return {
-    url: data.signedUrl,
+    path,
     filename: file.name,
     size: file.size,
     width: dims?.width,
@@ -136,12 +138,19 @@ export function ListingForm({
   highlightMedia?: boolean;
 }) {
   const navigate = useNavigate();
+  // Pre-generate a stable listing id so uploads can be stored at the final
+  // {company_id}/{listing_id}/… path even before the row is inserted.
+  const listingId = useMemo(() => initial.id ?? crypto.randomUUID(), [initial.id]);
+  const isNew = !initial.id;
   const [v, setV] = useState<ListingValues>(initial);
   const [busy, setBusy] = useState(false);
   const [ytQuick, setYtQuick] = useState("");
   const mediaSectionRef = useRef<HTMLDivElement>(null);
   const update = <K extends keyof ListingValues>(k: K, val: ListingValues[K]) =>
     setV((p) => ({ ...p, [k]: val }));
+
+  const heroPreview = useStorageSignedUrl("listing-media", v.hero_image_storage_path);
+  const galleryPreviews = useStorageSignedUrls("listing-media", v.gallery_storage_paths);
 
   useEffect(() => {
     if (highlightMedia && mediaSectionRef.current) {
@@ -177,8 +186,8 @@ export function ListingForm({
     const f = e.target.files?.[0];
     if (!f) return;
     try {
-      const res = await uploadFile(f, "hero", companyId);
-      update("hero_image_url", res.url);
+      const res = await uploadFile(f, companyId, listingId);
+      update("hero_image_storage_path", res.path);
       setHeroMeta(res);
       toast.success(
         `Upload successful · ${res.filename}${res.width ? ` · ${res.width}×${res.height}` : ""}`,
@@ -191,8 +200,11 @@ export function ListingForm({
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
     try {
-      const results = await Promise.all(files.map((f) => uploadFile(f, "gallery", companyId)));
-      update("gallery_urls", [...v.gallery_urls, ...results.map((r) => r.url)]);
+      const results = await Promise.all(files.map((f) => uploadFile(f, companyId, listingId)));
+      update("gallery_storage_paths", [
+        ...v.gallery_storage_paths,
+        ...results.map((r) => r.path),
+      ]);
       setGalleryMeta((prev) => [...prev, ...results]);
       toast.success(`${results.length} image(s) added`);
     } catch (err) {
@@ -209,6 +221,7 @@ export function ListingForm({
     try {
       const slug = v.slug ?? `${slugify(`${v.address} ${v.city} ${v.state}`)}-${uniqueSuffix()}`;
       const payload = {
+        id: listingId,
         company_id: companyId,
         address: v.address,
         city: v.city,
@@ -219,8 +232,12 @@ export function ListingForm({
         baths: v.baths ? Number(v.baths) : null,
         sqft: v.sqft ? Number(v.sqft) : null,
         description: v.description || null,
-        hero_image_url: v.hero_image_url || null,
-        gallery_urls: v.gallery_urls,
+        // Legacy *_url columns are for external URLs only. Storage-hosted
+        // media lives in *_storage_path columns.
+        hero_image_url: null,
+        gallery_urls: [] as string[],
+        hero_image_storage_path: v.hero_image_storage_path,
+        gallery_storage_paths: v.gallery_storage_paths,
         primary_media_type: v.primary_media_type as any,
         primary_media_url: v.primary_media_url || null,
         secondary_media_url: v.secondary_media_url || null,
@@ -234,8 +251,8 @@ export function ListingForm({
         slug,
         show_address_on_unbranded: v.show_address_on_unbranded,
       };
-      if (v.id) {
-        const { error } = await supabase.from("listings").update(payload).eq("id", v.id);
+      if (!isNew) {
+        const { error } = await supabase.from("listings").update(payload).eq("id", listingId);
         if (error) throw error;
         toast.success("Listing updated");
       } else {
@@ -371,27 +388,49 @@ export function ListingForm({
             PNG, or WebP · landscape preferred (portrait works too).
           </p>
           <p>Screenshots and imperfectly sized images are fine — we'll center-crop them cleanly.</p>
+          <p className="pt-1 border-t border-border/60">
+            Photos are stored privately. Public tour pages load them through short-lived signed
+            links that expire in 60 minutes — draft and archived listings are never anonymously
+            accessible.
+          </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <Label>Hero image</Label>
             <div className="mt-1">
-              {v.hero_image_url && (
+              {v.hero_image_storage_path && (
                 <div className="mb-2">
                   <div className="aspect-video w-full overflow-hidden rounded bg-muted">
-                    <img
-                      src={v.hero_image_url}
-                      className="w-full h-full object-cover"
-                      alt="Hero preview"
-                    />
+                    {heroPreview ? (
+                      <img
+                        src={heroPreview}
+                        className="w-full h-full object-cover"
+                        alt="Hero preview"
+                      />
+                    ) : (
+                      <div className="w-full h-full grid place-items-center text-xs text-muted-foreground">
+                        Loading preview…
+                      </div>
+                    )}
                   </div>
-                  {heroMeta && (
-                    <p className="text-xs text-muted-foreground mt-1 truncate">
-                      ✓ {heroMeta.filename}
-                      {heroMeta.width ? ` · ${heroMeta.width}×${heroMeta.height}` : ""}
+                  <div className="flex items-center justify-between mt-1">
+                    <p className="text-xs text-muted-foreground truncate">
+                      {heroMeta
+                        ? `✓ ${heroMeta.filename}${heroMeta.width ? ` · ${heroMeta.width}×${heroMeta.height}` : ""}`
+                        : "Stored privately"}
                     </p>
-                  )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        update("hero_image_storage_path", null);
+                        setHeroMeta(null);
+                      }}
+                      className="text-xs text-muted-foreground hover:text-destructive"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
               )}
               <label className="flex items-center gap-2 border border-dashed rounded p-3 text-sm cursor-pointer hover:bg-muted/30">
@@ -409,16 +448,23 @@ export function ListingForm({
             <Label>Photo gallery</Label>
             <div className="mt-1">
               <div className="grid grid-cols-3 gap-2 mb-2">
-                {v.gallery_urls.map((u, i) => {
-                  const meta = galleryMeta.find((m) => m.url === u);
+                {v.gallery_storage_paths.map((p, i) => {
+                  const meta = galleryMeta.find((m) => m.path === p);
+                  const preview = galleryPreviews[i];
                   return (
-                    <div key={u} className="relative group">
+                    <div key={p} className="relative group">
                       <div className="aspect-square w-full overflow-hidden rounded bg-muted">
-                        <img
-                          src={u}
-                          className="w-full h-full object-cover"
-                          alt={meta?.filename ?? ""}
-                        />
+                        {preview ? (
+                          <img
+                            src={preview}
+                            className="w-full h-full object-cover"
+                            alt={meta?.filename ?? ""}
+                          />
+                        ) : (
+                          <div className="w-full h-full grid place-items-center text-[10px] text-muted-foreground">
+                            …
+                          </div>
+                        )}
                       </div>
                       {meta && (
                         <p
@@ -431,10 +477,10 @@ export function ListingForm({
                       <button
                         onClick={() => {
                           update(
-                            "gallery_urls",
-                            v.gallery_urls.filter((_, j) => j !== i),
+                            "gallery_storage_paths",
+                            v.gallery_storage_paths.filter((_, j) => j !== i),
                           );
-                          setGalleryMeta((prev) => prev.filter((m) => m.url !== u));
+                          setGalleryMeta((prev) => prev.filter((m) => m.path !== p));
                         }}
                         className="absolute top-1 right-1 bg-black/70 text-white rounded p-0.5 opacity-0 group-hover:opacity-100"
                       >
@@ -568,7 +614,11 @@ export function ListingForm({
             <Input
               value={v.brokerage_logo_url}
               onChange={(e) => update("brokerage_logo_url", e.target.value)}
+              placeholder="https://brokerage.example.com/logo.png"
             />
+            <p className="text-xs text-muted-foreground mt-1">
+              External URL only. Uploaded files aren't accepted here.
+            </p>
           </div>
           <div>
             <Label>MLS number</Label>
@@ -615,7 +665,7 @@ export function ListingForm({
           Cancel
         </Button>
         <Button onClick={save} disabled={busy}>
-          {busy ? "Saving…" : v.id ? "Save changes" : "Create listing"}
+          {busy ? "Saving…" : !isNew ? "Save changes" : "Create listing"}
         </Button>
       </div>
     </div>

@@ -41,8 +41,8 @@ function EditListing() {
     baths: data.baths?.toString() ?? "",
     sqft: data.sqft?.toString() ?? "",
     description: data.description ?? "",
-    hero_image_url: data.hero_image_url ?? "",
-    gallery_urls: data.gallery_urls ?? [],
+    hero_image_storage_path: data.hero_image_storage_path ?? null,
+    gallery_storage_paths: data.gallery_storage_paths ?? [],
     primary_media_type: data.primary_media_type ?? "youtube",
     primary_media_url: data.primary_media_url ?? "",
     secondary_media_url: data.secondary_media_url ?? "",
@@ -55,6 +55,7 @@ function EditListing() {
     status: data.status,
     show_address_on_unbranded: data.show_address_on_unbranded ?? true,
   };
+
 
   return (
     <div className="container-luxe py-10">

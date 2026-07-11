@@ -265,7 +265,7 @@ The MVP is validated by a repeatable local pipeline. None of these substitute fo
   - unbranded tour response contains no agent, brokerage, or company-logo fields;
   - signed media URLs return 200; expired/unauthorized paths return the expected non-200;
   - `record_public_event` accepts valid events and silently ignores unknown slugs.
-- **Client-bundle secret scan** — every build greps `dist/client/` for `service_role`, `sb_secret_`, and known password patterns. A match fails the release.
+- **Client-bundle secret scan** — `bun run verify:bundle` (or `bun run verify:release`) scans `dist/client/` for private-secret patterns (service-role JWT claims, `sb_secret_*` keys, Postgres URIs, AWS keys, PEM blocks) and exits non-zero on match. Wire this into whatever CI/release step you use before deploy.
 
 Not claimed: independent penetration test, third-party security audit, or formal compliance certification (SOC 2, ISO 27001, HIPAA, etc.).
 

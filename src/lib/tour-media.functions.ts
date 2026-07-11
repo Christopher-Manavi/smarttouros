@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestIP, getRequestHeader } from "@tanstack/react-start/server";
+import { createHash } from "node:crypto";
 
 /**
  * Sign fresh short-lived download URLs for the storage-hosted media that

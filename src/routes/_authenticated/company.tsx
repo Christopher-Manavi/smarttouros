@@ -70,8 +70,10 @@ function Company() {
   }
 
 
+  const logoPreview = useStorageSignedUrl("company-logos", c?.logo_storage_path ?? null);
   if (!c) return <div className="container-luxe py-10 text-muted-foreground">Loading…</div>;
   const set = (k: string, v: any) => setC({ ...c, [k]: v });
+
 
   return (
     <div className="container-luxe py-10 max-w-3xl">
@@ -112,9 +114,15 @@ function Company() {
         </div>
         <div>
           <Label>Logo</Label>
-          {c.logo_url && <img src={c.logo_url} alt="logo" className="h-16 mb-2 object-contain" />}
+          {logoPreview && (
+            <img src={logoPreview} alt="logo" className="h-16 mb-2 object-contain" />
+          )}
           <Input type="file" accept="image/*" onChange={uploadLogo} />
+          <p className="text-xs text-muted-foreground mt-1">
+            Stored privately. Branded tour pages load it through a fresh short-lived link.
+          </p>
         </div>
+
         <div className="flex items-center justify-between border rounded-md p-4 bg-muted/30">
           <div>
             <Label>Custom domain</Label>

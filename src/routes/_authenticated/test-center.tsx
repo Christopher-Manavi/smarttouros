@@ -167,8 +167,9 @@ function TestCenter() {
         label: "Unbranded page_view recorded after opening",
         status: "pending",
       },
-      { id: "anon_select", label: "Anonymous can SELECT active listing (RLS)", status: "pending" },
-      { id: "anon_insert", label: "Anonymous can INSERT page_view event (RLS)", status: "pending" },
+      { id: "anon_select", label: "Anon SELECT on listings is denied", status: "pending" },
+      { id: "anon_insert", label: "Anon direct INSERT into events is denied", status: "pending" },
+      { id: "anon_rpc", label: "Anon can call record_public_event RPC", status: "pending" },
       {
         id: "strip_pii",
         label: "Unbranded page strips agent name / phone / email / brokerage name / logo",

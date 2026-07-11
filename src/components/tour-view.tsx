@@ -48,8 +48,7 @@ function GallerySection({ urls }: { urls: string[] }) {
 }
 
 async function recordEvent(args: {
-  listingId: string;
-  companyId: string;
+  slug: string;
   pageType: "branded" | "unbranded";
   eventType: "page_view" | "media_click" | "video_play" | "cta_click" | "outbound_click";
 }) {
@@ -62,20 +61,18 @@ async function recordEvent(args: {
         localStorage.setItem("stos_vh", v);
         return v;
       })();
-    await supabase.from("events").insert({
-      listing_id: args.listingId,
-      company_id: args.companyId,
-      page_type: args.pageType,
-      event_type: args.eventType,
-      referrer: document.referrer || null,
-      utm_source: params.get("utm_source"),
-      utm_campaign: params.get("utm_campaign"),
-      user_agent: navigator.userAgent,
-      device_type: detectDevice(navigator.userAgent),
-      visitor_hash: visitorHash,
+    await supabase.rpc("record_public_event", {
+      p_slug: args.slug,
+      p_page_type: args.pageType,
+      p_event_type: args.eventType,
+      p_referrer: document.referrer || null,
+      p_utm_source: params.get("utm_source"),
+      p_utm_campaign: params.get("utm_campaign"),
+      p_user_agent: navigator.userAgent,
+      p_device_type: detectDevice(navigator.userAgent),
+      p_visitor_hash: visitorHash,
     });
   } catch (e) {
-    // Analytics must never break the public page.
     console.warn("[tour] recordEvent failed", e);
   }
 }

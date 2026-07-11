@@ -1,78 +1,43 @@
-# SmartTourOS MVP Build Plan
+## Security Hardening Pass 1 — Server-Side Data Minimization
 
-A white-label smart real estate tour platform. Luxury aesthetic (white/black/slate/soft gray, elegant serif headings + clean sans body, generous whitespace).
+**Migration already applied** — the following are already live in the database:
+- `get_public_branded_tour(text)` — explicit allowlist for listing + company + tracking + privacy (privacy limited to `privacy_policy_url`, `terms_url`, `show_privacy_notice`, `privacy_notice_text`).
+- `get_public_unbranded_tour(text)` — omits `agent_*`, `brokerage_*`, `company_id`; company returned as `NULL`; address/city/state/zip only included when `show_address_on_unbranded = true`.
+- `record_public_event(...)` — SECURITY DEFINER, derives `listing_id`/`company_id` from slug, validates enums.
+- All three functions: `REVOKE ALL ... FROM PUBLIC` then `GRANT EXECUTE ... TO anon, authenticated`.
+- Old `get_public_tour` dropped.
+- Policy `"anon read active listings"` on `public.listings` dropped; `REVOKE SELECT ON public.listings FROM anon`.
+- Anon and authenticated event INSERT policies dropped; `REVOKE INSERT ON public.events FROM anon, authenticated`.
 
-## Phase 1 — Backend (Lovable Cloud / Supabase)
+The linter's 8 WARNs are expected: these RPCs are intentionally public and are the only public-tour surface. No action required on them.
 
-Enable Lovable Cloud, then create schema via migration:
+### Remaining client-side changes
 
-**Tables**
+1. **`src/components/tour-view.tsx`**
+   - Replace `supabase.from("events").insert(...)` with `supabase.rpc("record_public_event", { p_slug, p_page_type, p_event_type, ... })`.
+   - Change `recordEvent` signature: take `slug` + `pageType` + `eventType` (drop `listingId`/`companyId`).
+   - Update all call sites in the file to pass `listing.slug` (both RPCs already return `slug`).
+   - `loadTourBundle(slug, mode)` — dispatch to `get_public_branded_tour` or `get_public_unbranded_tour` based on `mode`.
 
-- `companies` — name, logo_url, brand_color, phone, email, custom_domain_placeholder
-- `profiles` — user_id, full_name, company_id (role lives in `user_roles`)
-- `user_roles` — enum `app_role` = `super_admin | company_admin | agent`, with `has_role()` security-definer
-- `listings` — all fields from spec + `slug` (unique), `status` enum (draft/active/archived), `primary_media_type` enum
-- `tracking_settings` — one row per company, all script fields + toggles
-- `privacy_settings` — privacy/terms URLs + toggles
-- `events` — page_view / media_click / video_play / cta_click / outbound_click
-- `resolved_visitors` — placeholder contact rows
+2. **`src/routes/_public/tour.$slug.tsx`** — call `loadTourBundle(slug, "branded")`.
 
-**RLS**
+3. **`src/routes/_public/u.$slug.tsx`** — call `loadTourBundle(slug, "unbranded")`; remove the client-side hard-strip sanitizer (server now guarantees).
 
-- Super admin: full access via `has_role(uid,'super_admin')`
-- Company admin: scoped to their `company_id`
-- Agent: read listings assigned to them + events for those listings
-- Public read on `listings` (status=active) and `tracking_settings` for the public tour pages
-- Public insert on `events` (anon-allowed, no PII)
+4. **`src/components/public-access-panel.tsx`** — the anonymous listing SELECT probe will now correctly fail. Relabel the checks to reflect the hardened contract: anon SELECT on `listings` MUST fail (that's the pass condition); direct anon INSERT on `events` MUST fail; anon call to `record_public_event` MUST succeed. Update the fetch probes accordingly.
 
-**Storage buckets**: `listing-media` (public), `company-logos` (public)
+5. **`src/routes/_authenticated/test-center.tsx`** — same reframing:
+   - `anon_select` on `listings` → expected DENY (pass = HTTP 401/permission error).
+   - `anon_insert` on `events` → expected DENY.
+   - Add a new probe: anon RPC `record_public_event` → expected ALLOW, followed by verifying the event count increments.
 
-**Auth**: email/password + Google. On signup, trigger creates `profiles` row; first user becomes super_admin via seed.
+### Verification after code changes
+- `bun run tsc` clean.
+- Fetch `/u/:demo-slug` with Playwright; assert JSON response body contains none of `agent_name`, `agent_phone`, `agent_email`, `brokerage_name`, `brokerage_logo_url`, `company_id`, and (when `show_address_on_unbranded=false`) none of `address`/`city`/`state`/`zip`; assert `company: null`.
+- Fetch `/tour/:demo-slug`; assert branding fields present.
+- Confirm a page_view row lands in `events` after visiting each URL.
+- Confirm authenticated dashboard/listings pages still work (untouched policies).
 
-## Phase 2 — App Shell
-
-- TanStack Router file-based routes under `_authenticated/`
-- Left sidebar nav: Dashboard, Listings, Create Listing, Resolved Visitors, Tracking, Company Settings, Privacy Settings (Super Admin sees extra "Companies" entry)
-- Design tokens in `src/styles.css`: deep black, soft slate, ivory whites, refined serif display + inter body, subtle shadow/elevation tokens
-
-## Phase 3 — Authenticated Screens
-
-1. **Dashboard** — KPI cards (listings, active, views, unique visitors), top listings, recent events
-2. **Listings table** — address/city/state/price/status/views/branded+unbranded URL copy buttons/edit/analytics
-3. **Create/Edit Listing** — full form, hero + gallery uploads to Storage, slug autogen with collision suffix
-4. **Listing Analytics** — totals, branded vs unbranded split, daily chart (recharts), top referrers, recent events
-5. **Resolved Visitors** — table + CSV export + status update buttons (placeholder integrations)
-6. **Tracking Settings** — script textareas + toggles
-7. **Company Settings** — branding fields + "Custom Domain Coming Soon" badge
-8. **Privacy Settings** — URLs + toggles + default copy
-
-## Phase 4 — Public Tour Pages
-
-Public routes (no auth), SSR-friendly:
-
-- `/tour/$slug` — branded
-- `/u/$slug` — unbranded MLS-safe (strips agent/brokerage/CTAs)
-
-**MediaEmbed component** — detects YouTube/Vimeo URLs → embed; Matterport/CloudPano/custom iframe; Mux placeholder; HTML5 video for direct URLs.
-
-Layout: full-bleed hero media → details → gallery → description → secondary media → minimal footer. Mobile-first.
-
-**Tracking injection**: fetch company `tracking_settings` server-side, inject scripts conditionally based on branded/unbranded toggles + privacy banner.
-
-**Event capture**: client effect fires `page_view` on mount, click handlers fire `media_click` / `cta_click` / `outbound_click` — POST to public server route `/api/public/events` which inserts into `events` (Zod-validated, rate-limit-friendly).
-
-## Phase 5 — Positioning Copy
-
-- Admin banner on listing detail: "Use the unbranded URL for MLS virtual tour fields. Confirm local MLS rules before publishing."
-- Resolved Visitors header: "Connect your identity-resolution or analytics provider using tracking settings."
-
-## Technical notes
-
-- TanStack Start + Supabase per integration rules; protected routes under `_authenticated/`, public tour pages top-level
-- `createServerFn` with `requireSupabaseAuth` for admin reads/writes
-- Public event insert via `/api/public/events` server route using server publishable client + `TO anon` insert policy
-- CSV export client-side from queried rows
-- Recharts for analytics charts
-- Out of scope per spec: billing, CRM integrations, direct mail, real MLS API, transcoding, custom domains
-
-Proceeding to build on approval.
+### Change log deliverable
+After the code edits, provide:
+- Files changed.
+- Security-focused summary tying each of the 9 acceptance criteria to the change that fulfills it.

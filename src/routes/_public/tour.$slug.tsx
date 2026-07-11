@@ -41,6 +41,11 @@ function BrandedTour() {
   const { data, isLoading } = useQuery({
     queryKey: ["tour", slug],
     queryFn: () => loadTourBundle(slug, "branded"),
+    // Signed URLs expire in 3600s. Refresh well before expiry so images
+    // stay valid on long-open tabs without a full-page reload.
+    refetchInterval: 50 * 60 * 1000,
+    refetchIntervalInBackground: false,
+    staleTime: 45 * 60 * 1000,
   });
   if (isLoading)
     return (

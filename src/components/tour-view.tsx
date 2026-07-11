@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { MediaEmbed } from "@/components/media-embed";
 import { SmartImage } from "@/components/smart-image";
 import { resolveCompliance } from "@/lib/compliance";
+import { signPublicTourMedia, type PublicTourMedia } from "@/lib/tour-media.functions";
+
 
 type Listing = any;
 type Company = any;

@@ -80,23 +80,6 @@ function Dashboard() {
     .map(([id, v]) => ({ listing: listings.find((l) => l.id === id), views: v }))
     .filter((r) => r.listing);
 
-  async function handleDemo() {
-    if (!companyId) {
-      toast.error("Company not loaded yet");
-      return;
-    }
-    setCreating(true);
-    try {
-      const { slug } = await createDemoListing(companyId);
-      await refetch();
-      navigate({ to: "/demo", search: { slug } });
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to create demo");
-    } finally {
-      setCreating(false);
-    }
-  }
-
   return (
     <div className="container-luxe py-10">
       <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
@@ -104,19 +87,8 @@ function Dashboard() {
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Overview</p>
           <h1 className="font-display text-4xl mt-2">Dashboard</h1>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
-            <Link to="/test-center">
-              <ClipboardCheck className="h-4 w-4 mr-2" />
-              MVP Test Center
-            </Link>
-          </Button>
-          <Button onClick={handleDemo} disabled={creating || !companyId}>
-            <Sparkles className="h-4 w-4 mr-2" />
-            {creating ? "Creating…" : "Create Demo Listing"}
-          </Button>
-        </div>
       </div>
+
 
       <Card className="p-6 mb-6 border-foreground/20 bg-muted/30">
         <div className="flex items-start gap-3 mb-3">

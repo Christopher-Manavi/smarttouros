@@ -11,8 +11,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 
 const IS_DEV = import.meta.env.DEV;
-const DEMO_EMAIL = "demo@smarttouros.app";
-const DEMO_PASSWORD = "DemoTour!2026#Smart";
 
 function formatAuthError(err: unknown): string {
   if (!err) return "An unexpected authentication error occurred.";
@@ -120,34 +118,6 @@ function AuthPage() {
     }
   }
 
-  async function handleDemo() {
-    setBusy(true);
-    setErrorMsg(null);
-    setInfoMsg(null);
-    try {
-      // Try sign-in first; if user doesn't exist, sign up.
-      let res = await supabase.auth.signInWithPassword({
-        email: DEMO_EMAIL,
-        password: DEMO_PASSWORD,
-      });
-      logDev("demo signIn", { error: res.error });
-      if (res.error) {
-        await doSignup(DEMO_EMAIL, DEMO_PASSWORD, "Demo User", "Demo Brokerage");
-        res = await supabase.auth.signInWithPassword({
-          email: DEMO_EMAIL,
-          password: DEMO_PASSWORD,
-        });
-        logDev("demo signIn after signup", { error: res.error });
-        if (res.error) throw res.error;
-      }
-      if (res.data.session) navigate({ to: "/dashboard", replace: true });
-      else setInfoMsg("Demo account created. Check the demo inbox to confirm if required.");
-    } catch (err) {
-      setErrorMsg(`Demo login failed: ${formatAuthError(err)}`);
-    } finally {
-      setBusy(false);
-    }
-  }
 
   return (
     <div className="min-h-screen flex">
@@ -253,20 +223,6 @@ function AuthPage() {
             </Button>
           </form>
 
-          <div className="flex items-center gap-3 my-5">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-xs uppercase tracking-widest text-muted-foreground">or</span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            disabled={busy}
-            onClick={handleDemo}
-          >
-            Continue as Demo User
-          </Button>
 
           <p className="text-sm text-muted-foreground text-center mt-6">
             {mode === "signin" ? "Don't have an account? " : "Already have one? "}

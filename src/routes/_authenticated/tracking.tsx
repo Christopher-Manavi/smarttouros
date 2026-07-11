@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/use-auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +20,16 @@ export const TEST_TRACKING_SCRIPT = `<script>
 </script>`;
 
 export const Route = createFileRoute("/_authenticated/tracking")({
+  beforeLoad: async () => {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData.user) throw redirect({ to: "/auth" });
+    const { data: roleRows } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userData.user.id);
+    const isSuper = (roleRows ?? []).some((r) => r.role === "super_admin");
+    if (!isSuper) throw redirect({ to: "/dashboard" });
+  },
   component: Tracking,
 });
 

@@ -1,5 +1,5 @@
 {
-  "name": "tanstack_start_ts",
+  "name": "smarttouros",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -12,7 +12,9 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:unit": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "verify:bundle": "node scripts/verify-bundle.mjs",
+    "verify:release": "bun run build && bun run verify:bundle"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

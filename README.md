@@ -86,7 +86,7 @@ The platform is built as a multi-tenant SaaS with role-based access (`super_admi
 - **Separate `user_roles` table:** Roles are never stored on `profiles`. Access is checked via a `has_role(user_id, role)` `SECURITY DEFINER` function to avoid RLS recursion.
 - **Storage isolation:** `listing-media` and `company-logos` are **private** buckets. Authenticated access is gated by RLS policies that pin `bucket_id` and require the path's first segment to match the caller's `company_id`; `listing-media` additionally validates the `{company_id}/{listing_id}/...` prefix.
 - **Server-side signing + rate limiting:** All public media URLs are generated server-side, only for `status = 'active'` listings, and the signing endpoint is rate-limited (60 requests/minute per caller).
-- **No service-role credential in the browser bundle:** The client bundle ships only `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`. `SUPABASE_SERVICE_ROLE_KEY` is server-only and is verified absent from `dist/client/` on every build.
+- **No service-role credential in the browser bundle:** The client bundle ships only `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`. `SUPABASE_SERVICE_ROLE_KEY` is server-only. A `bun run verify:bundle` script scans `dist/client/` for private-secret patterns (service-role JWT claims, `sb_secret_*` keys, Postgres URIs, AWS keys, PEM blocks) and fails on match; `bun run verify:release` chains `build` and `verify:bundle` as a single gate.
 
 ---
 
@@ -194,7 +194,7 @@ VITE_SUPABASE_PROJECT_ID=<project-ref>
 - GetUntitled or other third-party API credentials.
 - Any other private secret.
 
-These are read from `process.env.*` inside server-function `.handler()` bodies. They must never appear under `VITE_*`, in client imports, in the git tree in plain form, or in `dist/client/`. Every production build runs a bundle secret scan.
+These are read from `process.env.*` inside server-function `.handler()` bodies. They must never appear under `VITE_*`, in client imports, in the git tree in plain form, or in `dist/client/`. Run `bun run verify:bundle` (or `bun run verify:release` after a fresh build) to scan the client bundle for private-secret patterns; it exits non-zero on match.
 
 Do not print or commit actual key values to this repository or the README.
 
@@ -265,7 +265,7 @@ The MVP is validated by a repeatable local pipeline. None of these substitute fo
   - unbranded tour response contains no agent, brokerage, or company-logo fields;
   - signed media URLs return 200; expired/unauthorized paths return the expected non-200;
   - `record_public_event` accepts valid events and silently ignores unknown slugs.
-- **Client-bundle secret scan** — every build greps `dist/client/` for `service_role`, `sb_secret_`, and known password patterns. A match fails the release.
+- **Client-bundle secret scan** — `bun run verify:bundle` (or `bun run verify:release`) scans `dist/client/` for private-secret patterns (service-role JWT claims, `sb_secret_*` keys, Postgres URIs, AWS keys, PEM blocks) and exits non-zero on match. Wire this into whatever CI/release step you use before deploy.
 
 Not claimed: independent penetration test, third-party security audit, or formal compliance certification (SOC 2, ISO 27001, HIPAA, etc.).
 

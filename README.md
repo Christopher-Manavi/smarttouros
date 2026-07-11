@@ -194,7 +194,7 @@ VITE_SUPABASE_PROJECT_ID=<project-ref>
 - GetUntitled or other third-party API credentials.
 - Any other private secret.
 
-These are read from `process.env.*` inside server-function `.handler()` bodies. They must never appear under `VITE_*`, in client imports, in the git tree in plain form, or in `dist/client/`. Every production build runs a bundle secret scan.
+These are read from `process.env.*` inside server-function `.handler()` bodies. They must never appear under `VITE_*`, in client imports, in the git tree in plain form, or in `dist/client/`. Run `bun run verify:bundle` (or `bun run verify:release` after a fresh build) to scan the client bundle for private-secret patterns; it exits non-zero on match.
 
 Do not print or commit actual key values to this repository or the README.
 

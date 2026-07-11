@@ -254,13 +254,9 @@ export function TourView({
         )}
       </section>
 
-      <GallerySection
-        urls={(listing.gallery_urls ?? []).filter(
-          (u: unknown): u is string => typeof u === "string" && !!u.trim(),
-        )}
-      />
+      <GallerySection urls={galleryUrls} />
 
-      {listing.secondary_media_url && (
+      {secondaryUrl && (
         <section className="container-luxe pb-16">
           <h2 className="font-display text-3xl mb-6">More media</h2>
           <div
@@ -272,7 +268,7 @@ export function TourView({
               })
             }
           >
-            <MediaEmbed type={listing.primary_media_type} url={listing.secondary_media_url} />
+            <MediaEmbed type={listing.primary_media_type} url={secondaryUrl} />
           </div>
         </section>
       )}
@@ -282,14 +278,15 @@ export function TourView({
         <section className="border-t bg-muted/30">
           <div className="container-luxe py-12 grid md:grid-cols-2 gap-10 items-center">
             <div>
-              {listing.brokerage_logo_url && (
+              {(brokerageLogo || listing.brokerage_logo_url) && (
                 <SmartImage
-                  src={listing.brokerage_logo_url}
+                  src={brokerageLogo || listing.brokerage_logo_url}
                   alt=""
                   className="h-12 object-contain mb-4"
                   hideOnError
                 />
               )}
+
               {listing.brokerage_name && (
                 <p className="text-sm uppercase tracking-widest text-muted-foreground">
                   {listing.brokerage_name}

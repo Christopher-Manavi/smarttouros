@@ -31,13 +31,14 @@ const baseItems = [
   { title: "Listings", url: "/listings", icon: Building2 },
   { title: "Create Listing", url: "/create-listing", icon: Plus },
   { title: "Resolved Visitors", url: "/resolved-visitors", icon: Users },
-  { title: "Tracking", url: "/tracking", icon: LineChart },
-  { title: "Tracking Verify", url: "/tracking-verify", icon: FlaskConical },
+  { title: "Identity Resolution", url: "/identity", icon: ShieldCheck },
   { title: "Company", url: "/company", icon: Settings2 },
   { title: "Privacy", url: "/privacy-settings", icon: ShieldCheck },
 ];
 
 const superAdminItems = [
+  { title: "Tracking", url: "/tracking", icon: LineChart },
+  { title: "Tracking Verify", url: "/tracking-verify", icon: FlaskConical },
   { title: "MVP Test Center", url: "/test-center", icon: ClipboardCheck },
 ];
 

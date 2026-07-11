@@ -14,6 +14,8 @@ import {
   DEFAULT_PUBLIC_BASE_URL,
   isPreviewUrl,
 } from "@/lib/public-url";
+import { useStorageSignedUrl } from "@/lib/storage-preview";
+
 
 export const Route = createFileRoute("/_authenticated/company")({
   component: Company,

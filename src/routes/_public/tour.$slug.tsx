@@ -54,7 +54,9 @@ function BrandedTour() {
       company={data?.company}
       tracking={data?.tracking}
       privacy={data?.privacy}
+      media={data?.media ?? null}
       mode="branded"
     />
   );
+
 }

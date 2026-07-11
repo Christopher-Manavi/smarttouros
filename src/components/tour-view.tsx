@@ -384,12 +384,18 @@ function TourFooter({
 }
 
 export async function loadTourBundle(slug: string, mode: "branded" | "unbranded") {
-  // Use a SECURITY DEFINER RPC so anonymous visitors only receive public-safe
-  // fields. The unbranded RPC additionally strips agent/brokerage/company data
-  // and hides the address unless show_address_on_unbranded is true.
+  // 1) Public-safe metadata via SECURITY DEFINER RPC (no storage paths).
+  // 2) Fresh short-lived signed URLs for storage-hosted media via server fn.
+  //    The unbranded server fn refuses to sign brokerage/company logos.
   const fn = mode === "branded" ? "get_public_branded_tour" : "get_public_unbranded_tour";
-  const { data, error } = await supabase.rpc(fn, { p_slug: slug });
-  if (error || !data) return { listing: null, company: null, tracking: null, privacy: null };
+  const [bundleRes, media] = await Promise.all([
+    supabase.rpc(fn, { p_slug: slug }),
+    signPublicTourMedia({ data: { slug, mode } }).catch(() => null),
+  ]);
+  const { data, error } = bundleRes;
+  if (error || !data) {
+    return { listing: null, company: null, tracking: null, privacy: null, media: null };
+  }
   const bundle = data as unknown as {
     listing: any;
     company: any;
@@ -401,5 +407,7 @@ export async function loadTourBundle(slug: string, mode: "branded" | "unbranded"
     company: bundle.company ?? null,
     tracking: bundle.tracking ?? null,
     privacy: bundle.privacy ?? null,
+    media: media ?? null,
   };
 }
+

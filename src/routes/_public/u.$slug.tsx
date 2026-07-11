@@ -56,7 +56,9 @@ function UnbrandedTour() {
       company={null}
       tracking={data?.tracking}
       privacy={data?.privacy}
+      media={data?.media ?? null}
       mode="unbranded"
     />
   );
+
 }

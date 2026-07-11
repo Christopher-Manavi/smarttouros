@@ -21,6 +21,7 @@ export type Database = {
           custom_domain_placeholder: string | null
           email: string | null
           id: string
+          logo_storage_path: string | null
           logo_url: string | null
           name: string
           phone: string | null
@@ -32,6 +33,7 @@ export type Database = {
           custom_domain_placeholder?: string | null
           email?: string | null
           id?: string
+          logo_storage_path?: string | null
           logo_url?: string | null
           name: string
           phone?: string | null
@@ -43,6 +45,7 @@ export type Database = {
           custom_domain_placeholder?: string | null
           email?: string | null
           id?: string
+          logo_storage_path?: string | null
           logo_url?: string | null
           name?: string
           phone?: string | null
@@ -119,19 +122,24 @@ export type Database = {
           assigned_agent_id: string | null
           baths: number | null
           beds: number | null
+          brokerage_logo_storage_path: string | null
           brokerage_logo_url: string | null
           brokerage_name: string | null
           city: string | null
           company_id: string
           created_at: string
           description: string | null
+          gallery_storage_paths: string[]
           gallery_urls: string[] | null
+          hero_image_storage_path: string | null
           hero_image_url: string | null
           id: string
           mls_number: string | null
           price: number | null
+          primary_media_storage_path: string | null
           primary_media_type: Database["public"]["Enums"]["media_type"] | null
           primary_media_url: string | null
+          secondary_media_storage_path: string | null
           secondary_media_url: string | null
           show_address_on_unbranded: boolean | null
           slug: string
@@ -149,19 +157,24 @@ export type Database = {
           assigned_agent_id?: string | null
           baths?: number | null
           beds?: number | null
+          brokerage_logo_storage_path?: string | null
           brokerage_logo_url?: string | null
           brokerage_name?: string | null
           city?: string | null
           company_id: string
           created_at?: string
           description?: string | null
+          gallery_storage_paths?: string[]
           gallery_urls?: string[] | null
+          hero_image_storage_path?: string | null
           hero_image_url?: string | null
           id?: string
           mls_number?: string | null
           price?: number | null
+          primary_media_storage_path?: string | null
           primary_media_type?: Database["public"]["Enums"]["media_type"] | null
           primary_media_url?: string | null
+          secondary_media_storage_path?: string | null
           secondary_media_url?: string | null
           show_address_on_unbranded?: boolean | null
           slug: string
@@ -179,19 +192,24 @@ export type Database = {
           assigned_agent_id?: string | null
           baths?: number | null
           beds?: number | null
+          brokerage_logo_storage_path?: string | null
           brokerage_logo_url?: string | null
           brokerage_name?: string | null
           city?: string | null
           company_id?: string
           created_at?: string
           description?: string | null
+          gallery_storage_paths?: string[]
           gallery_urls?: string[] | null
+          hero_image_storage_path?: string | null
           hero_image_url?: string | null
           id?: string
           mls_number?: string | null
           price?: number | null
+          primary_media_storage_path?: string | null
           primary_media_type?: Database["public"]["Enums"]["media_type"] | null
           primary_media_url?: string | null
+          secondary_media_storage_path?: string | null
           secondary_media_url?: string | null
           show_address_on_unbranded?: boolean | null
           slug?: string
@@ -210,6 +228,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      media_sign_rate_limit: {
+        Row: {
+          bucket_key: string
+          request_count: number
+          window_started_at: string
+        }
+        Insert: {
+          bucket_key: string
+          request_count?: number
+          window_started_at: string
+        }
+        Update: {
+          bucket_key?: string
+          request_count?: number
+          window_started_at?: string
+        }
+        Relationships: []
       }
       privacy_settings: {
         Row: {
@@ -438,6 +474,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      extract_supabase_object_path: {
+        Args: { p_bucket: string; p_url: string }
+        Returns: string
+      }
       get_my_company_id: { Args: never; Returns: string }
       get_public_branded_tour: { Args: { p_slug: string }; Returns: Json }
       get_public_unbranded_tour: { Args: { p_slug: string }; Returns: Json }

@@ -14,6 +14,8 @@ import {
   DEFAULT_PUBLIC_BASE_URL,
   isPreviewUrl,
 } from "@/lib/public-url";
+import { useStorageSignedUrl } from "@/lib/storage-preview";
+
 
 export const Route = createFileRoute("/_authenticated/company")({
   component: Company,
@@ -44,7 +46,7 @@ function Company() {
         brand_color: c.brand_color,
         phone: c.phone,
         email: c.email,
-        logo_url: c.logo_url,
+        logo_storage_path: c.logo_storage_path,
       })
       .eq("id", c.id);
     setBusy(false);
@@ -55,20 +57,23 @@ function Company() {
   async function uploadLogo(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f || !c) return;
-    const path = `${c.id}/${crypto.randomUUID()}.${f.name.split(".").pop()}`;
+    const ext = (f.name.split(".").pop() ?? "bin").toLowerCase();
+    // Storage policy requires the first folder segment to equal the caller's
+    // own company_id.
+    const path = `${c.id}/${crypto.randomUUID()}.${ext}`;
     const { error } = await supabase.storage
       .from("company-logos")
-      .upload(path, f, { contentType: f.type });
+      .upload(path, f, { contentType: f.type, upsert: false });
     if (error) return toast.error(error.message);
-    const { data, error: signErr } = await supabase.storage
-      .from("company-logos")
-      .createSignedUrl(path, 60 * 60 * 24 * 365 * 10);
-    if (signErr || !data?.signedUrl) return toast.error(signErr?.message ?? "Could not sign URL");
-    setC({ ...c, logo_url: data.signedUrl });
+    setC({ ...c, logo_storage_path: path });
+    toast.success("Logo uploaded");
   }
 
+
+  const logoPreview = useStorageSignedUrl("company-logos", c?.logo_storage_path ?? null);
   if (!c) return <div className="container-luxe py-10 text-muted-foreground">Loading…</div>;
   const set = (k: string, v: any) => setC({ ...c, [k]: v });
+
 
   return (
     <div className="container-luxe py-10 max-w-3xl">
@@ -109,9 +114,15 @@ function Company() {
         </div>
         <div>
           <Label>Logo</Label>
-          {c.logo_url && <img src={c.logo_url} alt="logo" className="h-16 mb-2 object-contain" />}
+          {logoPreview && (
+            <img src={logoPreview} alt="logo" className="h-16 mb-2 object-contain" />
+          )}
           <Input type="file" accept="image/*" onChange={uploadLogo} />
+          <p className="text-xs text-muted-foreground mt-1">
+            Stored privately. Branded tour pages load it through a fresh short-lived link.
+          </p>
         </div>
+
         <div className="flex items-center justify-between border rounded-md p-4 bg-muted/30">
           <div>
             <Label>Custom domain</Label>

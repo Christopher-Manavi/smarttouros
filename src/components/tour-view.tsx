@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { MediaEmbed } from "@/components/media-embed";
 import { SmartImage } from "@/components/smart-image";
 import { resolveCompliance } from "@/lib/compliance";
+import { signPublicTourMedia, type PublicTourMedia } from "@/lib/tour-media.functions";
+
 
 type Listing = any;
 type Company = any;
@@ -116,12 +118,14 @@ export function TourView({
   company,
   tracking,
   privacy,
+  media,
   mode,
 }: {
   listing: Listing;
   company: Company | null;
   tracking: Tracking | null;
   privacy: Privacy | null;
+  media: PublicTourMedia | null;
   mode: "branded" | "unbranded";
 }) {
   const fired = useRef(false);
@@ -149,6 +153,14 @@ export function TourView({
   const unbranded = mode === "unbranded";
   const showAddress = !unbranded || listing.show_address_on_unbranded;
 
+  // External URLs (YouTube, Vimeo, etc.) come from the RPC. Storage-hosted
+  // media only arrives via short-lived signed URLs in `media`.
+  const primaryUrl = listing.primary_media_url || media?.primary_media || null;
+  const secondaryUrl = listing.secondary_media_url || media?.secondary_media || null;
+  const heroUrl = media?.hero || null;
+  const galleryUrls = media?.gallery ?? [];
+  const brokerageLogo = !unbranded ? (media?.brokerage_logo ?? null) : null;
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* HERO MEDIA */}
@@ -162,12 +174,12 @@ export function TourView({
             })
           }
         >
-          {listing.primary_media_url ? (
-            <MediaEmbed type={listing.primary_media_type} url={listing.primary_media_url} />
-          ) : listing.hero_image_url ? (
+          {primaryUrl ? (
+            <MediaEmbed type={listing.primary_media_type} url={primaryUrl} />
+          ) : heroUrl ? (
             <div className="aspect-video w-full overflow-hidden">
               <SmartImage
-                src={listing.hero_image_url}
+                src={heroUrl}
                 alt=""
                 className="w-full h-full object-cover"
                 loading="eager"
@@ -177,6 +189,7 @@ export function TourView({
           ) : null}
         </div>
       </section>
+
 
       <section className="container-luxe py-12 md:py-16">
         {showAddress ? (
@@ -241,13 +254,9 @@ export function TourView({
         )}
       </section>
 
-      <GallerySection
-        urls={(listing.gallery_urls ?? []).filter(
-          (u: unknown): u is string => typeof u === "string" && !!u.trim(),
-        )}
-      />
+      <GallerySection urls={galleryUrls} />
 
-      {listing.secondary_media_url && (
+      {secondaryUrl && (
         <section className="container-luxe pb-16">
           <h2 className="font-display text-3xl mb-6">More media</h2>
           <div
@@ -259,7 +268,7 @@ export function TourView({
               })
             }
           >
-            <MediaEmbed type={listing.primary_media_type} url={listing.secondary_media_url} />
+            <MediaEmbed type={listing.primary_media_type} url={secondaryUrl} />
           </div>
         </section>
       )}
@@ -269,14 +278,15 @@ export function TourView({
         <section className="border-t bg-muted/30">
           <div className="container-luxe py-12 grid md:grid-cols-2 gap-10 items-center">
             <div>
-              {listing.brokerage_logo_url && (
+              {(brokerageLogo || listing.brokerage_logo_url) && (
                 <SmartImage
-                  src={listing.brokerage_logo_url}
+                  src={brokerageLogo || listing.brokerage_logo_url}
                   alt=""
                   className="h-12 object-contain mb-4"
                   hideOnError
                 />
               )}
+
               {listing.brokerage_name && (
                 <p className="text-sm uppercase tracking-widest text-muted-foreground">
                   {listing.brokerage_name}
@@ -374,12 +384,18 @@ function TourFooter({
 }
 
 export async function loadTourBundle(slug: string, mode: "branded" | "unbranded") {
-  // Use a SECURITY DEFINER RPC so anonymous visitors only receive public-safe
-  // fields. The unbranded RPC additionally strips agent/brokerage/company data
-  // and hides the address unless show_address_on_unbranded is true.
+  // 1) Public-safe metadata via SECURITY DEFINER RPC (no storage paths).
+  // 2) Fresh short-lived signed URLs for storage-hosted media via server fn.
+  //    The unbranded server fn refuses to sign brokerage/company logos.
   const fn = mode === "branded" ? "get_public_branded_tour" : "get_public_unbranded_tour";
-  const { data, error } = await supabase.rpc(fn, { p_slug: slug });
-  if (error || !data) return { listing: null, company: null, tracking: null, privacy: null };
+  const [bundleRes, media] = await Promise.all([
+    supabase.rpc(fn, { p_slug: slug }),
+    signPublicTourMedia({ data: { slug, mode } }).catch(() => null),
+  ]);
+  const { data, error } = bundleRes;
+  if (error || !data) {
+    return { listing: null, company: null, tracking: null, privacy: null, media: null };
+  }
   const bundle = data as unknown as {
     listing: any;
     company: any;
@@ -391,5 +407,7 @@ export async function loadTourBundle(slug: string, mode: "branded" | "unbranded"
     company: bundle.company ?? null,
     tracking: bundle.tracking ?? null,
     privacy: bundle.privacy ?? null,
+    media: media ?? null,
   };
 }
+

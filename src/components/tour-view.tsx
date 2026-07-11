@@ -373,12 +373,19 @@ function TourFooter({
   );
 }
 
-export async function loadTourBundle(slug: string) {
+export async function loadTourBundle(slug: string, mode: "branded" | "unbranded") {
   // Use a SECURITY DEFINER RPC so anonymous visitors only receive public-safe
-  // fields (no owner emails, phone, or unrelated tenant data).
-  const { data, error } = await supabase.rpc("get_public_tour", { p_slug: slug });
+  // fields. The unbranded RPC additionally strips agent/brokerage/company data
+  // and hides the address unless show_address_on_unbranded is true.
+  const fn = mode === "branded" ? "get_public_branded_tour" : "get_public_unbranded_tour";
+  const { data, error } = await supabase.rpc(fn, { p_slug: slug });
   if (error || !data) return { listing: null, company: null, tracking: null, privacy: null };
-  const bundle = data as { listing: any; company: any; tracking: any; privacy: any };
+  const bundle = data as unknown as {
+    listing: any;
+    company: any;
+    tracking: any;
+    privacy: any;
+  };
   return {
     listing: bundle.listing ?? null,
     company: bundle.company ?? null,

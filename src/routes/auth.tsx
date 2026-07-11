@@ -125,8 +125,7 @@ function AuthPage() {
       if (res.data.session) navigate({ to: "/dashboard", replace: true });
       else setInfoMsg("Demo account created. Check the demo inbox to confirm if required.");
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setErrorMsg(`Demo login failed: ${msg}`);
+      setErrorMsg(`Demo login failed: ${formatAuthError(err)}`);
     } finally {
       setBusy(false);
     }

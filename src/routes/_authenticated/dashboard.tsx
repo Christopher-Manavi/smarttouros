@@ -35,8 +35,6 @@ function StatCard({
 
 function Dashboard() {
   const navigate = useNavigate();
-  const { companyId } = useAuth();
-  const [creating, setCreating] = useState(false);
   const [ytUrl, setYtUrl] = useState("");
 
   function startSmartTour() {

@@ -697,7 +697,12 @@ function PreviewTab({ campaignId }: { campaignId: string }) {
     return {
       agentFirstName: agent?.first_name ?? null,
       agentLastName: agent?.last_name ?? null,
+      agentCity: agent?.city ?? null,
+      agentState: agent?.state ?? null,
+      agentBrokerage: null,
+      listingCount: null,
       lenderFirstName: lender?.first_name ?? null,
+      lenderLastName: lender?.last_name ?? null,
       lenderCompany: lender?.company ?? null,
       annualPriceCents: selected.annual_price_cents,
     };

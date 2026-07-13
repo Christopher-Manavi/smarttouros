@@ -34,16 +34,13 @@ import {
 import {
   listMatches,
   previewMatches,
+  previewMatchEmails,
   commitMatches,
   setMatchStatus,
 } from "@/lib/sponsorship/matches.functions";
 import { listAuditEvents } from "@/lib/sponsorship/audit.functions";
 import { parseCsv } from "@/lib/sponsorship/csv";
 import { deriveOfferDisplay, type SponsorshipMatchStatus } from "@/lib/sponsorship/status";
-import {
-  renderAgentEmailPreview,
-  renderLenderEmailPreview,
-} from "@/lib/sponsorship/email-preview";
 
 const searchSchema = z.object({
   tab: z
@@ -673,8 +670,13 @@ function Tone({
 // -----------------------------------------------------------------------
 function PreviewTab({ campaignId }: { campaignId: string }) {
   const list = useServerFn(listMatches);
+  const preview = useServerFn(previewMatchEmails);
   const [rows, setRows] = useState<MatchRow[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [renderedPreview, setRenderedPreview] = useState<Awaited<
+    ReturnType<typeof previewMatchEmails>
+  > | null>(null);
+  const [previewError, setPreviewError] = useState<string | null>(null);
 
   useEffect(() => {
     list({ data: { campaign_id: campaignId } }).then((r) => {
@@ -686,27 +688,24 @@ function PreviewTab({ campaignId }: { campaignId: string }) {
 
   const selected = useMemo(() => rows.find((r) => r.id === selectedId) ?? null, [rows, selectedId]);
 
-  const previewInput = useMemo(() => {
-    if (!selected) return null;
-    const agent = Array.isArray(selected.sponsorship_agents)
-      ? selected.sponsorship_agents[0]
-      : selected.sponsorship_agents;
-    const lender = Array.isArray(selected.sponsorship_lenders)
-      ? selected.sponsorship_lenders[0]
-      : selected.sponsorship_lenders;
-    return {
-      agentFirstName: agent?.first_name ?? null,
-      agentLastName: agent?.last_name ?? null,
-      agentCity: agent?.city ?? null,
-      agentState: agent?.state ?? null,
-      agentBrokerage: agent?.brokerage ?? null,
-      listingCount: agent?.listing_count ?? null,
-      lenderFirstName: lender?.first_name ?? null,
-      lenderLastName: lender?.last_name ?? null,
-      lenderCompany: lender?.company ?? null,
-      annualPriceCents: selected.annual_price_cents,
+  useEffect(() => {
+    let active = true;
+    setRenderedPreview(null);
+    setPreviewError(null);
+    if (!selected) return () => {
+      active = false;
     };
-  }, [selected]);
+    preview({ data: { campaign_id: campaignId, match_id: selected.id } })
+      .then((r) => {
+        if (active) setRenderedPreview(r as Awaited<ReturnType<typeof previewMatchEmails>>);
+      })
+      .catch((e) => {
+        if (active) setPreviewError(e instanceof Error ? e.message : "Failed to render preview");
+      });
+    return () => {
+      active = false;
+    };
+  }, [preview, campaignId, selected]);
 
   return (
     <div className="space-y-4">
@@ -750,13 +749,14 @@ function PreviewTab({ campaignId }: { campaignId: string }) {
             </select>
           </Card>
 
-          {previewInput && (
+          {previewError && <Card className="p-4 text-sm text-destructive">{previewError}</Card>}
+          {!previewError && !renderedPreview && (
+            <Card className="p-4 text-sm text-muted-foreground">Loading preview…</Card>
+          )}
+          {renderedPreview && (
             <div className="grid md:grid-cols-2 gap-3">
-              <EmailCard title="Agent invitation" data={renderAgentEmailPreview(previewInput)} />
-              <EmailCard
-                title="Lender notification"
-                data={renderLenderEmailPreview(previewInput)}
-              />
+              <EmailCard title="Agent invitation" data={renderedPreview.agent} />
+              <EmailCard title="Lender notification" data={renderedPreview.lender} />
             </div>
           )}
         </>

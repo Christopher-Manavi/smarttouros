@@ -1,43 +1,256 @@
-## Security Hardening Pass 1 — Server-Side Data Minimization
 
-**Migration already applied** — the following are already live in the database:
-- `get_public_branded_tour(text)` — explicit allowlist for listing + company + tracking + privacy (privacy limited to `privacy_policy_url`, `terms_url`, `show_privacy_notice`, `privacy_notice_text`).
-- `get_public_unbranded_tour(text)` — omits `agent_*`, `brokerage_*`, `company_id`; company returned as `NULL`; address/city/state/zip only included when `show_address_on_unbranded = true`.
-- `record_public_event(...)` — SECURITY DEFINER, derives `listing_id`/`company_id` from slug, validates enums.
-- All three functions: `REVOKE ALL ... FROM PUBLIC` then `GRANT EXECUTE ... TO anon, authenticated`.
-- Old `get_public_tour` dropped.
-- Policy `"anon read active listings"` on `public.listings` dropped; `REVOKE SELECT ON public.listings FROM anon`.
-- Anon and authenticated event INSERT policies dropped; `REVOKE INSERT ON public.events FROM anon, authenticated`.
+# SmartTourOS Sponsorship Engine — Phase 1 Plan (Revised)
 
-The linter's 8 WARNs are expected: these RPCs are intentionally public and are the only public-tour surface. No action required on them.
+Revisions applied per your feedback. Nothing will be implemented, migrated, or published until you approve.
 
-### Remaining client-side changes
+---
 
-1. **`src/components/tour-view.tsx`**
-   - Replace `supabase.from("events").insert(...)` with `supabase.rpc("record_public_event", { p_slug, p_page_type, p_event_type, ... })`.
-   - Change `recordEvent` signature: take `slug` + `pageType` + `eventType` (drop `listingId`/`companyId`).
-   - Update all call sites in the file to pass `listing.slug` (both RPCs already return `slug`).
-   - `loadTourBundle(slug, mode)` — dispatch to `get_public_branded_tour` or `get_public_unbranded_tour` based on `mode`.
+## 1. Rollback location (revised)
 
-2. **`src/routes/_public/tour.$slug.tsx`** — call `loadTourBundle(slug, "branded")`.
+- Forward migration only under `supabase/migrations/`: `<timestamp>_sponsorship_engine_phase1.sql`.
+- Rollback SQL is **not** a migration. It lives at `docs/rollback/sponsorship_engine_phase1_rollback.sql` with a header comment: *"Reference only. Do NOT place in supabase/migrations. Run manually via psql if a full teardown is authorized."*
+- `README.md` gets a short "Rollback" subsection under the Sponsorship Engine section pointing at that path.
 
-3. **`src/routes/_public/u.$slug.tsx`** — call `loadTourBundle(slug, "unbranded")`; remove the client-side hard-strip sanitizer (server now guarantees).
+---
 
-4. **`src/components/public-access-panel.tsx`** — the anonymous listing SELECT probe will now correctly fail. Relabel the checks to reflect the hardened contract: anon SELECT on `listings` MUST fail (that's the pass condition); direct anon INSERT on `events` MUST fail; anon call to `record_public_event` MUST succeed. Update the fetch probes accordingly.
+## 2. One-sponsor-per-agent index (revised)
 
-5. **`src/routes/_authenticated/test-center.tsx`** — same reframing:
-   - `anon_select` on `listings` → expected DENY (pass = HTTP 401/permission error).
-   - `anon_insert` on `events` → expected DENY.
-   - Add a new probe: anon RPC `record_public_event` → expected ALLOW, followed by verifying the event count increments.
+Partial unique index covering **all non-terminal statuses**:
 
-### Verification after code changes
-- `bun run tsc` clean.
-- Fetch `/u/:demo-slug` with Playwright; assert JSON response body contains none of `agent_name`, `agent_phone`, `agent_email`, `brokerage_name`, `brokerage_logo_url`, `company_id`, and (when `show_address_on_unbranded=false`) none of `address`/`city`/`state`/`zip`; assert `company: null`.
-- Fetch `/tour/:demo-slug`; assert branding fields present.
-- Confirm a page_view row lands in `events` after visiting each URL.
-- Confirm authenticated dashboard/listings pages still work (untouched policies).
+```sql
+CREATE UNIQUE INDEX sponsorship_matches_one_current_per_agent
+  ON public.sponsorship_matches (agent_id)
+  WHERE status IN (
+    'draft',
+    'ready',
+    'agent_invitation_pending',
+    'agent_invited',
+    'agent_viewed',
+    'agent_accepted',
+    'lender_notification_pending',
+    'lender_notified',
+    'lender_viewed',
+    'payment_pending',
+    'paid',
+    'active'
+  );
+```
 
-### Change log deliverable
-After the code edits, provide:
-- Files changed.
-- Security-focused summary tying each of the 9 acceptance criteria to the change that fulfills it.
+Terminal statuses excluded (agent can be re-matched only after one of these): `agent_declined`, `expired`, `reassigned`, `cancelled`.
+
+`generateMatches` becomes idempotent:
+- Wrap in a transaction.
+- Before inserting a draft match, `SELECT 1 FROM sponsorship_matches WHERE agent_id = $1 AND status IN (<non-terminal set>)`.
+- Skip that agent if any current match exists.
+- The unique index is the hard backstop: any race condition surfaces as a `23505` and is retried/reported, never silently duplicated.
+
+---
+
+## 3. Email uniqueness (revised)
+
+- `citext` is **not** assumed present and will **not** be installed. `email` columns are plain `text`.
+- Application layer normalizes: `email = trim(lower(input))` before every insert/update. Enforced in a shared `normalizeEmail()` helper used by CSV parser, paste grid handler, and manual entry.
+- DB uniqueness via explicit unique indexes (not inline table constraints):
+
+```sql
+CREATE UNIQUE INDEX sponsorship_agents_campaign_email_uidx
+  ON public.sponsorship_agents (campaign_id, lower(email));
+
+CREATE UNIQUE INDEX sponsorship_lenders_campaign_email_uidx
+  ON public.sponsorship_lenders (campaign_id, lower(email));
+```
+
+A `CHECK (email = lower(email))` is added on both tables so a stray un-normalized insert fails loudly instead of creating a hidden duplicate.
+
+---
+
+## 4. Geographic fields for matching (revised)
+
+Agent gets its own postal code; lender gets its own service ZIP list. Campaign ZIPs stay as a scope/filter only.
+
+```text
+sponsorship_agents
+  + postal_code text                 -- normalized 5-digit US ZIP or NULL
+
+sponsorship_lenders
+  + service_zip_codes text[] DEFAULT '{}'
+```
+
+Both validated by regex (`^\d{5}$`) at the application layer; DB stores whatever the app writes so international support later is not blocked.
+
+Matching order (deterministic):
+1. `agent.postal_code` present AND `agent.postal_code = ANY(lender.service_zip_codes)`
+2. same `lower(city)`
+3. same `state`
+4. tie-breaker: lender with lowest current capacity utilization, then lexicographic lender `email`
+
+Campaign `zip_codes` is used only to constrain which agents/lenders are eligible for a campaign (a validation warning if a record's postal code sits outside the campaign scope), never as an agent-level ZIP substitute.
+
+---
+
+## 5. Lender capacity in schema (revised)
+
+Capacity is per-lender and lives on the lender row:
+
+```sql
+sponsorship_lenders
+  + max_current_sponsorships int NOT NULL DEFAULT 5
+  CHECK (max_current_sponsorships >= 0)
+```
+
+Capacity check counts every non-terminal match — same status set as the unique index in §2 — so `draft`, `ready`, `paid`, and `active` all consume capacity:
+
+```sql
+SELECT count(*) FROM sponsorship_matches
+ WHERE lender_id = $1
+   AND status IN (<non-terminal set>)
+```
+
+`generateMatches` refuses to assign a lender once that count reaches `max_current_sponsorships`. Super_admin can raise a lender's cap manually.
+
+---
+
+## 6. `created_by` deletion behavior (revised)
+
+```sql
+sponsorship_campaigns.created_by uuid NULL REFERENCES auth.users(id) ON DELETE SET NULL
+```
+
+Explicit choice: **nullable FK with `ON DELETE SET NULL`**. Rationale:
+- Preserves audit continuity — campaigns aren't orphaned or deleted when a super_admin account is removed.
+- Never blocks a legitimate `auth.users` deletion.
+- The historical UUID stays available as long as it points at a live user; audit trail is preserved separately in `sponsorship_audit_events.actor_user_id` (same nullability, same rule).
+
+---
+
+## 7. Generated route tree (revised)
+
+`src/routeTree.gen.ts` **will** change automatically when routes are added, and is included in the "files that may change" list below. It is regenerated by the TanStack Router Vite plugin — never edited by hand and never included in a manual diff review as a source-of-truth file.
+
+---
+
+## 8. Single canonical match status (revised)
+
+Adopting the simpler single-status model.
+
+- `sponsorship_matches.status` is the **only** workflow field. The `sponsorship_match_status` enum is the sole source of truth.
+- The columns `agent_offer_status` and `lender_offer_status` are **removed** from the schema.
+- UI derives agent-facing and lender-facing labels via a pure function `deriveOfferDisplay(status)` in `src/lib/sponsorship/status.ts`. No independent mutable fields.
+- Timestamp columns for observability (all nullable, set by server functions on transition, never a source of workflow truth):
+  - `agent_invited_at`, `agent_viewed_at`, `agent_responded_at`
+  - `lender_notified_at`, `lender_viewed_at`, `lender_responded_at`
+  - `activated_at`, `terminated_at`
+- A CHECK constraint asserts terminal statuses have `terminated_at` set; transitions are enforced by server functions (Phase 2 may add a trigger).
+
+---
+
+## 9. Migration safety (revised)
+
+The forward migration will:
+
+- Introduce **only** `sponsorship_*` prefixed objects (tables, enum, indexes, policies, updated_at triggers reusing the existing `public.set_updated_at()`).
+- Not install any extension. Not alter any existing table, function, trigger, policy, view, storage bucket, or role.
+- Wrap the entire body in `BEGIN; ... COMMIT;` so any statement failure aborts the whole migration — no half-created module.
+- Use `CASCADE` **only** inside the sponsorship subgraph, i.e., FKs from `sponsorship_agents`, `sponsorship_lenders`, `sponsorship_matches`, and `sponsorship_audit_events` to `sponsorship_campaigns(id) ON DELETE CASCADE`. No cascade touches anything outside the module.
+- Apply to the preview environment first; existing test suite (signup smoke, tour render, event increment, tsgo, build, unit tests, verify:bundle) must remain green before promotion.
+
+---
+
+## Revised schema (consolidated reference)
+
+```text
+enum sponsorship_match_status:
+  draft | ready |
+  agent_invitation_pending | agent_invited | agent_viewed |
+  agent_accepted | agent_declined |
+  lender_notification_pending | lender_notified | lender_viewed |
+  payment_pending | paid | active |
+  expired | reassigned | cancelled
+
+sponsorship_campaigns
+  id uuid PK, campaign_name text NOT NULL, market_city text, market_state text,
+  zip_codes text[] DEFAULT '{}',
+  status text CHECK IN ('draft','ready','active','archived') DEFAULT 'draft',
+  feature_flag_snapshot bool NOT NULL DEFAULT false,
+  created_by uuid NULL REFERENCES auth.users(id) ON DELETE SET NULL,
+  created_at, updated_at
+
+sponsorship_agents
+  id, campaign_id → sponsorship_campaigns ON DELETE CASCADE,
+  first_name, last_name,
+  email text NOT NULL CHECK (email = lower(email)),
+  phone, brokerage, city, state, postal_code text,
+  listing_count int CHECK (listing_count >= 0),
+  profile_url, import_source text CHECK IN ('paste','csv','manual'),
+  created_at, updated_at
+  UNIQUE INDEX (campaign_id, lower(email))
+
+sponsorship_lenders
+  id, campaign_id → sponsorship_campaigns ON DELETE CASCADE,
+  first_name, last_name,
+  email text NOT NULL CHECK (email = lower(email)),
+  phone, company, nmls_number text CHECK (nmls_number IS NULL OR nmls_number ~ '^[0-9]{5,10}$'),
+  city, state, service_areas text[] DEFAULT '{}',
+  service_zip_codes text[] DEFAULT '{}',
+  max_current_sponsorships int NOT NULL DEFAULT 5 CHECK (max_current_sponsorships >= 0),
+  headshot_url, logo_url,
+  created_at, updated_at
+  UNIQUE INDEX (campaign_id, lower(email))
+
+sponsorship_matches
+  id, campaign_id, agent_id, lender_id,
+  status sponsorship_match_status NOT NULL DEFAULT 'draft',
+  annual_price_cents int NOT NULL DEFAULT 99900 CHECK (annual_price_cents >= 0),
+  agent_invited_at, agent_viewed_at, agent_responded_at,
+  lender_notified_at, lender_viewed_at, lender_responded_at,
+  activated_at, terminated_at,
+  created_at, updated_at
+  PARTIAL UNIQUE INDEX on (agent_id) WHERE status IN (<non-terminal set>)
+
+sponsorship_audit_events
+  id, campaign_id, match_id NULL, event_type text NOT NULL,
+  actor_type text NOT NULL, actor_user_id uuid NULL REFERENCES auth.users(id) ON DELETE SET NULL,
+  sanitized_metadata jsonb NOT NULL DEFAULT '{}',
+  created_at
+  (append-only: no UPDATE/DELETE policy)
+```
+
+GRANTs unchanged: `authenticated` gets full CRUD, `service_role` gets ALL, `anon` gets nothing. Every table has RLS enabled with all four policies gated on `public.has_role(auth.uid(), 'super_admin')`; `sponsorship_audit_events` intentionally has no UPDATE or DELETE policy (append-only).
+
+---
+
+## Exact files that may be created or modified
+
+**Created:**
+- `supabase/migrations/<ts>_sponsorship_engine_phase1.sql` (forward only)
+- `docs/rollback/sponsorship_engine_phase1_rollback.sql` (reference; not a migration)
+- `src/lib/sponsorship/feature-flag.ts`
+- `src/lib/sponsorship/authorization.ts`
+- `src/lib/sponsorship/status.ts` (canonical status derivation)
+- `src/lib/sponsorship/normalize.ts` (email + zip normalization)
+- `src/lib/sponsorship/csv.ts`
+- `src/lib/sponsorship/matching.ts`
+- `src/lib/sponsorship/email-preview.ts`
+- `src/lib/sponsorship/{campaigns,agents,lenders,matches,audit}.functions.ts`
+- `src/routes/_authenticated/_super_admin/route.tsx`
+- `src/routes/_authenticated/_super_admin/sponsorship.index.tsx`
+- `src/routes/_authenticated/_super_admin/sponsorship.new.tsx`
+- `src/routes/_authenticated/_super_admin/sponsorship.$campaignId.tsx`
+- `src/routes/_authenticated/_super_admin/sponsorship.$campaignId.{agents,lenders,matches,preview,audit}.tsx`
+- `src/components/sponsorship/*` (campaign-form, agent-grid, lender-grid, csv-drop, paste-grid, match-review-table, email-preview, funnel-status-badge)
+- `tests/unit/sponsorship-{csv,matching,preview,flag,status,normalize}.test.ts`
+- `tests/e2e/sponsorship-authz.spec.ts`, `tests/e2e/sponsorship-super-admin.spec.ts`
+
+**Modified (minimally):**
+- `src/components/app-sidebar.tsx` — one flag-gated entry appended to `superAdminItems`.
+- `.env.example` — document `SPONSORSHIP_ENGINE_ENABLED` and `VITE_SPONSORSHIP_ENGINE_ENABLED`, both default false.
+- `README.md` — "Sponsorship engine (internal, flag-gated)" + rollback pointer.
+
+**Regenerated automatically (do not hand-edit):**
+- `src/routeTree.gen.ts` — updated by the TanStack Router Vite plugin when new route files land.
+
+**Explicitly not touched:** all files and DB objects listed in §1 of the prior plan (auth, tours, events, tracking, storage, existing RLS, existing functions, existing triggers).
+
+---
+
+Awaiting approval. No implementation, no migration, no publish.

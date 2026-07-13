@@ -395,6 +395,302 @@ export type Database = {
           },
         ]
       }
+      sponsorship_agents: {
+        Row: {
+          brokerage: string | null
+          campaign_id: string
+          city: string | null
+          created_at: string
+          email: string
+          first_name: string | null
+          id: string
+          import_source: string
+          last_name: string | null
+          listing_count: number | null
+          phone: string | null
+          postal_code: string | null
+          profile_url: string | null
+          state: string | null
+          updated_at: string
+        }
+        Insert: {
+          brokerage?: string | null
+          campaign_id: string
+          city?: string | null
+          created_at?: string
+          email: string
+          first_name?: string | null
+          id?: string
+          import_source?: string
+          last_name?: string | null
+          listing_count?: number | null
+          phone?: string | null
+          postal_code?: string | null
+          profile_url?: string | null
+          state?: string | null
+          updated_at?: string
+        }
+        Update: {
+          brokerage?: string | null
+          campaign_id?: string
+          city?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string | null
+          id?: string
+          import_source?: string
+          last_name?: string | null
+          listing_count?: number | null
+          phone?: string | null
+          postal_code?: string | null
+          profile_url?: string | null
+          state?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sponsorship_agents_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "sponsorship_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sponsorship_audit_events: {
+        Row: {
+          actor_type: string
+          actor_user_id: string | null
+          campaign_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          match_id: string | null
+          sanitized_metadata: Json
+        }
+        Insert: {
+          actor_type: string
+          actor_user_id?: string | null
+          campaign_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          match_id?: string | null
+          sanitized_metadata?: Json
+        }
+        Update: {
+          actor_type?: string
+          actor_user_id?: string | null
+          campaign_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          match_id?: string | null
+          sanitized_metadata?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sponsorship_audit_events_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "sponsorship_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sponsorship_audit_events_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "sponsorship_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sponsorship_campaigns: {
+        Row: {
+          campaign_name: string
+          created_at: string
+          created_by: string | null
+          feature_flag_snapshot: boolean
+          id: string
+          market_city: string | null
+          market_state: string | null
+          status: string
+          updated_at: string
+          zip_codes: string[]
+        }
+        Insert: {
+          campaign_name: string
+          created_at?: string
+          created_by?: string | null
+          feature_flag_snapshot?: boolean
+          id?: string
+          market_city?: string | null
+          market_state?: string | null
+          status?: string
+          updated_at?: string
+          zip_codes?: string[]
+        }
+        Update: {
+          campaign_name?: string
+          created_at?: string
+          created_by?: string | null
+          feature_flag_snapshot?: boolean
+          id?: string
+          market_city?: string | null
+          market_state?: string | null
+          status?: string
+          updated_at?: string
+          zip_codes?: string[]
+        }
+        Relationships: []
+      }
+      sponsorship_lenders: {
+        Row: {
+          campaign_id: string
+          city: string | null
+          company: string | null
+          created_at: string
+          email: string
+          first_name: string | null
+          headshot_url: string | null
+          id: string
+          last_name: string | null
+          logo_url: string | null
+          max_current_sponsorships: number
+          nmls_number: string | null
+          phone: string | null
+          service_areas: string[]
+          service_zip_codes: string[]
+          state: string | null
+          updated_at: string
+        }
+        Insert: {
+          campaign_id: string
+          city?: string | null
+          company?: string | null
+          created_at?: string
+          email: string
+          first_name?: string | null
+          headshot_url?: string | null
+          id?: string
+          last_name?: string | null
+          logo_url?: string | null
+          max_current_sponsorships?: number
+          nmls_number?: string | null
+          phone?: string | null
+          service_areas?: string[]
+          service_zip_codes?: string[]
+          state?: string | null
+          updated_at?: string
+        }
+        Update: {
+          campaign_id?: string
+          city?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string | null
+          headshot_url?: string | null
+          id?: string
+          last_name?: string | null
+          logo_url?: string | null
+          max_current_sponsorships?: number
+          nmls_number?: string | null
+          phone?: string | null
+          service_areas?: string[]
+          service_zip_codes?: string[]
+          state?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sponsorship_lenders_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "sponsorship_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sponsorship_matches: {
+        Row: {
+          activated_at: string | null
+          agent_id: string
+          agent_invited_at: string | null
+          agent_responded_at: string | null
+          agent_viewed_at: string | null
+          annual_price_cents: number
+          campaign_id: string
+          created_at: string
+          id: string
+          lender_id: string
+          lender_notified_at: string | null
+          lender_responded_at: string | null
+          lender_viewed_at: string | null
+          status: Database["public"]["Enums"]["sponsorship_match_status"]
+          terminated_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          activated_at?: string | null
+          agent_id: string
+          agent_invited_at?: string | null
+          agent_responded_at?: string | null
+          agent_viewed_at?: string | null
+          annual_price_cents?: number
+          campaign_id: string
+          created_at?: string
+          id?: string
+          lender_id: string
+          lender_notified_at?: string | null
+          lender_responded_at?: string | null
+          lender_viewed_at?: string | null
+          status?: Database["public"]["Enums"]["sponsorship_match_status"]
+          terminated_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activated_at?: string | null
+          agent_id?: string
+          agent_invited_at?: string | null
+          agent_responded_at?: string | null
+          agent_viewed_at?: string | null
+          annual_price_cents?: number
+          campaign_id?: string
+          created_at?: string
+          id?: string
+          lender_id?: string
+          lender_notified_at?: string | null
+          lender_responded_at?: string | null
+          lender_viewed_at?: string | null
+          status?: Database["public"]["Enums"]["sponsorship_match_status"]
+          terminated_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sponsorship_matches_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "sponsorship_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sponsorship_matches_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "sponsorship_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sponsorship_matches_lender_id_fkey"
+            columns: ["lender_id"]
+            isOneToOne: false
+            referencedRelation: "sponsorship_lenders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tracking_settings: {
         Row: {
           company_id: string
@@ -521,6 +817,23 @@ export type Database = {
         | "iframe"
         | "video_url"
       page_type: "branded" | "unbranded"
+      sponsorship_match_status:
+        | "draft"
+        | "ready"
+        | "agent_invitation_pending"
+        | "agent_invited"
+        | "agent_viewed"
+        | "agent_accepted"
+        | "agent_declined"
+        | "lender_notification_pending"
+        | "lender_notified"
+        | "lender_viewed"
+        | "payment_pending"
+        | "paid"
+        | "active"
+        | "expired"
+        | "reassigned"
+        | "cancelled"
       visitor_status: "new" | "exported" | "suppressed"
     }
     CompositeTypes: {
@@ -668,6 +981,24 @@ export const Constants = {
         "video_url",
       ],
       page_type: ["branded", "unbranded"],
+      sponsorship_match_status: [
+        "draft",
+        "ready",
+        "agent_invitation_pending",
+        "agent_invited",
+        "agent_viewed",
+        "agent_accepted",
+        "agent_declined",
+        "lender_notification_pending",
+        "lender_notified",
+        "lender_viewed",
+        "payment_pending",
+        "paid",
+        "active",
+        "expired",
+        "reassigned",
+        "cancelled",
+      ],
       visitor_status: ["new", "exported", "suppressed"],
     },
   },

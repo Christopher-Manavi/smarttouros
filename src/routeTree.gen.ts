@@ -37,6 +37,7 @@ import { Route as AuthenticatedSuper_adminSponsorshipIndexRouteImport } from './
 import { Route as AuthenticatedListingsIdReportRouteImport } from './routes/_authenticated/listings.$id.report'
 import { Route as AuthenticatedListingsIdAnalyticsRouteImport } from './routes/_authenticated/listings.$id.analytics'
 import { Route as AuthenticatedSuper_adminSponsorshipNewRouteImport } from './routes/_authenticated/_super_admin/sponsorship.new'
+import { Route as AuthenticatedSuper_adminSponsorshipCampaignIdRouteImport } from './routes/_authenticated/_super_admin/sponsorship.$campaignId'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -185,6 +186,12 @@ const AuthenticatedSuper_adminSponsorshipNewRoute =
     path: '/sponsorship/new',
     getParentRoute: () => AuthenticatedSuper_adminRouteRoute,
   } as any)
+const AuthenticatedSuper_adminSponsorshipCampaignIdRoute =
+  AuthenticatedSuper_adminSponsorshipCampaignIdRouteImport.update({
+    id: '/sponsorship/$campaignId',
+    path: '/sponsorship/$campaignId',
+    getParentRoute: () => AuthenticatedSuper_adminRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -208,6 +215,7 @@ export interface FileRoutesByFullPath {
   '/tour/$slug': typeof PublicTourSlugRoute
   '/u/$slug': typeof PublicUSlugRoute
   '/listings/': typeof AuthenticatedListingsIndexRoute
+  '/sponsorship/$campaignId': typeof AuthenticatedSuper_adminSponsorshipCampaignIdRoute
   '/sponsorship/new': typeof AuthenticatedSuper_adminSponsorshipNewRoute
   '/listings/$id/analytics': typeof AuthenticatedListingsIdAnalyticsRoute
   '/listings/$id/report': typeof AuthenticatedListingsIdReportRoute
@@ -235,6 +243,7 @@ export interface FileRoutesByTo {
   '/tour/$slug': typeof PublicTourSlugRoute
   '/u/$slug': typeof PublicUSlugRoute
   '/listings': typeof AuthenticatedListingsIndexRoute
+  '/sponsorship/$campaignId': typeof AuthenticatedSuper_adminSponsorshipCampaignIdRoute
   '/sponsorship/new': typeof AuthenticatedSuper_adminSponsorshipNewRoute
   '/listings/$id/analytics': typeof AuthenticatedListingsIdAnalyticsRoute
   '/listings/$id/report': typeof AuthenticatedListingsIdReportRoute
@@ -266,6 +275,7 @@ export interface FileRoutesById {
   '/_public/tour/$slug': typeof PublicTourSlugRoute
   '/_public/u/$slug': typeof PublicUSlugRoute
   '/_authenticated/listings/': typeof AuthenticatedListingsIndexRoute
+  '/_authenticated/_super_admin/sponsorship/$campaignId': typeof AuthenticatedSuper_adminSponsorshipCampaignIdRoute
   '/_authenticated/_super_admin/sponsorship/new': typeof AuthenticatedSuper_adminSponsorshipNewRoute
   '/_authenticated/listings/$id/analytics': typeof AuthenticatedListingsIdAnalyticsRoute
   '/_authenticated/listings/$id/report': typeof AuthenticatedListingsIdReportRoute
@@ -295,6 +305,7 @@ export interface FileRouteTypes {
     | '/tour/$slug'
     | '/u/$slug'
     | '/listings/'
+    | '/sponsorship/$campaignId'
     | '/sponsorship/new'
     | '/listings/$id/analytics'
     | '/listings/$id/report'
@@ -322,6 +333,7 @@ export interface FileRouteTypes {
     | '/tour/$slug'
     | '/u/$slug'
     | '/listings'
+    | '/sponsorship/$campaignId'
     | '/sponsorship/new'
     | '/listings/$id/analytics'
     | '/listings/$id/report'
@@ -352,6 +364,7 @@ export interface FileRouteTypes {
     | '/_public/tour/$slug'
     | '/_public/u/$slug'
     | '/_authenticated/listings/'
+    | '/_authenticated/_super_admin/sponsorship/$campaignId'
     | '/_authenticated/_super_admin/sponsorship/new'
     | '/_authenticated/listings/$id/analytics'
     | '/_authenticated/listings/$id/report'
@@ -564,16 +577,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSuper_adminSponsorshipNewRouteImport
       parentRoute: typeof AuthenticatedSuper_adminRouteRoute
     }
+    '/_authenticated/_super_admin/sponsorship/$campaignId': {
+      id: '/_authenticated/_super_admin/sponsorship/$campaignId'
+      path: '/sponsorship/$campaignId'
+      fullPath: '/sponsorship/$campaignId'
+      preLoaderRoute: typeof AuthenticatedSuper_adminSponsorshipCampaignIdRouteImport
+      parentRoute: typeof AuthenticatedSuper_adminRouteRoute
+    }
   }
 }
 
 interface AuthenticatedSuper_adminRouteRouteChildren {
+  AuthenticatedSuper_adminSponsorshipCampaignIdRoute: typeof AuthenticatedSuper_adminSponsorshipCampaignIdRoute
   AuthenticatedSuper_adminSponsorshipNewRoute: typeof AuthenticatedSuper_adminSponsorshipNewRoute
   AuthenticatedSuper_adminSponsorshipIndexRoute: typeof AuthenticatedSuper_adminSponsorshipIndexRoute
 }
 
 const AuthenticatedSuper_adminRouteRouteChildren: AuthenticatedSuper_adminRouteRouteChildren =
   {
+    AuthenticatedSuper_adminSponsorshipCampaignIdRoute:
+      AuthenticatedSuper_adminSponsorshipCampaignIdRoute,
     AuthenticatedSuper_adminSponsorshipNewRoute:
       AuthenticatedSuper_adminSponsorshipNewRoute,
     AuthenticatedSuper_adminSponsorshipIndexRoute:

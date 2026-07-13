@@ -10,6 +10,7 @@ import {
   LogOut,
   ClipboardCheck,
   FlaskConical,
+  Handshake,
 } from "lucide-react";
 import {
   Sidebar,
@@ -25,6 +26,7 @@ import {
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
+import { isSponsorshipEnabledClient } from "@/lib/sponsorship/feature-flag";
 
 const baseItems = [
   { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -42,12 +44,20 @@ const superAdminItems = [
   { title: "MVP Test Center", url: "/test-center", icon: ClipboardCheck },
 ];
 
+const sponsorshipItem = { title: "Sponsorship", url: "/sponsorship", icon: Handshake };
+
 export function AppSidebar() {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { roles } = useAuth();
   const isSuperAdmin = roles.includes("super_admin");
-  const items = isSuperAdmin ? [...baseItems, ...superAdminItems] : baseItems;
+  const items = isSuperAdmin
+    ? [
+        ...baseItems,
+        ...superAdminItems,
+        ...(isSponsorshipEnabledClient() ? [sponsorshipItem] : []),
+      ]
+    : baseItems;
   const isActive = (url: string) =>
     url === "/dashboard" ? pathname === url : pathname === url || pathname.startsWith(url + "/");
 

@@ -74,6 +74,7 @@ function SponsorshipIndex() {
               key={c.id}
               to="/sponsorship/$campaignId"
               params={{ campaignId: c.id }}
+              search={{ tab: "agents" }}
               className="block"
             >
               <Card className="p-4 hover:bg-muted/30 transition">

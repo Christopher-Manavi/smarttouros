@@ -135,7 +135,7 @@ function AuthPage() {
       }
     } catch (err) {
       logDev("error", err);
-      setErrorMsg(formatAuthError(err));
+      setErrorMsg(formatAuthError(err, mode));
     } finally {
       setBusy(false);
     }

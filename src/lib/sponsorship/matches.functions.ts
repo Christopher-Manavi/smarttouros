@@ -4,6 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { requireSuperAdmin, writeAudit } from "./server-helpers";
 import { NON_TERMINAL_STATUSES, type SponsorshipMatchStatus } from "./status";
 import { proposeMatches, type MatchAgent, type MatchLender } from "./matching";
+import { renderMatchEmailPreviews } from "./email-preview-path";
 
 export const listMatches = createServerFn({ method: "GET" })
   .inputValidator((raw: unknown) => z.object({ campaign_id: z.string().uuid() }).parse(raw))
@@ -75,6 +76,26 @@ export const previewMatches = createServerFn({ method: "GET" })
         unmatchable: agents.length - alreadyMatched.size - proposals.length,
       },
     };
+  });
+
+export const previewMatchEmails = createServerFn({ method: "GET" })
+  .inputValidator((raw: unknown) =>
+    z.object({ campaign_id: z.string().uuid(), match_id: z.string().uuid() }).parse(raw),
+  )
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context, data }) => {
+    await requireSuperAdmin(context);
+    const { data: row, error } = await context.supabase
+      .from("sponsorship_matches")
+      .select(
+        "id, annual_price_cents, sponsorship_agents(first_name, last_name, brokerage, city, state, listing_count), sponsorship_lenders(first_name, last_name, company)",
+      )
+      .eq("campaign_id", data.campaign_id)
+      .eq("id", data.match_id)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!row) throw new Error("Match not found");
+    return renderMatchEmailPreviews(row);
   });
 
 export const commitMatches = createServerFn({ method: "POST" })

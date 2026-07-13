@@ -115,6 +115,18 @@ function AuthPage() {
     return { confirmed: false };
   }
 
+  async function handleForgot(em: string) {
+    try {
+      await supabase.auth.resetPasswordForEmail(em, {
+        redirectTo: window.location.origin + "/reset-password",
+      });
+    } catch (err) {
+      logDev("resetPasswordForEmail error", err);
+      // Swallow — always show generic response to prevent user enumeration.
+    }
+    setInfoMsg("If an account exists for that email, a password reset link has been sent.");
+  }
+
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
@@ -128,6 +140,8 @@ function AuthPage() {
             "Account created. Please check your email to confirm your account before signing in.",
           );
         }
+      } else if (mode === "forgot") {
+        await handleForgot(email);
       } else {
         const res = await supabase.auth.signInWithPassword({ email, password });
         logDev("signIn response", { data: res.data, error: res.error });
@@ -136,7 +150,7 @@ function AuthPage() {
       }
     } catch (err) {
       logDev("error", err);
-      setErrorMsg(formatAuthError(err, mode));
+      setErrorMsg(formatAuthError(err, mode === "signup" ? "signup" : "signin"));
     } finally {
       setBusy(false);
     }

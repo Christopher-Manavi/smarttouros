@@ -177,12 +177,18 @@ function AuthPage() {
         <Card className="w-full max-w-md p-8">
           <div className="mb-6">
             <h1 className="font-display text-3xl">
-              {mode === "signin" ? "Welcome back" : "Create your workspace"}
+              {mode === "signin"
+                ? "Welcome back"
+                : mode === "signup"
+                  ? "Create your workspace"
+                  : "Reset your password"}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               {mode === "signin"
                 ? "Sign in to manage your tours."
-                : "Start hosting listing tours in minutes."}
+                : mode === "signup"
+                  ? "Start hosting listing tours in minutes."
+                  : "Enter your email and we'll send a reset link."}
             </p>
           </div>
 
@@ -234,48 +240,86 @@ function AuthPage() {
                 required
               />
             </div>
-            <div>
-              <Label htmlFor="pw">Password</Label>
-              <Input
-                id="pw"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={8}
-              />
-              {mode === "signup" && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Min 8 characters. Common/breached passwords are rejected — use something unique.
-                </p>
-              )}
-            </div>
+            {mode !== "forgot" && (
+              <div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="pw">Password</Label>
+                  {mode === "signin" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode("forgot");
+                        setErrorMsg(null);
+                        setInfoMsg(null);
+                      }}
+                      className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
+                    >
+                      Forgot password?
+                    </button>
+                  )}
+                </div>
+                <Input
+                  id="pw"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={8}
+                />
+                {mode === "signup" && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Min 8 characters. Common/breached passwords are rejected — use something unique.
+                  </p>
+                )}
+              </div>
+            )}
             <Button type="submit" className="w-full" disabled={busy}>
               {busy
                 ? mode === "signin"
                   ? "Signing in..."
-                  : "Creating account..."
+                  : mode === "signup"
+                    ? "Creating account..."
+                    : "Sending reset link..."
                 : mode === "signin"
                   ? "Sign in"
-                  : "Create account"}
+                  : mode === "signup"
+                    ? "Create account"
+                    : "Send reset link"}
             </Button>
           </form>
 
 
           <p className="text-sm text-muted-foreground text-center mt-6">
-            {mode === "signin" ? "Don't have an account? " : "Already have one? "}
-            <button
-              type="button"
-              onClick={() => {
-                setMode(mode === "signin" ? "signup" : "signin");
-                setErrorMsg(null);
-                setInfoMsg(null);
-              }}
-              className="text-foreground underline underline-offset-4"
-            >
-              {mode === "signin" ? "Create one" : "Sign in"}
-            </button>
+            {mode === "forgot" ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("signin");
+                  setErrorMsg(null);
+                  setInfoMsg(null);
+                }}
+                className="text-foreground underline underline-offset-4"
+              >
+                Back to sign in
+              </button>
+            ) : (
+              <>
+                {mode === "signin" ? "Don't have an account? " : "Already have one? "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode(mode === "signin" ? "signup" : "signin");
+                    setErrorMsg(null);
+                    setInfoMsg(null);
+                  }}
+                  className="text-foreground underline underline-offset-4"
+                >
+                  {mode === "signin" ? "Create one" : "Sign in"}
+                </button>
+              </>
+            )}
           </p>
+
 
           {IS_DEV && (
             <div className="mt-6 p-3 rounded border bg-muted/40 text-xs font-mono space-y-1">

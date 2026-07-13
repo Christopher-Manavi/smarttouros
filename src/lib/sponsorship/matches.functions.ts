@@ -1,29 +1,19 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { assertSponsorshipEnabled } from "./feature-flag";
+import { requireSuperAdmin, writeAudit } from "./server-helpers";
 import { NON_TERMINAL_STATUSES, type SponsorshipMatchStatus } from "./status";
 import { proposeMatches, type MatchAgent, type MatchLender } from "./matching";
-
-async function requireSuperAdmin(ctx: {
-  supabase: any; // eslint-disable-line @typescript-eslint/no-explicit-any
-  userId: string;
-}): Promise<void> {
-  const { data } = await ctx.supabase.from("user_roles").select("role").eq("user_id", ctx.userId);
-  const isSuper = ((data ?? []) as Array<{ role: string }>).some((r) => r.role === "super_admin");
-  if (!isSuper) throw new Response("Not found", { status: 404 });
-}
 
 export const listMatches = createServerFn({ method: "GET" })
   .inputValidator((raw: unknown) => z.object({ campaign_id: z.string().uuid() }).parse(raw))
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    assertSponsorshipEnabled();
     await requireSuperAdmin(context);
     const { data: rows, error } = await context.supabase
       .from("sponsorship_matches")
       .select(
-        "id, agent_id, lender_id, status, rank_reason, notes, created_at, updated_at, sponsorship_agents(email, first_name, last_name, city, state, postal_code), sponsorship_lenders(email, first_name, last_name, company, city, state)",
+        "id, agent_id, lender_id, status, annual_price_cents, created_at, updated_at, sponsorship_agents(email, first_name, last_name, city, state, postal_code), sponsorship_lenders(email, first_name, last_name, company, city, state)",
       )
       .eq("campaign_id", data.campaign_id)
       .order("created_at", { ascending: false });
@@ -35,7 +25,6 @@ export const previewMatches = createServerFn({ method: "GET" })
   .inputValidator((raw: unknown) => z.object({ campaign_id: z.string().uuid() }).parse(raw))
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    assertSponsorshipEnabled();
     await requireSuperAdmin(context);
     const [agentsRes, lendersRes, matchesRes] = await Promise.all([
       context.supabase
@@ -55,7 +44,7 @@ export const previewMatches = createServerFn({ method: "GET" })
     if (lendersRes.error) throw new Error(lendersRes.error.message);
     if (matchesRes.error) throw new Error(matchesRes.error.message);
 
-    const agents = (agentsRes.data ?? []) as MatchAgent[];
+    const agents = ((agentsRes.data ?? []) as MatchAgent[]).filter((a) => !!a.email);
     const rawLenders = (lendersRes.data ?? []) as Omit<MatchLender, "current_load">[];
     const existingMatches = (matchesRes.data ?? []) as Array<{
       agent_id: string;
@@ -89,13 +78,17 @@ export const previewMatches = createServerFn({ method: "GET" })
   });
 
 export const commitMatches = createServerFn({ method: "POST" })
-  .inputValidator((raw: unknown) => z.object({ campaign_id: z.string().uuid() }).parse(raw))
+  .inputValidator((raw: unknown) =>
+    z
+      .object({
+        campaign_id: z.string().uuid(),
+        annual_price_cents: z.number().int().min(0).max(10_000_000),
+      })
+      .parse(raw),
+  )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    assertSponsorshipEnabled();
     await requireSuperAdmin(context);
-
-    // Recompute proposals server-side (never trust client selections).
     const [agentsRes, lendersRes, matchesRes] = await Promise.all([
       context.supabase
         .from("sponsorship_agents")
@@ -135,23 +128,22 @@ export const commitMatches = createServerFn({ method: "POST" })
       current_load: loadByLender.get(l.id) ?? 0,
     }));
     const proposals = proposeMatches(agents, lenders, alreadyMatched);
+    if (proposals.length === 0) return { inserted: 0, skipped: 0 };
 
-    if (proposals.length === 0) {
-      return { inserted: 0, skipped: 0 };
-    }
-
-    // Insert one at a time so a single partial-index conflict (concurrent
-    // super_admin action) doesn't kill the whole batch.
     let inserted = 0;
     let skipped = 0;
     for (const p of proposals) {
-      const { error } = await context.supabase.from("sponsorship_matches").insert({
-        campaign_id: data.campaign_id,
-        agent_id: p.agent_id,
-        lender_id: p.lender_id,
-        status: "ready",
-        rank_reason: p.rank_reason,
-      });
+      const { data: row, error } = await context.supabase
+        .from("sponsorship_matches")
+        .insert({
+          campaign_id: data.campaign_id,
+          agent_id: p.agent_id,
+          lender_id: p.lender_id,
+          status: "ready",
+          annual_price_cents: data.annual_price_cents,
+        })
+        .select("id")
+        .single();
       if (error) {
         if (error.code === "23505") {
           skipped += 1;
@@ -160,15 +152,24 @@ export const commitMatches = createServerFn({ method: "POST" })
         }
       } else {
         inserted += 1;
+        await writeAudit(context.supabase, {
+          campaign_id: data.campaign_id,
+          match_id: row.id,
+          actor_user_id: context.userId,
+          event_type: "match.created",
+          metadata: {
+            agent_id: p.agent_id,
+            lender_id: p.lender_id,
+            rank_reason: p.rank_reason,
+            annual_price_cents: data.annual_price_cents,
+          },
+        });
       }
     }
-
-    await context.supabase.from("sponsorship_audit_events").insert({
+    await writeAudit(context.supabase, {
       campaign_id: data.campaign_id,
       actor_user_id: context.userId,
-      action: "matches.committed",
-      subject_type: "batch",
-      subject_id: null,
+      event_type: "matches.committed",
       metadata: { inserted, skipped, proposed: proposals.length },
     });
     return { inserted, skipped };
@@ -197,13 +198,11 @@ export const setMatchStatus = createServerFn({ method: "POST" })
           "reassigned",
           "cancelled",
         ]),
-        notes: z.string().trim().max(2000).optional().nullable(),
       })
       .parse(raw),
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    assertSponsorshipEnabled();
     await requireSuperAdmin(context);
     const { data: prior } = await context.supabase
       .from("sponsorship_matches")
@@ -212,7 +211,7 @@ export const setMatchStatus = createServerFn({ method: "POST" })
       .maybeSingle();
     const { error } = await context.supabase
       .from("sponsorship_matches")
-      .update({ status: data.status, notes: data.notes ?? null })
+      .update({ status: data.status })
       .eq("id", data.id);
     if (error) {
       if (error.code === "23505")
@@ -222,12 +221,11 @@ export const setMatchStatus = createServerFn({ method: "POST" })
       throw new Error(error.message);
     }
     if (prior) {
-      await context.supabase.from("sponsorship_audit_events").insert({
+      await writeAudit(context.supabase, {
         campaign_id: prior.campaign_id,
+        match_id: data.id,
         actor_user_id: context.userId,
-        action: "match.status_changed",
-        subject_type: "match",
-        subject_id: data.id,
+        event_type: "match.status_changed",
         metadata: { from: prior.status, to: data.status },
       });
     }

@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { assertSponsorshipEnabled } from "./feature-flag";
+import { requireSuperAdmin, writeAudit } from "./server-helpers";
 import { validateAgents, type AgentImport, type CsvRow } from "./csv";
 import {
   isValidEmail,
@@ -11,20 +11,10 @@ import {
   normalizeZip,
 } from "./normalize";
 
-async function requireSuperAdmin(ctx: {
-  supabase: any; // eslint-disable-line @typescript-eslint/no-explicit-any
-  userId: string;
-}): Promise<void> {
-  const { data } = await ctx.supabase.from("user_roles").select("role").eq("user_id", ctx.userId);
-  const isSuper = ((data ?? []) as Array<{ role: string }>).some((r) => r.role === "super_admin");
-  if (!isSuper) throw new Response("Not found", { status: 404 });
-}
-
 export const listAgents = createServerFn({ method: "GET" })
   .inputValidator((raw: unknown) => z.object({ campaign_id: z.string().uuid() }).parse(raw))
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    assertSponsorshipEnabled();
     await requireSuperAdmin(context);
     const { data: rows, error } = await context.supabase
       .from("sponsorship_agents")
@@ -55,7 +45,6 @@ export const addAgent = createServerFn({ method: "POST" })
   .inputValidator((raw: unknown) => singleAgentSchema.parse(raw))
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    assertSponsorshipEnabled();
     await requireSuperAdmin(context);
     const email = normalizeEmail(data.email);
     if (!email || !isValidEmail(email)) throw new Error("Invalid email");
@@ -74,6 +63,7 @@ export const addAgent = createServerFn({ method: "POST" })
           ? null
           : normalizeInt(data.listing_count),
       profile_url: normalizeString(data.profile_url ?? null),
+      import_source: "manual",
     };
     const { data: inserted, error } = await context.supabase
       .from("sponsorship_agents")
@@ -81,16 +71,15 @@ export const addAgent = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) {
-      if (error.code === "23505") throw new Error("An agent with that email already exists in this campaign.");
+      if (error.code === "23505")
+        throw new Error("An agent with that email already exists in this campaign.");
       throw new Error(error.message);
     }
-    await context.supabase.from("sponsorship_audit_events").insert({
+    await writeAudit(context.supabase, {
       campaign_id: data.campaign_id,
       actor_user_id: context.userId,
-      action: "agent.added",
-      subject_type: "agent",
-      subject_id: inserted.id,
-      metadata: { email },
+      event_type: "agent.added",
+      metadata: { email, agent_id: inserted.id },
     });
     return { id: inserted.id };
   });
@@ -106,23 +95,26 @@ export const importAgentsBulk = createServerFn({ method: "POST" })
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    assertSponsorshipEnabled();
     await requireSuperAdmin(context);
-
     const parsed = validateAgents(data.rows as CsvRow[]);
     if (parsed.valid.length === 0) {
-      return { inserted: 0, skipped_existing: 0, errors: parsed.errors, duplicates: parsed.duplicates };
+      return {
+        inserted: 0,
+        skipped_existing: 0,
+        errors: parsed.errors,
+        duplicates: parsed.duplicates,
+      };
     }
-    // De-dup against existing rows in the same campaign.
     const emails = parsed.valid.map((v) => v.email);
     const { data: existing } = await context.supabase
       .from("sponsorship_agents")
       .select("email")
       .eq("campaign_id", data.campaign_id)
       .in("email", emails);
-    const existingSet = new Set(((existing ?? []) as Array<{ email: string }>).map((r) => r.email));
-    const toInsert = parsed.valid.filter((v: AgentImport) => !existingSet.has(v.email));
-
+    const existingSet = new Set(
+      ((existing ?? []) as Array<{ email: string }>).map((r) => r.email),
+    );
+    const toInsert: AgentImport[] = parsed.valid.filter((v) => !existingSet.has(v.email));
     if (toInsert.length === 0) {
       return {
         inserted: 0,
@@ -131,17 +123,17 @@ export const importAgentsBulk = createServerFn({ method: "POST" })
         duplicates: parsed.duplicates,
       };
     }
-
-    const payload = toInsert.map((a) => ({ campaign_id: data.campaign_id, ...a }));
+    const payload = toInsert.map((a) => ({
+      campaign_id: data.campaign_id,
+      ...a,
+      import_source: "csv",
+    }));
     const { error } = await context.supabase.from("sponsorship_agents").insert(payload);
     if (error) throw new Error(error.message);
-
-    await context.supabase.from("sponsorship_audit_events").insert({
+    await writeAudit(context.supabase, {
       campaign_id: data.campaign_id,
       actor_user_id: context.userId,
-      action: "agents.imported",
-      subject_type: "batch",
-      subject_id: null,
+      event_type: "agents.imported",
       metadata: {
         inserted: toInsert.length,
         skipped_existing: existingSet.size,
@@ -161,9 +153,7 @@ export const deleteAgent = createServerFn({ method: "POST" })
   .inputValidator((raw: unknown) => z.object({ id: z.string().uuid() }).parse(raw))
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    assertSponsorshipEnabled();
     await requireSuperAdmin(context);
-    // Fetch campaign_id first for audit trail.
     const { data: existing } = await context.supabase
       .from("sponsorship_agents")
       .select("campaign_id, email")
@@ -176,13 +166,11 @@ export const deleteAgent = createServerFn({ method: "POST" })
       throw new Error(error.message);
     }
     if (existing) {
-      await context.supabase.from("sponsorship_audit_events").insert({
+      await writeAudit(context.supabase, {
         campaign_id: existing.campaign_id,
         actor_user_id: context.userId,
-        action: "agent.removed",
-        subject_type: "agent",
-        subject_id: data.id,
-        metadata: { email: existing.email },
+        event_type: "agent.removed",
+        metadata: { email: existing.email, agent_id: data.id },
       });
     }
     return { ok: true };

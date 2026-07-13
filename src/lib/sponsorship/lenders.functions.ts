@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { assertSponsorshipEnabled } from "./feature-flag";
+import { requireSuperAdmin, writeAudit } from "./server-helpers";
 import { validateLenders, type CsvRow, type LenderImport } from "./csv";
 import {
   isValidEmail,
@@ -12,20 +12,10 @@ import {
   normalizeZipList,
 } from "./normalize";
 
-async function requireSuperAdmin(ctx: {
-  supabase: any; // eslint-disable-line @typescript-eslint/no-explicit-any
-  userId: string;
-}): Promise<void> {
-  const { data } = await ctx.supabase.from("user_roles").select("role").eq("user_id", ctx.userId);
-  const isSuper = ((data ?? []) as Array<{ role: string }>).some((r) => r.role === "super_admin");
-  if (!isSuper) throw new Response("Not found", { status: 404 });
-}
-
 export const listLenders = createServerFn({ method: "GET" })
   .inputValidator((raw: unknown) => z.object({ campaign_id: z.string().uuid() }).parse(raw))
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    assertSponsorshipEnabled();
     await requireSuperAdmin(context);
     const { data: rows, error } = await context.supabase
       .from("sponsorship_lenders")
@@ -57,11 +47,11 @@ export const addLender = createServerFn({ method: "POST" })
   .inputValidator((raw: unknown) => singleLenderSchema.parse(raw))
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    assertSponsorshipEnabled();
     await requireSuperAdmin(context);
     const email = normalizeEmail(data.email);
     if (!email || !isValidEmail(email)) throw new Error("Invalid email");
-    if (data.nmls_number && !isValidNmls(data.nmls_number)) throw new Error("Invalid NMLS number");
+    if (data.nmls_number && !isValidNmls(data.nmls_number))
+      throw new Error("Invalid NMLS number");
     const row = {
       campaign_id: data.campaign_id,
       first_name: normalizeString(data.first_name ?? null),
@@ -86,13 +76,11 @@ export const addLender = createServerFn({ method: "POST" })
         throw new Error("A lender with that email already exists in this campaign.");
       throw new Error(error.message);
     }
-    await context.supabase.from("sponsorship_audit_events").insert({
+    await writeAudit(context.supabase, {
       campaign_id: data.campaign_id,
       actor_user_id: context.userId,
-      action: "lender.added",
-      subject_type: "lender",
-      subject_id: inserted.id,
-      metadata: { email },
+      event_type: "lender.added",
+      metadata: { email, lender_id: inserted.id },
     });
     return { id: inserted.id };
   });
@@ -108,9 +96,7 @@ export const importLendersBulk = createServerFn({ method: "POST" })
   )
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    assertSponsorshipEnabled();
     await requireSuperAdmin(context);
-
     const parsed = validateLenders(data.rows as CsvRow[]);
     if (parsed.valid.length === 0) {
       return {
@@ -126,8 +112,10 @@ export const importLendersBulk = createServerFn({ method: "POST" })
       .select("email")
       .eq("campaign_id", data.campaign_id)
       .in("email", emails);
-    const existingSet = new Set(((existing ?? []) as Array<{ email: string }>).map((r) => r.email));
-    const toInsert = parsed.valid.filter((v: LenderImport) => !existingSet.has(v.email));
+    const existingSet = new Set(
+      ((existing ?? []) as Array<{ email: string }>).map((r) => r.email),
+    );
+    const toInsert: LenderImport[] = parsed.valid.filter((v) => !existingSet.has(v.email));
     if (toInsert.length === 0) {
       return {
         inserted: 0,
@@ -139,13 +127,10 @@ export const importLendersBulk = createServerFn({ method: "POST" })
     const payload = toInsert.map((l) => ({ campaign_id: data.campaign_id, ...l }));
     const { error } = await context.supabase.from("sponsorship_lenders").insert(payload);
     if (error) throw new Error(error.message);
-
-    await context.supabase.from("sponsorship_audit_events").insert({
+    await writeAudit(context.supabase, {
       campaign_id: data.campaign_id,
       actor_user_id: context.userId,
-      action: "lenders.imported",
-      subject_type: "batch",
-      subject_id: null,
+      event_type: "lenders.imported",
       metadata: {
         inserted: toInsert.length,
         skipped_existing: existingSet.size,
@@ -165,7 +150,6 @@ export const deleteLender = createServerFn({ method: "POST" })
   .inputValidator((raw: unknown) => z.object({ id: z.string().uuid() }).parse(raw))
   .middleware([requireSupabaseAuth])
   .handler(async ({ context, data }) => {
-    assertSponsorshipEnabled();
     await requireSuperAdmin(context);
     const { data: existing } = await context.supabase
       .from("sponsorship_lenders")
@@ -179,13 +163,11 @@ export const deleteLender = createServerFn({ method: "POST" })
       throw new Error(error.message);
     }
     if (existing) {
-      await context.supabase.from("sponsorship_audit_events").insert({
+      await writeAudit(context.supabase, {
         campaign_id: existing.campaign_id,
         actor_user_id: context.userId,
-        action: "lender.removed",
-        subject_type: "lender",
-        subject_id: data.id,
-        metadata: { email: existing.email },
+        event_type: "lender.removed",
+        metadata: { email: existing.email, lender_id: data.id },
       });
     }
     return { ok: true };

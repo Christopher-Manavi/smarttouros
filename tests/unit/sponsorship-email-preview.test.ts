@@ -30,7 +30,9 @@ function assertNoPlaceholders(...strings: string[]) {
 describe("sponsorship/email-preview — agent invitation", () => {
   it("renders subject, cta and body with all fields", () => {
     const out = renderAgentEmailPreview(full);
-    expect(out.subject).toBe("Summit Home Loans wants to sponsor your listing lead platform");
+    expect(out.subject).toBe(
+      "Would you like Summit Home Loans to sponsor your listing lead platform?",
+    );
     expect(out.cta).toBe("Yes — ask Bob to sponsor my account");
     expect(out.body).toContain("Hi Alice,");
     expect(out.body).toContain("Bob Chen at Summit Home Loans");

@@ -13,7 +13,7 @@ export const listMatches = createServerFn({ method: "GET" })
     const { data: rows, error } = await context.supabase
       .from("sponsorship_matches")
       .select(
-        "id, agent_id, lender_id, status, annual_price_cents, created_at, updated_at, sponsorship_agents(email, first_name, last_name, city, state, postal_code), sponsorship_lenders(email, first_name, last_name, company, city, state)",
+        "id, agent_id, lender_id, status, annual_price_cents, created_at, updated_at, sponsorship_agents(email, first_name, last_name, city, state, postal_code, brokerage, listing_count), sponsorship_lenders(email, first_name, last_name, company, city, state)",
       )
       .eq("campaign_id", data.campaign_id)
       .order("created_at", { ascending: false });

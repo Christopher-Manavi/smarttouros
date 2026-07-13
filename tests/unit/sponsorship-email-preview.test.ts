@@ -30,7 +30,9 @@ function assertNoPlaceholders(...strings: string[]) {
 describe("sponsorship/email-preview — agent invitation", () => {
   it("renders subject, cta and body with all fields", () => {
     const out = renderAgentEmailPreview(full);
-    expect(out.subject).toBe("Summit Home Loans wants to sponsor your listing lead platform");
+    expect(out.subject).toBe(
+      "Would you like Summit Home Loans to sponsor your listing lead platform?",
+    );
     expect(out.cta).toBe("Yes — ask Bob to sponsor my account");
     expect(out.body).toContain("Hi Alice,");
     expect(out.body).toContain("Bob Chen at Summit Home Loans");
@@ -147,5 +149,47 @@ describe("sponsorship/email-preview — transport safety", () => {
     // Nothing on globalThis was hijacked by a mail SDK.
     expect((globalThis as Record<string, unknown>).Resend).toBeUndefined();
     expect((globalThis as Record<string, unknown>).sgMail).toBeUndefined();
+  });
+});
+
+describe("sponsorship/email-preview — final corrections", () => {
+  it("agent subject uses question wording", () => {
+    expect(renderAgentEmailPreview(full).subject).toBe(
+      "Would you like Summit Home Loans to sponsor your listing lead platform?",
+    );
+  });
+
+  it("lender preview renders brokerage and listing_count when present", () => {
+    const out = renderLenderEmailPreview({
+      ...full,
+      agentFirstName: "Sarah",
+      agentLastName: "Johnson",
+      agentBrokerage: "Test Realty",
+      agentCity: "Houston",
+      agentState: "TX",
+      listingCount: 5,
+    });
+    expect(out.body).toContain("Agent: Sarah Johnson");
+    expect(out.body).toContain("Brokerage: Test Realty");
+    expect(out.body).toContain("Market: Houston, TX");
+    expect(out.body).toContain("Active listings: 5");
+    expect(out.body).toContain("Annual sponsored seat: $999");
+  });
+
+  it("renders listing_count of 0 (not treated as missing)", () => {
+    const out = renderLenderEmailPreview({ ...full, listingCount: 0 });
+    expect(out.body).toContain("Active listings: 0");
+  });
+
+  it("omits brokerage line cleanly when missing", () => {
+    const out = renderLenderEmailPreview({ ...full, agentBrokerage: null });
+    expect(out.body).not.toMatch(/Brokerage:/);
+    expect(out.body).not.toMatch(/\bundefined\b|\bnull\b/);
+  });
+
+  it("omits listing count line cleanly when missing", () => {
+    const out = renderLenderEmailPreview({ ...full, listingCount: null });
+    expect(out.body).not.toMatch(/Active listings:/);
+    expect(out.body).not.toMatch(/\bundefined\b|\bnull\b/);
   });
 });

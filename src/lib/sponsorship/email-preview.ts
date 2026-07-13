@@ -93,7 +93,7 @@ export function renderAgentEmailPreview(i: PreviewInput): RenderedEmail {
   const price = fmtPrice(i.annualPriceCents);
 
   const companyForSubject = lenderCompany ?? lenderFull ?? lenderFirst ?? "A local lender";
-  const subject = `${companyForSubject} wants to sponsor your listing lead platform`;
+  const subject = `Would you like ${companyForSubject} to sponsor your listing lead platform?`;
 
   const sponsorRef = lenderFull
     ? lenderCompany

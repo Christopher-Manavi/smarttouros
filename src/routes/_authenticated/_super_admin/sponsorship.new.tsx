@@ -44,7 +44,7 @@ function NewCampaign() {
         },
       });
       toast.success("Campaign created");
-      navigate({ to: "/sponsorship/$campaignId", params: { campaignId: res.id } });
+      navigate({ to: "/sponsorship/$campaignId", params: { campaignId: res.id }, search: { tab: "agents" } });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to create");
     } finally {

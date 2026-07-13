@@ -12,22 +12,45 @@ import { AlertTriangle, CheckCircle2 } from "lucide-react";
 
 const IS_DEV = import.meta.env.DEV;
 
-function formatAuthError(err: unknown): string {
-  if (!err) return "An unexpected authentication error occurred.";
-  if (err instanceof Error && err.message) return err.message;
-  if (typeof err === "string" && err) return err;
-  if (typeof err === "object") {
-    const e = err as { message?: unknown; error_description?: unknown; code?: unknown };
-    const msg =
-      (typeof e.message === "string" && e.message) ||
-      (typeof e.error_description === "string" && e.error_description) ||
-      "";
-    const code = typeof e.code === "string" ? e.code : "";
-    if (msg && code) return `${msg} (${code})`;
-    if (msg) return msg;
-    if (code) return `Authentication error (${code})`;
+function formatAuthError(err: unknown, mode: "signin" | "signup"): string {
+  const raw =
+    err instanceof Error
+      ? err.message
+      : typeof err === "string"
+        ? err
+        : typeof err === "object" && err !== null
+          ? String(
+              (err as { message?: unknown; error_description?: unknown }).message ??
+                (err as { error_description?: unknown }).error_description ??
+                "",
+            )
+          : "";
+  const lower = raw.toLowerCase();
+
+  if (
+    lower.includes("already registered") ||
+    lower.includes("already been registered") ||
+    lower.includes("user already exists") ||
+    lower.includes("duplicate key")
+  ) {
+    return "An account already exists with this email. Please sign in instead.";
   }
-  return "An unexpected authentication error occurred. Please try again.";
+  if (lower.includes("invalid login credentials")) {
+    return "That email and password don't match. Please try again.";
+  }
+  if (lower.includes("email not confirmed")) {
+    return "Please confirm your email address before signing in. Check your inbox for the confirmation link.";
+  }
+  if (
+    lower.includes("password") &&
+    (lower.includes("weak") || lower.includes("pwned") || lower.includes("breach"))
+  ) {
+    return "That password has appeared in a public breach. Please choose a unique password.";
+  }
+  if (mode === "signup") {
+    return "We couldn't create your account. Please try again in a moment.";
+  }
+  return "We couldn't sign you in. Please try again.";
 }
 
 export const Route = createFileRoute("/auth")({
@@ -112,7 +135,7 @@ function AuthPage() {
       }
     } catch (err) {
       logDev("error", err);
-      setErrorMsg(formatAuthError(err));
+      setErrorMsg(formatAuthError(err, mode));
     } finally {
       setBusy(false);
     }

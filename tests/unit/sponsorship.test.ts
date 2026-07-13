@@ -82,7 +82,7 @@ describe("sponsorship/matching", () => {
   const agents: MatchAgent[] = [
     { id: "a1", email: "a1@x.co", city: "Denver", state: "CO", postal_code: "80202" },
     { id: "a2", email: "a2@x.co", city: "Boulder", state: "CO", postal_code: "80301" },
-    { id: "a3", email: "a3@x.co", city: null, state: null, postal_code: null },
+    { id: "a3", email: "a3@x.co", city: "Elsewhere", state: "CO", postal_code: null },
   ];
   const lenders: MatchLender[] = [
     {
